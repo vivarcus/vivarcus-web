@@ -1,0 +1,100 @@
+import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { describe, expect, it, vi } from "vitest";
+import { TaskCompleteModal } from "./TaskCompleteModal";
+import type { WorkflowTaskAction } from "../api/types";
+import { UiProvider } from "../context/UiContext";
+
+function renderModal(
+  task: WorkflowTaskAction,
+  onSubmit = vi.fn().mockResolvedValue(undefined),
+) {
+  return render(
+    <UiProvider>
+      <TaskCompleteModal task={task} onClose={vi.fn()} onSubmit={onSubmit} />
+    </UiProvider>,
+  );
+}
+
+function craConfirmTask(): WorkflowTaskAction {
+  return {
+    workflow_instance_id: "wf-1",
+    workflow_task_id: "task-1",
+    workflow_label: "PD Review",
+    task_label: "CRA Confirm",
+    task_instructions:
+      "PM has finished the review task, please check the comment and take action accordingly.",
+    status: "active",
+    can_complete: true,
+    verdict_options: [
+      {
+        name: "verdict_confirm__c",
+        label: "Confirm",
+        comment_label: "Comment",
+        comment_required: false,
+      },
+    ],
+  };
+}
+
+describe("TaskCompleteModal", () => {
+  it("shows instructions and verdict before comment for CRA Confirm", async () => {
+    const user = userEvent.setup();
+    renderModal(craConfirmTask());
+
+    expect(
+      screen.getByText(
+        /PM has finished the review task, please check the comment and take action accordingly\./,
+      ),
+    ).toBeInTheDocument();
+    expect(screen.getByText("Instructions")).toBeInTheDocument();
+    expect(screen.getByRole("radio", { name: "Confirm" })).not.toBeChecked();
+    expect(screen.queryByText("Comment")).not.toBeInTheDocument();
+    expect(screen.queryByRole("textbox")).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("radio", { name: "Confirm" }));
+    expect(screen.getByText("Comment")).toBeInTheDocument();
+    expect(screen.getByRole("textbox")).toBeInTheDocument();
+  });
+
+  it("requires selecting the verdict before submit", async () => {
+    const user = userEvent.setup();
+    const onSubmit = vi.fn().mockResolvedValue(undefined);
+    renderModal(craConfirmTask(), onSubmit);
+
+    await user.click(screen.getByRole("button", { name: /^Complete$/i }));
+    expect(onSubmit).not.toHaveBeenCalled();
+    expect(screen.getByText("Verdict is required")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("radio", { name: "Confirm" }));
+    await user.click(screen.getByRole("button", { name: /^Complete$/i }));
+    expect(onSubmit).toHaveBeenCalledWith("Confirm", "", {});
+  });
+
+  it("shows verdict reason after selecting a verdict", async () => {
+    const user = userEvent.setup();
+    const task: WorkflowTaskAction = {
+      workflow_instance_id: "wf-1",
+      workflow_task_id: "task-1",
+      workflow_api_name: "quality_issue_task__v",
+      workflow_label: "Quality Issue Task",
+      task_label: "Resolve Quality Issue",
+      status: "active",
+      can_complete: true,
+      verdict_options: [
+        {
+          name: "verdict_resolved__c",
+          label: "Resolved",
+          field_api_name: "verdict_reason__v",
+          field_label: "Verdict Reason",
+          field_required: true,
+        },
+      ],
+    };
+    renderModal(task);
+
+    expect(screen.queryByText("Verdict Reason")).not.toBeInTheDocument();
+    await user.click(screen.getByRole("radio", { name: "Resolved" }));
+    expect(screen.getByText("Verdict Reason")).toBeInTheDocument();
+  });
+});

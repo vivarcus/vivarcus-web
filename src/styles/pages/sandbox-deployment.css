@@ -1,0 +1,35 @@
+/* Deployment-specific table and form tweaks (shell uses admin-page.css). */
+
+.sandbox-deployment__entitlements-table.table-wrap {
+  width: max-content;
+  max-width: 100%;
+}
+
+.sandbox-deployment__entitlements-table .data-table table {
+  width: 460px;
+}
+
+.sandbox-deployment__entitlements-table .data-table .ant-table-thead > tr > th,
+.sandbox-deployment__entitlements-table .data-table .ant-table-tbody > tr > td {
+  white-space: nowrap;
+}
+
+.sandbox-deployment__source-mode {
+  margin-bottom: 0.75rem;
+}
+
+.sandbox-deployment__source-mode .ant-form-item-control-input-content {
+  padding-left: 140px;
+}
+
+.sandbox-deployment__source-value {
+  font-weight: 500;
+  line-height: 32px;
+}
+
+.admin-table__cell-ellipsis {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

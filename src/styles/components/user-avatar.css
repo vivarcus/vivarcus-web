@@ -1,0 +1,32 @@
+.user-avatar__img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+.header-menus__avatar.user-avatar--has-image {
+  background: transparent;
+  border-color: rgba(255, 255, 255, 0.45);
+}
+
+.header-menus__avatar .user-avatar__img {
+  border-radius: 50%;
+}
+
+.home-user-avatar.user-avatar--has-image {
+  background: transparent;
+}
+
+.home-user-avatar .user-avatar__img {
+  border-radius: 4px;
+}
+
+.workflow-timeline-user-avatar.user-avatar--has-image {
+  background: transparent;
+  color: inherit;
+}
+
+.workflow-timeline-user-avatar .user-avatar__img {
+  border-radius: 0;
+}

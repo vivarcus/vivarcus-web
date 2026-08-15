@@ -1,0 +1,292 @@
+.view-tabs {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-bottom: 0;
+}
+
+.view-tab {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  width: 100%;
+  border: none;
+  border-left: 3px solid transparent;
+  background: transparent;
+  border-radius: 0;
+  padding: 0.45rem 1rem;
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text);
+  text-decoration: none;
+}
+
+a.view-tab {
+  text-decoration: none;
+  color: var(--text);
+}
+
+a.view-tab:hover {
+  text-decoration: none;
+  color: var(--text);
+}
+
+.view-tab.ant-btn {
+  height: auto;
+  line-height: inherit;
+  box-shadow: none;
+  border-radius: 0;
+  justify-content: flex-start;
+  /* Lock border box so ant hover `border:` shorthand cannot collapse the 3px rail. */
+  border: none;
+  border-left: 3px solid transparent;
+}
+
+.view-tab:hover {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.view-tab.ant-btn:not(:disabled):hover,
+.view-tab.ant-btn:not(:disabled):focus-visible,
+.view-tab.ant-btn:not(:disabled):active {
+  border: none;
+  border-left: 3px solid transparent;
+  box-shadow: none;
+  color: inherit;
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.view-tab--active {
+  background: var(--accent-light);
+  border-left-color: var(--accent);
+  color: var(--text);
+  font-weight: 500;
+}
+
+.view-tab--active.ant-btn:not(:disabled):hover,
+.view-tab--active.ant-btn:not(:disabled):focus-visible,
+.view-tab--active.ant-btn:not(:disabled):active {
+  border-left-color: var(--accent);
+  background: var(--accent-light);
+  color: inherit;
+}
+
+.view-tab--active::before {
+  content: none;
+}
+
+.view-tab__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.875rem;
+  flex-shrink: 0;
+}
+
+.view-tab__label {
+  min-width: 0;
+  flex: 1;
+}
+
+.view-tab__meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  flex-shrink: 0;
+}
+
+.view-tab__count {
+  min-width: 1.25rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--muted);
+  text-align: right;
+}
+
+.view-tab--active .view-tab__count {
+  font-weight: 500;
+  color: var(--muted);
+}
+
+.view-tab__badge {
+  color: var(--accent);
+  font-size: 0.75rem;
+}
+
+.view-group {
+  margin-top: 0.625rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--border);
+}
+
+.view-group__title {
+  margin: 0 0 0.25rem 1rem;
+  color: var(--muted);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  line-height: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.saved-view-dialog {
+  width: min(640px, 92vw);
+}
+
+.saved-view-dialog__error {
+  margin-bottom: 0.75rem;
+}
+
+.saved-view-dialog__loading {
+  display: flex;
+  justify-content: center;
+  padding: 1.5rem 0;
+}
+
+.saved-view-dialog__toolbar {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.75rem;
+}
+
+.saved-view-dialog__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.saved-view-dialog__item {
+  border: 1px solid var(--border);
+  padding: 0.65rem 0.75rem;
+  background: var(--surface);
+}
+
+.saved-view-dialog__item-main {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.saved-view-dialog__badge {
+  font-size: 0.75rem;
+  color: var(--accent);
+}
+
+.saved-view-dialog__badge--muted {
+  color: var(--muted);
+}
+
+.saved-view-dialog__actions {
+  display: flex;
+  gap: 0.25rem;
+  flex-wrap: wrap;
+  margin-top: 0.5rem;
+}
+
+.saved-view-dialog__empty {
+  color: var(--muted);
+  padding: 0.5rem 0;
+}
+
+.edit-views-dialog__error,
+.save-view-name-dialog__error {
+  margin-bottom: 0.75rem;
+}
+
+.edit-views-dialog__toolbar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+  align-items: center;
+}
+
+.edit-views-dialog__sort {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  white-space: nowrap;
+}
+
+.edit-views-dialog__sort-label {
+  color: var(--muted);
+  font-size: 0.8125rem;
+}
+
+.edit-views-dialog__loading {
+  display: flex;
+  justify-content: center;
+  padding: 1.5rem 0;
+}
+
+.edit-views-dialog__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0;
+  max-height: 360px;
+  overflow: auto;
+  border-top: 1px solid var(--border);
+}
+
+.edit-views-dialog__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.edit-views-dialog__item-main {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.edit-views-dialog__owner {
+  color: var(--muted);
+  font-size: 0.8125rem;
+}
+
+.edit-views-dialog__delete.ant-btn {
+  flex-shrink: 0;
+}
+
+.edit-views-dialog__empty {
+  color: var(--muted);
+  padding: 0.75rem 0;
+}
+
+.edit-views-dialog__count {
+  margin-top: 0.5rem;
+  text-align: right;
+  color: var(--muted);
+  font-size: 0.8125rem;
+}
+
+.save-view-name-dialog__info {
+  margin: 0 0 0.75rem;
+  color: var(--muted);
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+
+.list-header__save-view-menu.ant-dropdown-button {
+  height: 28px;
+}
+
+.list-header__save-view-menu.ant-dropdown-button > .ant-btn {
+  height: 28px;
+  font-size: 0.929rem;
+}

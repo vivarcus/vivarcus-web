@@ -1,0 +1,870 @@
+.vault-ai-chat-drawer.ant-drawer .ant-drawer-content-wrapper {
+  top: 52px;
+  height: calc(100% - 52px);
+}
+
+.vault-ai-chat-drawer .ant-drawer-content {
+  background: var(--header-bg, #1b2a4a);
+}
+
+.vault-ai-chat-drawer .ant-drawer-header {
+  padding: 0.65rem 0.85rem;
+  border-bottom: 0;
+  background: var(--header-bg, #1b2a4a);
+}
+
+.vault-ai-chat-drawer .ant-drawer-header-title {
+  flex-direction: row-reverse;
+}
+
+.vault-ai-chat-drawer .ant-drawer-close {
+  display: none;
+}
+
+.vault-ai-chat-drawer .ant-drawer-body {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: 0 0.65rem 0.65rem;
+  background: var(--header-bg, #1b2a4a);
+}
+
+.vault-ai-chat__drawer-title {
+  width: 100%;
+  color: #fff;
+}
+
+.vault-ai-chat__title {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: #e8a83a;
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.vault-ai-chat__title-icon {
+  display: inline-flex;
+  color: #e87722;
+}
+
+.vault-ai-chat__title-icon svg {
+  width: 0.9rem;
+  height: 0.9rem;
+}
+
+.vault-ai-chat__header-actions .ant-btn {
+  color: rgba(255, 255, 255, 0.92) !important;
+}
+
+.vault-ai-chat__header-actions .ant-btn:hover:not(:disabled),
+.vault-ai-chat__header-actions .ant-btn:focus-visible:not(:disabled) {
+  color: #fff !important;
+  background: rgba(255, 255, 255, 0.12) !important;
+}
+
+.vault-ai-chat__header-actions .ant-btn:disabled {
+  color: rgba(255, 255, 255, 0.45) !important;
+}
+
+.vault-ai-chat__header-btn--pinned.ant-btn {
+  color: #e8a83a !important;
+}
+
+/* Docked Panel: shrink TabNav + detail so the drawer sits in the vacated lane. */
+html.vault-ai-chat-docked .tab-nav,
+html.vault-ai-chat-docked .app-main {
+  margin-right: var(--vault-ai-chat-dock-width, 420px);
+  transition: margin-right 0.3s ease;
+}
+
+.vault-ai-chat-float {
+  position: fixed;
+  /* Below Ant Design Dropdown/Popover (~1050) so header menus stay usable. */
+  z-index: 900;
+  display: flex;
+  flex-direction: column;
+  min-width: 320px;
+  min-height: 320px;
+  overflow: hidden;
+  border-radius: 10px;
+  box-shadow: 0 12px 36px rgba(15, 23, 42, 0.28);
+  background: var(--header-bg, #1b2a4a);
+}
+
+.vault-ai-chat-float__header {
+  flex-shrink: 0;
+  padding: 0.65rem 0.85rem;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+
+.vault-ai-chat-float__header:active {
+  cursor: grabbing;
+}
+
+.vault-ai-chat-float__body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  padding: 0 0.65rem 0.65rem;
+}
+
+.vault-ai-chat-float__resize {
+  position: absolute;
+  z-index: 2;
+  touch-action: none;
+}
+
+.vault-ai-chat-float__resize--e {
+  top: 12px;
+  right: 0;
+  bottom: 12px;
+  width: 6px;
+  cursor: ew-resize;
+}
+
+.vault-ai-chat-float__resize--s {
+  left: 12px;
+  right: 12px;
+  bottom: 0;
+  height: 6px;
+  cursor: ns-resize;
+}
+
+.vault-ai-chat-float__resize--se {
+  right: 0;
+  bottom: 0;
+  width: 16px;
+  height: 16px;
+  cursor: nwse-resize;
+}
+
+.vault-ai-chat-float__resize--se::after {
+  content: "";
+  position: absolute;
+  right: 4px;
+  bottom: 4px;
+  width: 8px;
+  height: 8px;
+  border-right: 2px solid rgba(255, 255, 255, 0.55);
+  border-bottom: 2px solid rgba(255, 255, 255, 0.55);
+  border-radius: 1px;
+  pointer-events: none;
+}
+
+.vault-ai-chat__body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  height: 100%;
+  padding: 0.55rem 0.75rem 0.75rem;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.vault-ai-chat__toolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.15rem;
+  margin-bottom: 0.35rem;
+}
+
+.vault-ai-chat__toolbar .ant-btn {
+  color: #6b7280 !important;
+}
+
+.vault-ai-chat__toolbar .ant-btn:hover:not(:disabled),
+.vault-ai-chat__toolbar .ant-btn:focus-visible:not(:disabled),
+.vault-ai-chat__toolbar .vault-ai-chat__toolbar-btn--active {
+  color: #111827 !important;
+  background: #f3f4f6 !important;
+}
+
+.vault-ai-chat__messages {
+  flex: 1;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 0;
+  padding: 2px;
+}
+
+.vault-ai-chat__empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.85rem;
+  padding: 0.85rem 0.35rem 1.25rem;
+  min-height: 100%;
+}
+
+.vault-ai-chat__empty-title {
+  margin: 0;
+  color: #111827;
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.vault-ai-chat__help-prompt {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: #1f2937;
+  font-size: 0.95rem;
+  font-weight: 500;
+  line-height: 1.35;
+}
+
+.vault-ai-chat__help-prompt .vault-ai-chat__title-icon {
+  flex-shrink: 0;
+}
+
+.vault-ai-chat__action-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  width: 100%;
+  max-width: 17.5rem;
+  margin-top: 0.25rem;
+}
+
+.vault-ai-chat__action-card {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  width: 100%;
+  margin: 0;
+  padding: 0.7rem 0.85rem;
+  border: 1px solid #d9dde3;
+  border-radius: 6px;
+  background: #fff;
+  color: #1f2937;
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.3;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.vault-ai-chat__action-card:hover:not(:disabled) {
+  border-color: #b8bec8;
+  background: #fafbfc;
+}
+
+.vault-ai-chat__action-card:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.vault-ai-chat__action-card .vault-ai-chat__title-icon {
+  flex-shrink: 0;
+}
+
+.vault-ai-chat__history-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  padding: 0.35rem 0.15rem 0.75rem;
+  min-height: 100%;
+}
+
+.vault-ai-chat__history-heading {
+  margin: 0;
+  color: #111827;
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.vault-ai-chat__history-empty {
+  padding: 0.35rem 0.15rem;
+  font-size: 0.8125rem;
+}
+
+.vault-ai-chat__history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.vault-ai-chat__history-item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.15rem;
+  width: 100%;
+  margin: 0;
+  padding: 0.55rem 0.65rem;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #1f2937;
+  text-align: left;
+  cursor: pointer;
+}
+
+.vault-ai-chat__history-item:hover,
+.vault-ai-chat__history-item--active {
+  background: #f3f4f6;
+}
+
+.vault-ai-chat__history-item-title {
+  font-size: 0.875rem;
+  line-height: 1.3;
+  word-break: break-word;
+}
+
+.vault-ai-chat__history-item-subtitle {
+  color: #6b7280;
+  font-size: 0.75rem;
+  line-height: 1.3;
+}
+
+.vault-ai-chat__empty {
+  margin: 24px 8px !important;
+}
+
+.vault-ai-chat__error {
+  margin-bottom: 8px;
+}
+
+.vault-ai-chat__actions {
+  margin-bottom: 8px;
+}
+
+.vault-ai-chat__composer {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.45rem 0.35rem 0.75rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 999px;
+  background: #f8f9fb;
+}
+
+.vault-ai-chat__input.ant-input,
+.vault-ai-chat__input.ant-input-outlined {
+  flex: 1;
+  border: 0 !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  resize: none;
+  padding: 0.35rem 0;
+}
+
+.vault-ai-chat__input {
+  flex: 1;
+}
+
+.vault-ai-chat__send.ant-btn {
+  flex-shrink: 0;
+  width: 2rem;
+  height: 2rem;
+  min-width: 2rem;
+  padding: 0;
+  border-radius: 999px;
+}
+
+.vault-ai-chat__disclaimer {
+  display: block;
+  margin-top: 0.45rem;
+  font-size: 11px;
+  line-height: 1.35;
+  text-align: center;
+}
+
+.vault-ai-chat__history {
+  width: 240px;
+  border-right: 1px solid var(--ant-color-border-secondary, #f0f0f0);
+  overflow: auto;
+  padding: 8px;
+}
+
+.vault-ai-chat__history-main {
+  flex: 1;
+  padding: 12px;
+  min-width: 0;
+}
+
+.vault-ai-chat-modal.ant-modal-root .ant-modal-wrap {
+  overflow: hidden;
+}
+
+.vault-ai-chat-modal.ant-modal-root .ant-modal {
+  max-width: none;
+  width: calc(100vw - 24px) !important;
+  height: calc(100vh - 24px);
+  margin: 0;
+  padding: 0;
+  top: 0;
+}
+
+.vault-ai-chat-modal.ant-modal-root .ant-modal-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  max-height: 100%;
+  padding: 0 !important;
+  border: 0;
+  border-radius: 8px;
+  box-shadow: 0 8px 28px rgba(15, 23, 42, 0.28);
+  overflow: hidden;
+  background: transparent;
+}
+
+.vault-ai-chat-modal.ant-modal-root .ant-modal-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  height: 100%;
+  max-height: 100%;
+  padding: 0 !important;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent;
+  overflow: hidden;
+}
+
+.vault-ai-chat-modal.ant-modal-root .ant-modal-header {
+  display: none;
+  margin: 0;
+  padding: 0;
+}
+
+.vault-ai-chat-modal.ant-modal-root .ant-modal-body {
+  flex: 1;
+  min-height: 0;
+  height: 100%;
+  margin: 0;
+  padding: 0 !important;
+}
+
+.vault-ai-chat-full {
+  display: flex;
+  height: 100%;
+  min-height: 0;
+  background: #fff;
+}
+
+.vault-ai-chat-full__sidebar {
+  display: flex;
+  flex-direction: column;
+  width: 260px;
+  flex-shrink: 0;
+  background: var(--header-bg, #1b2a4a);
+  color: #fff;
+}
+
+.vault-ai-chat-full__brand {
+  padding: 1rem 1rem 0.75rem;
+}
+
+.vault-ai-chat-full__brand .vault-ai-chat__title {
+  font-size: 1rem;
+}
+
+.vault-ai-chat-full__sidebar-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 0 0.65rem 0.75rem;
+}
+
+.vault-ai-chat-full__section + .vault-ai-chat-full__section {
+  margin-top: 1rem;
+}
+
+.vault-ai-chat-full__section-label {
+  margin-bottom: 0.45rem;
+  padding: 0 0.35rem;
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.vault-ai-chat-full__action-list,
+.vault-ai-chat-full__chat-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.vault-ai-chat-full__action-item,
+.vault-ai-chat-full__chat-item {
+  display: flex;
+  width: 100%;
+  margin: 0;
+  padding: 0.55rem 0.6rem;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #fff;
+  text-align: left;
+  cursor: pointer;
+}
+
+.vault-ai-chat-full__action-item {
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.875rem;
+}
+
+.vault-ai-chat-full__action-item .vault-ai-chat__title-icon {
+  flex-shrink: 0;
+}
+
+.vault-ai-chat-full__action-item:hover:not(:disabled),
+.vault-ai-chat-full__chat-item:hover,
+.vault-ai-chat-full__chat-item--active {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.vault-ai-chat-full__action-item:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.vault-ai-chat-full__chat-item {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.15rem;
+}
+
+.vault-ai-chat-full__chat-title {
+  font-size: 0.875rem;
+  line-height: 1.3;
+  word-break: break-word;
+}
+
+.vault-ai-chat-full__chat-subtitle,
+.vault-ai-chat-full__chat-empty {
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 0.75rem;
+  line-height: 1.3;
+}
+
+.vault-ai-chat-full__chat-empty {
+  padding: 0.35rem 0.6rem;
+}
+
+.vault-ai-chat-full__sidebar-footer {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.35rem;
+  padding: 0.65rem;
+}
+
+.vault-ai-chat-full__footer-btn {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  margin: 0;
+  padding: 0.55rem 0.35rem;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+.vault-ai-chat-full__footer-btn .anticon {
+  font-size: 1rem;
+}
+
+.vault-ai-chat-full__footer-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.vault-ai-chat-full__footer-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.vault-ai-chat-full__main {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  background: #fff;
+}
+
+.vault-ai-chat-full__main-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+}
+
+.vault-ai-chat-full__record {
+  min-width: 0;
+  color: #1f2937;
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.vault-ai-chat-full__main-actions .ant-btn {
+  color: #4b5563 !important;
+}
+
+.vault-ai-chat-full__main-actions .ant-btn:hover:not(:disabled),
+.vault-ai-chat-full__main-actions .ant-btn:focus-visible:not(:disabled) {
+  color: #111827 !important;
+  background: #f3f4f6 !important;
+}
+
+.vault-ai-chat-full__main-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  padding: 1rem 1.15rem 0.85rem;
+}
+
+.vault-ai-chat-full__main-body .vault-ai-chat__messages {
+  padding: 0.25rem 0.15rem 0.75rem;
+  gap: 14px;
+}
+
+.vault-ai-chat-full__main-body .vault-ai-chat__composer {
+  position: relative;
+  align-items: center;
+  padding: 0.35rem 0.45rem 0.35rem 0.75rem;
+  border: 0;
+  border-radius: 999px;
+  background: #f3f5f8;
+}
+
+.vault-ai-chat-full__main-body .vault-ai-chat__input.ant-input,
+.vault-ai-chat-full__main-body .vault-ai-chat__input.ant-input-outlined {
+  border: 0 !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  resize: none;
+  padding: 0.35rem 0;
+}
+
+.vault-ai-chat-full__main-body .vault-ai-chat__send.ant-btn {
+  width: 2.15rem;
+  height: 2.15rem;
+  min-width: 2.15rem;
+}
+
+.vault-ai-chat-full__main-body .vault-ai-chat__bubble {
+  max-width: min(72%, 44rem);
+  border: 0;
+  background: transparent;
+  padding: 0;
+  box-shadow: none;
+}
+
+.vault-ai-chat-full__main-body .vault-ai-chat__bubble--user {
+  padding: 0.55rem 0.9rem;
+  border-radius: 999px;
+  border: 0;
+  background: #dce9ff;
+  color: #12325d;
+  box-shadow: none;
+}
+
+.vault-ai-chat-full__main-body .vault-ai-chat__assistant {
+  align-items: flex-start;
+}
+
+.vault-ai-chat__bubble {
+  align-self: flex-start;
+  max-width: 92%;
+  border-radius: 12px;
+  padding: 8px 12px;
+  word-break: break-word;
+  background: #fff;
+  border: 1px solid #e6e8ec;
+}
+
+.vault-ai-chat__bubble--user {
+  align-self: flex-end;
+  background: #e8f1ff;
+  border-color: #d6e6ff;
+  white-space: pre-wrap;
+}
+
+.vault-ai-chat__bubble--cancelled {
+  opacity: 0.7;
+}
+
+.vault-ai-chat__bubble--streaming .vault-ai-chat__cursor {
+  opacity: 0.5;
+}
+
+.vault-ai-chat__assistant {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.45rem;
+}
+
+.vault-ai-chat__assistant-icon {
+  display: inline-flex;
+  flex-shrink: 0;
+  margin-top: 0.15rem;
+  color: #e87722;
+}
+
+.vault-ai-chat__assistant-icon svg {
+  width: 0.9rem;
+  height: 0.9rem;
+}
+
+.vault-ai-chat__md {
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--ant-color-text, rgba(0, 0, 0, 0.88));
+  min-width: 0;
+}
+
+.vault-ai-chat__md > :first-child {
+  margin-top: 0;
+}
+
+.vault-ai-chat__md > :last-child {
+  margin-bottom: 0;
+}
+
+.vault-ai-chat__md p {
+  margin: 0 0 0.55em;
+}
+
+.vault-ai-chat__md p:last-child {
+  margin-bottom: 0;
+}
+
+.vault-ai-chat__md strong {
+  font-weight: 600;
+}
+
+.vault-ai-chat__md ul,
+.vault-ai-chat__md ol {
+  margin: 0.35em 0 0.55em;
+  padding-left: 1.35em;
+}
+
+.vault-ai-chat__md li {
+  margin: 0.15em 0;
+}
+
+.vault-ai-chat__md li > p {
+  margin: 0;
+}
+
+.vault-ai-chat__md h1,
+.vault-ai-chat__md h2,
+.vault-ai-chat__md h3,
+.vault-ai-chat__md h4 {
+  margin: 0.65em 0 0.35em;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.vault-ai-chat__md h1:first-child,
+.vault-ai-chat__md h2:first-child,
+.vault-ai-chat__md h3:first-child,
+.vault-ai-chat__md h4:first-child {
+  margin-top: 0;
+}
+
+.vault-ai-chat__md code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.92em;
+  padding: 0.05em 0.3em;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.vault-ai-chat__md pre {
+  margin: 0.45em 0;
+  padding: 8px 10px;
+  overflow-x: auto;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.vault-ai-chat__md pre code {
+  padding: 0;
+  background: transparent;
+}
+
+.vault-ai-chat__md blockquote {
+  margin: 0.45em 0;
+  padding-left: 0.75em;
+  border-left: 3px solid rgba(0, 0, 0, 0.15);
+  color: var(--ant-color-text-secondary, rgba(0, 0, 0, 0.65));
+}
+
+.vault-ai-chat__page-link {
+  display: inline;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--ant-color-primary, #1677ff);
+  font: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+.vault-ai-chat__page-link:hover {
+  color: var(--ant-color-primary-hover, #4096ff);
+}
+
+.vault-ai-chat__page-ref {
+  color: var(--ant-color-primary, #1677ff);
+}
+
+.vault-ai-chat__ask-user {
+  display: grid;
+  gap: 0.55rem;
+  margin-top: 0.75rem;
+  padding: 0.65rem 0.7rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.vault-ai-chat__ask-user-options {
+  width: 100%;
+}
+
+.vault-ai-chat__ask-user-other-toggle {
+  margin-top: 0.15rem;
+}
+
+.vault-ai-chat__ask-user-input {
+  width: 100%;
+}
+
+.vault-ai-chat__ask-user-submit {
+  justify-self: start;
+}

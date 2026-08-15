@@ -1,0 +1,166 @@
+.pagination-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.75rem;
+  padding-top: 0.35rem;
+}
+
+.pagination-bar__meta {
+  align-self: center;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1rem;
+  align-items: flex-end;
+  margin-bottom: 1rem;
+  padding: 0.75rem 1rem;
+  background: var(--surface-muted);
+  border: 1px solid var(--border);
+  border-radius: 0;
+}
+
+.filter-bar--stacked {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.filter-bar--stacked .field--inline {
+  min-width: 0;
+  width: 100%;
+}
+
+.filter-bar--tight {
+  margin-bottom: 0.75rem;
+}
+
+.filter-bar__min-120 {
+  min-width: 120px;
+}
+
+.filter-bar__min-140 {
+  min-width: 140px;
+}
+
+.filter-bar__min-150 {
+  min-width: 150px;
+}
+
+.filter-bar__min-160 {
+  min-width: 160px;
+}
+
+.filter-bar__min-180 {
+  min-width: 180px;
+}
+
+.filter-bar__max-260 {
+  max-width: 260px;
+}
+
+.filter-bar__max-280 {
+  max-width: 280px;
+}
+
+.filter-bar__max-320 {
+  max-width: 320px;
+}
+
+.filter-bar__max-360 {
+  max-width: 360px;
+}
+
+.filter-bar__w-180 {
+  width: 180px;
+}
+
+.filter-bar__w-220 {
+  width: 220px;
+}
+
+.filter-bar__w-240 {
+  width: 240px;
+}
+
+.filter-bar__max-180 {
+  max-width: 180px;
+}
+
+.filter-bar__meta-end {
+  margin-left: auto;
+}
+
+.textarea {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.55rem 0.65rem;
+  background: var(--surface);
+  font-family: inherit;
+  resize: vertical;
+}
+
+.page-header--compact {
+  margin-top: 0.5rem;
+}
+
+.page-header--compact h2 {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.field--inline {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 140px;
+}
+
+.field--inline span {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.15rem 0.45rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.badge--info {
+  background: var(--info-bg);
+  color: var(--info-strong);
+}
+
+.badge--warning {
+  background: var(--warning-bg);
+  color: var(--warning-text);
+}
+
+.badge--error {
+  background: var(--danger-bg);
+  color: var(--danger-strong);
+}
+
+.badge--fatal {
+  background: #1e1b4b;
+  color: #fef2f2;
+}
+
+.badge--default {
+  background: var(--surface-muted);
+  color: var(--muted);
+}
+
+.mono {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  word-break: break-all;
+}

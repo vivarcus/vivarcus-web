@@ -1,0 +1,213 @@
+.user-profile-page {
+  display: grid;
+  grid-template-columns: minmax(220px, 280px) minmax(0, 1fr);
+  min-height: 100%;
+  background: var(--surface);
+}
+
+.user-profile-page__sidebar {
+  padding: 1.25rem 1rem 2rem;
+  background: var(--surface-muted);
+  border-right: 1px solid var(--border);
+}
+
+.user-profile-page__identity {
+  text-align: center;
+  margin-bottom: 1.25rem;
+}
+
+.user-profile-page__name {
+  margin: 0;
+  font-size: 1.35rem;
+  font-weight: 600;
+  color: var(--text);
+  word-break: break-word;
+}
+
+.user-profile-page__account {
+  margin: 0 0 1.5rem;
+}
+
+.user-profile-page__account-row {
+  margin-bottom: 0.85rem;
+}
+
+.user-profile-page__account-row dt {
+  margin: 0 0 0.15rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.user-profile-page__account-row dd {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--text);
+  word-break: break-word;
+}
+
+.user-profile-page__link-btn.ant-btn-link {
+  padding: 0;
+  height: auto;
+  color: var(--brand);
+  font: inherit;
+}
+
+.user-profile-page__link-btn.ant-btn-link:not(:disabled):hover {
+  color: var(--brand-dark);
+  text-decoration: underline;
+}
+
+.user-profile-page__coming-soon {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+  color: var(--brand);
+  font-size: 0.875rem;
+}
+
+.user-profile-page__coming-soon-tag {
+  display: inline-block;
+  padding: 0.05rem 0.4rem;
+  border-radius: 4px;
+  background: var(--surface-alt);
+  color: var(--muted);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.user-profile-page__groups-title {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0 0 0.65rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.user-profile-page__groups-title .anticon {
+  font-size: 0.85rem;
+}
+
+.user-profile-page__groups-empty,
+.user-profile-page__empty {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.8125rem;
+}
+
+.user-profile-page__groups-list,
+.user-profile-page__plain-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.user-profile-page__groups-list li,
+.user-profile-page__plain-list li {
+  padding: 0.2rem 0;
+  font-size: 0.8125rem;
+  color: var(--text);
+}
+
+.user-profile-page__main {
+  padding: 1rem 1.25rem 2rem;
+  min-width: 0;
+}
+
+.user-profile-page__body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.user-profile-page__body .record-section {
+  margin-bottom: 0;
+}
+
+.user-profile-page__edit-btn.ant-btn {
+  margin-left: auto;
+  height: auto;
+  min-width: unset;
+  padding: 0.1rem 0.35rem;
+  color: var(--muted);
+  box-shadow: none;
+}
+
+.user-profile-page__edit-btn.ant-btn:not(:disabled):hover {
+  color: var(--brand);
+  background: transparent;
+}
+
+.user-profile-page__edit-btn.ant-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.user-profile-page__inline-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-left: auto;
+}
+
+.user-profile-page__section-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 0.85rem;
+}
+
+.user-profile-page__email-table.ant-table-wrapper {
+  border: 1px solid var(--border);
+  font-size: 0.875rem;
+}
+
+.user-profile-page__email-table .ant-table-thead > tr > th {
+  background: var(--surface-muted);
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.user-profile-page__email-table .ant-table-thead > tr > th,
+.user-profile-page__email-table .ant-table-tbody > tr > td {
+  padding: 0.55rem 0.75rem;
+}
+
+.user-profile-page__email-table .ant-table-tbody > tr > td {
+  font-size: 0.875rem;
+}
+
+.user-profile-page__email-table__check {
+  width: 8rem;
+  text-align: center;
+}
+
+.user-profile-page__summary-interval {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.85rem;
+  font-size: 0.875rem;
+}
+
+.user-profile-page__summary-interval .ant-select {
+  min-width: 10rem;
+}
+
+@media (max-width: 900px) {
+  .user-profile-page {
+    grid-template-columns: 1fr;
+  }
+
+  .user-profile-page__sidebar {
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+}

@@ -1,0 +1,245 @@
+.milestone-workspace-page {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 0;
+  height: 100%;
+  padding: 12px 20px 12px;
+  background: var(--ov-surface, #fff);
+  box-sizing: border-box;
+}
+
+.milestone-workspace-page__header {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 0 0 auto;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--ov-border-subtle, #e6e9ee);
+}
+
+.milestone-workspace-page__back {
+  margin: 0;
+  font-size: 13px;
+}
+
+.milestone-workspace-page__back a {
+  color: var(--ov-link, #1a5fb4);
+  text-decoration: none;
+}
+
+.milestone-workspace-page__back a:hover {
+  text-decoration: underline;
+}
+
+.milestone-workspace-page__title-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.milestone-workspace-page__title-block {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.milestone-workspace-page__object-label {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.2;
+  color: var(--ov-text-secondary, #5b6572);
+}
+
+.milestone-workspace-page__title-row h1 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1.25;
+  color: var(--ov-text, #1f2329);
+}
+
+.milestone-workspace-page__state {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--ov-border, #c9d0d8);
+  background: var(--ov-surface-muted, #f5f7fa);
+  color: var(--ov-text-secondary, #5b6572);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+.milestone-workspace-page__body {
+  display: grid;
+  grid-template-columns: 240px minmax(0, 1fr);
+  gap: 12px;
+  flex: 1 1 auto;
+  min-height: 0;
+  align-items: stretch;
+}
+
+.milestone-workspace-page__sidebar {
+  min-height: 0;
+  overflow: auto;
+  border: 1px solid var(--ov-border-subtle, #e6e9ee);
+  border-radius: 6px;
+  background: var(--ov-surface, #fff);
+}
+
+.milestone-workspace-page__tree.ant-tree {
+  background: transparent;
+  padding: 8px 6px;
+  font-size: 13px;
+}
+
+.milestone-workspace-page__tree .ant-tree-treenode {
+  padding: 0 0 2px;
+  width: 100%;
+}
+
+.milestone-workspace-page__tree .ant-tree-node-content-wrapper {
+  min-height: 28px;
+  line-height: 28px;
+  border-radius: 4px;
+}
+
+.milestone-workspace-page__tree .ant-tree-node-selected {
+  background: #e8f1fb !important;
+  color: var(--ov-link, #1a5fb4);
+  font-weight: 600;
+}
+
+.milestone-workspace-page__tree .ant-tree-title {
+  word-break: break-word;
+  white-space: normal;
+}
+
+.milestone-workspace-page__content {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.milestone-workspace-page__section-head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex: 0 0 auto;
+  margin-bottom: 10px;
+}
+
+.milestone-workspace-page__content h2 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.milestone-workspace-page__count {
+  font-size: 12px;
+  color: var(--ov-text-secondary, #5b6572);
+}
+
+.milestone-workspace-page__filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 12px;
+  flex: 0 0 auto;
+  margin-bottom: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--ov-border-subtle, #e6e9ee);
+  border-radius: 6px;
+  background: var(--ov-surface-muted, #f8fafc);
+}
+
+.milestone-workspace-page__filter {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 150px;
+}
+
+.milestone-workspace-page__filter--search {
+  min-width: 220px;
+  flex: 1 1 220px;
+}
+
+.milestone-workspace-page__filter-label {
+  font-size: 12px;
+  color: var(--ov-text-secondary, #5b6572);
+}
+
+.milestone-workspace-page__filter .ant-select,
+.milestone-workspace-page__filter .ant-input-search {
+  width: 100%;
+}
+
+.milestone-workspace-page__table-host {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+  border: 1px solid var(--ov-border-subtle, #e6e9ee);
+  border-radius: 6px;
+  background: var(--ov-surface, #fff);
+}
+
+.milestone-workspace-page__name-link {
+  font-weight: 500;
+}
+
+.milestone-workspace-page__icon-empty {
+  color: var(--ov-text-secondary, #5b6572);
+}
+
+.milestone-workspace-page__table {
+  height: 100%;
+}
+
+.milestone-workspace-page__table .ant-spin-nested-loading,
+.milestone-workspace-page__table .ant-spin-container,
+.milestone-workspace-page__table .ant-table,
+.milestone-workspace-page__table .ant-table-container {
+  height: 100%;
+}
+
+.milestone-workspace-page__table .ant-table {
+  font-size: 13px;
+}
+
+.milestone-workspace-page__table .ant-table-thead > tr > th {
+  white-space: nowrap;
+  font-size: 12px;
+  background: var(--ov-surface-muted, #f5f7fa);
+}
+
+.milestone-workspace-page__table .ant-table-tbody > tr > td {
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.milestone-workspace-page__table .ant-table-placeholder .ant-table-cell {
+  padding: 40px 16px;
+  color: var(--ov-text-secondary, #5b6572);
+  white-space: normal;
+}
+
+@media (max-width: 900px) {
+  .milestone-workspace-page {
+    padding: 12px;
+  }
+
+  .milestone-workspace-page__body {
+    grid-template-columns: 1fr;
+  }
+
+  .milestone-workspace-page__sidebar {
+    overflow: visible;
+  }
+}

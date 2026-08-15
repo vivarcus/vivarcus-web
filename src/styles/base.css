@@ -1,0 +1,61 @@
+.visually-hidden,
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scrollbar-gutter: stable;
+  height: 100%;
+  font-size: var(--font-size-root);
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  /* 让整条布局链被视口高度约束，子区域（如列表表格）才能成为独立滚动容器 */
+  height: 100%;
+}
+
+#root {
+  height: 100%;
+}
+
+a {
+  color: var(--brand);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+button,
+input,
+select {
+  font: inherit;
+}
+
+/* 尊重系统级动效偏好：对前庭/动效敏感用户禁用非必要动画。
+   仅抑制持续时长，保留状态变化本身（颜色/透明度仍生效）。 */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

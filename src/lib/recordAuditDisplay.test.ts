@@ -1,0 +1,115 @@
+import { describe, expect, it } from "vitest";
+import {
+  auditTrailModalTitle,
+  enrichRecordAuditRows,
+  formatAuditRecordCellLabel,
+} from "./recordAuditDisplay";
+import { defaultAuditChrome } from "./i18n";
+
+describe("auditTrailModalTitle", () => {
+  it("matches Veeva screenshot title format", () => {
+    expect(auditTrailModalTitle("Study", "dfdfdfddfdf")).toBe(
+      "Audit trail for Study : Study: dfdfdfddfdf",
+    );
+  });
+
+  it("uses localized trail title template", () => {
+    const chrome = {
+      ...defaultAuditChrome,
+      trail_title_for: {
+        text: "{object}：{object}: {record} 的审计追踪",
+        key: "system:audit.trail_title_for",
+      },
+    };
+    expect(auditTrailModalTitle("研究", "NVC-301", chrome)).toBe(
+      "研究：研究: NVC-301 的审计追踪",
+    );
+  });
+});
+
+describe("formatAuditRecordCellLabel", () => {
+  it("matches Veeva record column format", () => {
+    expect(formatAuditRecordCellLabel("Study", "dfdfdfddfdf")).toBe("Study : dfdfdfddfdf");
+  });
+});
+
+describe("enrichRecordAuditRows", () => {
+  it("uses fixed record cell for all rows in record audit dialog", () => {
+    const [row] = enrichRecordAuditRows(
+      [
+        {
+          user_name: "nick@example.com",
+          item: "Study : 0s0s0s0s",
+          event_description: '"Study Number" changed from "" to "dfdfdfddfdf"',
+        },
+      ],
+      "Study : dfdfdfddfdf",
+    );
+    expect(row.record).toBe("Study : dfdfdfddfdf");
+  });
+
+  it("rewrites create event description with fixed record cell", () => {
+    const chrome = {
+      ...defaultAuditChrome,
+      item_created: {
+        text: "{item} 已创建",
+        key: "system:audit.item_created",
+      },
+    };
+    const [row] = enrichRecordAuditRows(
+      [
+        {
+          action: "Create",
+          user_name: "admin@novacrest.com",
+          item: "product__v 00P000000000001",
+          event_description: "Created record 00P000000000001 on object product__v",
+        },
+      ],
+      "产品 : NVC-301 (Novitinib) 250mg Tablet",
+      chrome,
+    );
+    expect(row.event_description).toBe(
+      "产品 : NVC-301 (Novitinib) 250mg Tablet 已创建",
+    );
+    expect(row.item).toBe("产品 : NVC-301 (Novitinib) 250mg Tablet");
+  });
+
+  it("adds record column from item when no fixed cell", () => {
+    const [row] = enrichRecordAuditRows([
+      {
+        user_name: "System",
+        on_behalf_of: "nick@example.com",
+        item: "Study : dfdfdfddfdf",
+        event_description: "changed",
+      },
+    ]);
+    expect(row.record).toBe("Study : dfdfdfddfdf");
+    expect(row.user_name).toBe("System on behalf of nick@example.com");
+  });
+
+  it("localizes on-behalf-of template", () => {
+    const chrome = {
+      ...defaultAuditChrome,
+      on_behalf_of: {
+        text: "{user}代表{principal}",
+        key: "system:audit.on_behalf_of",
+      },
+    };
+    const [row] = enrichRecordAuditRows(
+      [
+        {
+          user_name: "System",
+          on_behalf_of: "nick@example.com",
+        },
+      ],
+      undefined,
+      chrome,
+    );
+    expect(row.user_name).toBe("System代表nick@example.com");
+  });
+
+  it("leaves normal users unchanged", () => {
+    const [row] = enrichRecordAuditRows([{ user_name: "alice@example.com" }]);
+    expect(row.user_name).toBe("alice@example.com");
+  });
+});

@@ -1,0 +1,115 @@
+.sharing-panel--veeva {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.sharing-panel__header {
+  margin: 0;
+}
+
+.sharing-panel__title {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.sharing-panel__help {
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.sharing-panel__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.sharing-panel__filters {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1 1 auto;
+}
+
+.sharing-panel__filter-icon {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.sharing-panel__filter-select {
+  min-width: 9rem;
+}
+
+.sharing-panel__filter-select--wide {
+  min-width: 14rem;
+  flex: 1 1 14rem;
+  max-width: 22rem;
+}
+
+.sharing-panel__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.sharing-panel__pagination {
+  color: var(--muted);
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+.sharing-panel__member-icon {
+  display: inline-flex;
+  width: 1.25rem;
+  justify-content: center;
+}
+
+.sharing-panel__display-rule.ant-btn {
+  padding: 0;
+  height: auto;
+}
+
+.sharing-panel__remove.ant-btn {
+  color: var(--muted);
+}
+
+.sharing-panel__remove.ant-btn:hover {
+  color: #cf1322;
+}
+
+.sharing-panel__table .ant-table {
+  border: 1px solid var(--border);
+}
+
+.sharing-panel__table .ant-table-thead > tr > th {
+  background: #f3f4f6;
+  font-weight: 600;
+}
+
+.sharing-panel__loading {
+  padding: 1.5rem 0;
+}
+
+.sharing-panel__error {
+  margin: 0;
+}
+
+.sharing-panel__add-form .sharing-panel__add-search-row {
+  margin-bottom: 0.5rem;
+}
+
+.sharing-panel__add-member-select {
+  width: 100%;
+}
+
+.sharing-panel__add-loading {
+  display: block;
+  margin: 0.75rem 0;
+}

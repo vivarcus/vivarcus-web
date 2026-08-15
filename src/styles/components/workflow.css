@@ -1,0 +1,330 @@
+.workflow-task-banner-stack {
+  display: flex;
+  flex-direction: column;
+}
+
+.workflow-task-banner {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.85rem 1.25rem;
+  background: var(--surface-muted);
+  border-bottom: 1px solid var(--border);
+}
+
+.workflow-task-banner--overdue {
+  background: var(--danger-bg);
+  border-bottom-color: #f5c2c0;
+}
+
+.workflow-task-banner--soon {
+  background: var(--accent-light);
+  border-bottom-color: #f5d4b8;
+}
+
+.workflow-task-banner--on_track {
+  background: var(--success-bg);
+  border-bottom-color: var(--success-border);
+}
+
+.workflow-task-banner--none {
+  background: var(--surface-muted);
+  border-bottom-color: var(--border);
+}
+
+.workflow-task-banner__main {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.workflow-task-banner__icon {
+  flex-shrink: 0;
+  font-size: 1.1rem;
+}
+
+.workflow-due-status-icon {
+  flex-shrink: 0;
+  font-size: 1.1rem;
+}
+
+.workflow-due-status-icon.overdue {
+  color: var(--danger);
+}
+
+.workflow-due-status-icon.soon {
+  color: var(--accent);
+}
+
+.workflow-due-status-icon.ok {
+  color: var(--muted);
+}
+
+.workflow-task-banner__content {
+  min-width: 0;
+  flex: 1;
+}
+
+.workflow-task-banner__title-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.5rem 0.75rem;
+}
+
+.workflow-task-banner__title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.workflow-task-banner__toggle {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  color: var(--brand);
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+.workflow-task-banner__toggle:hover {
+  text-decoration: underline;
+}
+
+.workflow-task-banner__instructions {
+  margin-top: 0.5rem;
+  color: var(--text);
+  font-size: 0.875rem;
+  line-height: 1.45;
+}
+
+.workflow-task-banner__instructions-label {
+  display: inline;
+  margin-right: 0.35rem;
+  font-weight: 600;
+}
+
+.workflow-task-banner__instructions-text {
+  display: inline;
+  white-space: pre-wrap;
+}
+
+.workflow-task-banner__due {
+  margin-top: 0.35rem;
+  font-size: 0.8125rem;
+  line-height: 1.4;
+}
+
+.workflow-due-label--overdue {
+  color: var(--danger);
+  font-weight: 600;
+}
+
+.workflow-due-label--soon {
+  color: var(--accent-dark);
+  font-weight: 600;
+}
+
+.workflow-due-label--on_track {
+  color: #2e7d32;
+  font-weight: 600;
+}
+
+.workflow-due-label--none {
+  color: var(--muted);
+}
+
+.workflow-task-banner__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.workflow-panel {
+  margin-top: 0.75rem;
+  margin-bottom: 0;
+  padding: 0.75rem 0.85rem;
+  background: var(--workflow-row-hover-bg);
+  border: 1px solid var(--border);
+  border-radius: 0;
+}
+
+.workflow-panel__title {
+  margin: 0 0 0.75rem;
+  font-size: 1rem;
+}
+
+.workflow-panel__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.workflow-task {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem;
+  background: var(--workflow-row-hover-bg);
+  border-radius: 8px;
+}
+
+.workflow-task__info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.workflow-task__meta {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.workflow-task__instructions {
+  margin: 0.35rem 0 0;
+  font-size: 0.85rem;
+  color: var(--text);
+  white-space: pre-wrap;
+}
+
+.workflow-task__instructions-label {
+  font-weight: 600;
+  margin-right: 0.35rem;
+}
+
+.workflow-task__actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+/* ── Workflow start modal (Veeva CAP-UI reference) ── */
+.workflow-start-modal .ant-modal-content {
+  border-radius: 4px;
+  padding: 0;
+}
+
+.workflow-start-modal .ant-modal-header {
+  margin: 0;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+.workflow-start-modal .ant-modal-title {
+  font-size: 1.143rem;
+  font-weight: 400;
+}
+
+.workflow-start-modal .ant-modal-body {
+  padding: 20px 22px 6px;
+}
+
+.workflow-start-modal .ant-modal-footer {
+  margin: 0;
+  padding: 12px;
+  background: var(--surface-muted);
+  border-top: 1px solid var(--border);
+}
+
+.workflow-start-form .ant-form-item {
+  margin-bottom: 18px;
+}
+
+.workflow-start-form .ant-form-item-label {
+  padding-bottom: 4px;
+  font-weight: 600;
+}
+
+.workflow-start-form .field-grid__item--edit {
+  margin-bottom: 18px;
+}
+
+.workflow-start-form .field-grid__item--edit dt {
+  font-weight: 600;
+  padding-bottom: 4px;
+}
+
+.workflow-start-control .ant-select,
+.workflow-start-control .ant-input,
+.workflow-start-control .ant-input-number,
+.workflow-start-control .ant-picker,
+.workflow-start-control .ant-input-affix-wrapper {
+  background: var(--workflow-highlight-input);
+}
+
+.workflow-start-assignment {
+  margin-bottom: 2px !important;
+}
+
+.workflow-start-assignment .ant-radio-wrapper {
+  font-size: 0.857rem;
+}
+
+.workflow-start-assignment-tag {
+  margin-left: 8px;
+  font-weight: 400;
+}
+
+.workflow-start-instructions {
+  margin-bottom: 14px;
+  color: var(--text);
+  font-size: 0.929rem;
+  line-height: 1.5;
+}
+
+.workflow-start-instructions-label {
+  font-weight: 600;
+  margin-right: 0.35rem;
+}
+
+.workflow-start-required-note {
+  margin: 6px 0 8px;
+  color: var(--text);
+  font-size: 0.857rem;
+  font-style: italic;
+}
+
+.approve-reject-modal__intro {
+  margin: 0 0 1rem;
+  color: var(--text);
+  font-size: 0.929rem;
+  line-height: 1.5;
+}
+
+.approve-reject-modal__footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.approve-reject-modal__required-note {
+  color: var(--text);
+  font-size: 0.857rem;
+  font-style: italic;
+}
+
+.approve-reject-modal__actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.approve-reject-modal .approve-reject-control.ant-input,
+.approve-reject-modal .approve-reject-control.ant-input-affix-wrapper,
+.approve-reject-modal .approve-reject-control textarea.ant-input,
+.approve-reject-modal .approve-reject-control.ant-select .ant-select-selector {
+  background: var(--workflow-highlight-input);
+}
+
+.approve-reject-modal .ant-form-item-label > label {
+  font-weight: 600;
+}

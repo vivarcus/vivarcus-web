@@ -1,0 +1,46 @@
+.domain-information__page-header {
+  margin-bottom: 0.85rem;
+}
+
+.domain-information__body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.domain-information__body .record-section {
+  margin-bottom: 0;
+}
+
+.domain-information__info-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.domain-information__info-row {
+  display: grid;
+  grid-template-columns: 12rem minmax(0, 1fr);
+  gap: 0.75rem 1rem;
+  align-items: start;
+}
+
+.domain-information__field-label {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.domain-information__field-value {
+  color: var(--text);
+  word-break: break-word;
+}
+
+.domain-information__vaults-table {
+  width: 100%;
+}
+
+.domain-information--loading {
+  display: flex;
+  justify-content: center;
+  padding: 2rem 0;
+}

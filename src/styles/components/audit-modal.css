@@ -1,0 +1,198 @@
+.record-audit-modal .ant-modal-content {
+  padding: 0;
+}
+
+.record-audit-modal .ant-modal-header {
+  padding: 1rem 1.25rem 0.75rem;
+  margin-bottom: 0;
+}
+
+.record-audit-modal .ant-modal-body {
+  padding: 0 1.25rem 0.5rem;
+  max-height: min(72vh, 680px);
+  overflow: auto;
+}
+
+.record-audit-modal .ant-modal-footer {
+  padding: 0.75rem 1.25rem 1rem;
+  margin-top: 0;
+}
+
+.record-audit-modal__footer {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.record-audit-panel--veeva .record-audit-panel__filters {
+  background: var(--surface-muted);
+  border: 1px solid var(--border);
+  padding: 0.85rem 1rem 0.65rem;
+  margin-bottom: 0.75rem;
+}
+
+.record-audit-panel__filter-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.record-audit-panel__filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.record-audit-panel__filter-kind {
+  min-width: 8.5rem;
+}
+
+.record-audit-panel__filter-op {
+  min-width: 8rem;
+}
+
+.record-audit-panel__filter-date {
+  min-width: 11rem;
+}
+
+.record-audit-panel__filter-value {
+  flex: 1;
+  min-width: 12rem;
+}
+
+.record-audit-panel__apply {
+  margin-left: auto;
+}
+
+.record-audit-panel__add-filter {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.record-audit-panel__add-filter-btn {
+  padding-inline: 0;
+  font-size: 0.875rem;
+}
+
+.record-audit-panel__summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin: 0.35rem 0 0.65rem;
+}
+
+.record-audit-panel__summary-text {
+  margin: 0;
+  font-style: italic;
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+.record-audit-panel__actions {
+  font-size: 1.25rem;
+  line-height: 1;
+  padding-inline: 0.35rem;
+}
+
+.audit-export__menu-item {
+  border: none;
+  background: transparent;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+}
+
+.audit-export__menu-item:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.record-audit-panel--veeva .table-wrap--veeva-audit {
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.record-audit-panel--veeva .table-wrap--veeva-audit .data-table--veeva-audit {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  background: var(--surface);
+}
+
+.record-audit-panel--veeva .table-wrap--veeva-audit .data-table--veeva-audit th,
+.record-audit-panel--veeva .table-wrap--veeva-audit .data-table--veeva-audit td {
+  padding: 0.55rem 0.75rem;
+  border-bottom: 1px solid #e3e6ea;
+  border-inline: none;
+  text-align: left;
+  vertical-align: top;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  color: var(--text);
+  background: var(--surface);
+}
+
+.record-audit-panel--veeva .table-wrap--veeva-audit .data-table--veeva-audit thead th {
+  color: var(--text);
+  font-weight: 600;
+  font-size: 0.8125rem;
+  white-space: nowrap;
+  border-bottom: none;
+  box-shadow: inset 0 -2px 0 var(--accent);
+}
+
+.record-audit-panel--veeva .table-wrap--veeva-audit .data-table--veeva-audit tbody td {
+  max-width: none;
+  overflow: visible;
+  text-overflow: unset;
+  white-space: normal;
+  word-break: break-word;
+}
+
+.record-audit-panel--veeva .table-wrap--veeva-audit .data-table--veeva-audit tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.record-audit-panel--veeva .table-wrap--veeva-audit .data-table__veeva-th--timestamp,
+.record-audit-panel--veeva .table-wrap--veeva-audit .data-table__veeva-td--timestamp {
+  white-space: nowrap;
+}
+
+.record-audit-panel--veeva .table-wrap--veeva-audit .data-table__veeva-th--user_name,
+.record-audit-panel--veeva .table-wrap--veeva-audit .data-table__veeva-td--user_name {
+  white-space: nowrap;
+}
+
+.record-audit-panel--veeva .table-wrap--veeva-audit .data-table__cell--event-description {
+  min-width: 0;
+}
+
+.record-audit-panel--veeva .table-wrap--veeva-audit .data-table__veeva-td--record {
+  white-space: normal;
+}
+
+.record-audit-panel--veeva .table-wrap--veeva-audit .data-table--veeva-audit .data-table__empty {
+  display: block;
+  padding: 1rem 0;
+  text-align: center;
+  color: var(--muted);
+}
+
+.table-wrap--audit-scroll {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+}
+
+.table-wrap--audit-scroll .data-table .ant-table-tbody > tr > td {
+  max-width: 20rem;
+}
+
+.table-wrap--audit-scroll .data-table__cell--event-description {
+  min-width: 16rem;
+  max-width: 28rem;
+  white-space: normal;
+}

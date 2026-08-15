@@ -1,0 +1,234 @@
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: flex-start;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.65rem;
+  border-bottom: 2px solid var(--accent);
+}
+
+.page-header--list,
+.page-header--record {
+  border-bottom: none;
+  padding-bottom: 0.35rem;
+  margin-bottom: 0.5rem;
+}
+
+.page-header--record {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  gap: 0.35rem;
+  border-bottom: 2px solid var(--accent);
+  padding-bottom: 0.75rem;
+}
+
+.page-header--list {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.page-header--list h1 {
+  font-size: 1.15rem;
+}
+
+.page-header__title-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  width: 100%;
+}
+
+.page-header__top-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  width: 100%;
+  min-height: 1.5rem;
+}
+
+.page-header__top-row .breadcrumb {
+  margin-bottom: 0;
+  min-width: 0;
+  flex: 1 1 auto;
+  overflow: hidden;
+}
+
+.page-header__top-tools {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.65rem;
+  flex: 0 0 auto;
+  position: relative;
+  z-index: 1;
+}
+
+.page-header__top-row .record-list-nav {
+  position: relative;
+  z-index: 1;
+  flex: 0 0 auto;
+}
+
+.page-header__title-block {
+  min-width: 0;
+  flex: 1;
+}
+
+.page-header__heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.record-checkout-lock {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text);
+  font-size: 1rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.record-checkout-lock .anticon {
+  display: block;
+}
+
+.record-favorite-star {
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  font-size: 1.35rem;
+  line-height: 1;
+  padding: 0.1rem 0.15rem 0;
+  cursor: pointer;
+}
+
+.record-favorite-star--active {
+  color: #f5a623;
+}
+
+.record-favorite-star:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.record-favorite-star.ant-btn {
+  height: auto;
+  box-shadow: none;
+}
+
+.record-favorite {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 0.85rem;
+  line-height: 1.2;
+  padding: 0.35rem 0.65rem;
+  cursor: pointer;
+}
+
+.record-favorite--active {
+  border-color: var(--accent);
+  background: var(--accent-light);
+  color: var(--accent);
+}
+
+.record-favorite:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.record-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  background: #e8f4fc;
+  color: #006dcc;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.record-status-badge__trigger {
+  border: none;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+  font: inherit;
+}
+
+.record-status-badge--interactive {
+  padding-right: 0.45rem;
+}
+
+.record-status-badge__caret {
+  font-size: 0.65rem;
+  margin-left: 0.1rem;
+}
+
+.page-header h1 {
+  margin: 0;
+  font-size: 1.35rem;
+  font-weight: 600;
+}
+
+.page-header__breadcrumb {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--muted);
+}
+
+/* Secondary api_name shown beside a detail-page title (e.g. per-object permission page). */
+.page-header__api {
+  margin-left: 0.5rem;
+  font-size: 0.95rem;
+  font-weight: 400;
+  color: var(--muted);
+}
+
+.page-header__breadcrumb a {
+  color: inherit;
+}
+
+.breadcrumb {
+  margin-bottom: 0.35rem;
+}
+
+.breadcrumb__list {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 0;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-size: 0.875rem;
+  color: var(--muted);
+}
+
+.breadcrumb__item:not(:last-child)::after {
+  content: "›";
+  margin: 0 0.35rem;
+  color: var(--border);
+}
+
+.breadcrumb__item a {
+  color: var(--brand);
+}
+
+.breadcrumb__item span[aria-current="page"] {
+  color: var(--text);
+  font-weight: 500;
+}
+

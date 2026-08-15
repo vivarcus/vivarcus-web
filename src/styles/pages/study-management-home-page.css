@@ -1,0 +1,205 @@
+.study-mgmt-home-page__context {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.study-mgmt-home-page__context-main {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.study-mgmt-home-page__context-main h1 {
+  margin: 0;
+  font-size: 1.35rem;
+}
+
+.study-mgmt-home-page__breadcrumb {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.study-mgmt-home-page__breadcrumb-sep {
+  color: var(--muted);
+}
+
+.study-mgmt-home-page__loading {
+  display: grid;
+  place-items: center;
+  min-height: 240px;
+}
+
+.study-mgmt-home-page__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.smh-widget {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 1rem;
+  min-height: 180px;
+}
+
+.smh-widget--wide {
+  grid-column: 1 / -1;
+}
+
+.smh-widget__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.smh-widget__header h2 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.smh-widget__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.smh-widget__action,
+.smh-widget__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.8125rem;
+  color: var(--brand);
+  text-decoration: none;
+}
+
+.smh-widget__action:hover,
+.smh-widget__link:hover {
+  text-decoration: underline;
+}
+
+.smh-widget__empty,
+.smh-widget__footer {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.8125rem;
+}
+
+.smh-widget__footer-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+}
+
+.smh-summary-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.smh-summary-metrics__label {
+  margin: 0 0 0.5rem;
+  font-size: 0.8125rem;
+  color: var(--muted);
+}
+
+.smh-summary-metrics__value {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.smh-compliance {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.smh-compliance__label {
+  margin: 0 0 0.35rem;
+  font-size: 0.8125rem;
+  color: var(--muted);
+}
+
+.smh-compliance__overdue {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #cf1322;
+}
+
+.smh-compliance__cycle {
+  margin: 0 0 0.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.smh-monitoring-status {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.smh-monitoring-status li {
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.smh-monitoring-status__title {
+  display: flex;
+  justify-content: space-between;
+  font-weight: 500;
+}
+
+.smh-monitoring-status__segments {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.35rem;
+  font-size: 0.8125rem;
+  color: var(--muted);
+}
+
+.smh-enrollment-chart {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.smh-enrollment-chart__axis-label {
+  font-size: 11px;
+  fill: var(--muted);
+}
+
+.smh-enrollment-legend {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  font-size: 0.875rem;
+}
+
+@media (max-width: 960px) {
+  .study-mgmt-home-page__grid,
+  .smh-summary-metrics,
+  .smh-compliance {
+    grid-template-columns: 1fr;
+  }
+}

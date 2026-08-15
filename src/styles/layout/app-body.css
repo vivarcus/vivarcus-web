@@ -1,0 +1,52 @@
+.app-body {
+  flex: 1;
+  display: grid;
+  grid-template-columns: var(--sidebar-width) 1fr;
+  min-height: 0;
+}
+
+.app-main {
+  flex: 1;
+  overflow: hidden;
+  padding: 0;
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.app-main > .page,
+.app-main > .record-page,
+.app-main > .user-profile-page {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+
+/* Document library split view scrolls inside viewer + fields panels only. */
+.app-main > .record-page:has(.record-page__main--document-split) {
+  overflow: hidden;
+}
+
+.app-main > .list-page {
+  flex: 1;
+  min-height: 0;
+}
+
+.app-main > .home-page,
+.app-main > .milestone-workspace-page {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.page {
+  min-height: 100%;
+  padding: 1rem 1.25rem 2rem;
+  background: var(--surface);
+}
+
+.page--record {
+  padding: 1rem 1.25rem 2rem;
+  background: var(--surface);
+}

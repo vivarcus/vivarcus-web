@@ -1,0 +1,27 @@
+.record-page {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - 96px);
+  background: var(--surface);
+}
+
+.record-page:has(.record-page__main--document-split) {
+  min-height: 0;
+}
+
+.record-page__header {
+  padding: 1rem 1.25rem 0.5rem;
+  flex-shrink: 0;
+}
+
+.record-page__header .page-loading,
+.record-page__header .ant-alert {
+  margin-top: 0.75rem;
+}
+
+.record-page__chevron-band {
+  flex-shrink: 0;
+  padding: 0.5rem 0;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}

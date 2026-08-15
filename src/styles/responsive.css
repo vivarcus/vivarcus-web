@@ -1,0 +1,77 @@
+@media (max-width: 1100px) {
+  .record-page__body,
+  .record-page__body--with-nav,
+  .record-page__body--nav-collapsed,
+  .record-page__body--with-aside,
+  .record-page__body--with-nav.record-page__body--with-aside,
+  .record-page__body--nav-collapsed.record-page__body--with-aside {
+    grid-template-columns: 1fr;
+  }
+
+  .record-section-nav,
+  .record-section-nav--collapsed {
+    position: static;
+    min-height: auto;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .record-page__main:not(.record-page__main--document-split),
+  .record-page__body--with-nav .record-page__main:not(.record-page__main--document-split),
+  .record-page__body--nav-collapsed .record-page__main:not(.record-page__main--document-split) {
+    padding: 1rem 1.25rem 2rem;
+  }
+
+  .document-page__split {
+    grid-template-columns: 1fr;
+    min-height: auto;
+    height: auto;
+  }
+
+  .document-viewer {
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+    min-height: 20rem;
+    height: auto;
+    overflow: visible;
+  }
+
+  .document-page__fields,
+  .document-viewer__canvas {
+    overflow: visible;
+  }
+
+  .app-main > .record-page:has(.record-page__main--document-split) {
+    overflow: auto;
+  }
+
+  .record-page__main--document-split {
+    min-height: auto;
+    height: auto;
+    overflow: visible;
+  }
+
+  .record-page__aside {
+    position: static;
+  }
+}
+
+@media (max-width: 900px) {
+  .list-page {
+    grid-template-columns: 1fr;
+    overflow: auto;
+  }
+
+  .list-page__content {
+    overflow: visible;
+  }
+
+  .list-page__body {
+    overflow: visible;
+  }
+
+  .list-page__sidebar {
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+}

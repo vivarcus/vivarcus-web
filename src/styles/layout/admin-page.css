@@ -1,0 +1,679 @@
+/* Unified admin console page shell (inside list-page__content). */
+
+/* ── Admin console typography ───────────────────────────────────── */
+.admin-console {
+  font-size: var(--text-body);
+}
+
+.admin-console .sidebar-section__title,
+.admin-console .sidebar-section__action.ant-btn,
+.admin-console .sidebar-section__action--link,
+.admin-console .sidebar-filter-panel > .ant-collapse-item > .ant-collapse-header,
+.admin-console .config-components-sidebar__view-all,
+.admin-console .config-components-sidebar__empty {
+  font-size: var(--text-label);
+}
+
+.admin-console .view-tab,
+.admin-console .view-tab__icon {
+  font-size: var(--text-body);
+}
+
+.admin-console .page-header h1 {
+  font-size: var(--text-page-title-lg);
+}
+
+.admin-console .page-header--list {
+  border-bottom: 2px solid var(--accent);
+  padding-bottom: 0.65rem;
+  margin-bottom: 0.75rem;
+}
+
+.admin-console .page-header--list h1 {
+  font-size: var(--text-page-title);
+}
+
+.admin-console .page-header__breadcrumb,
+.admin-console .breadcrumb__list {
+  font-size: var(--text-body);
+}
+
+.admin-console .pagination-bar__meta,
+.admin-console .field--inline span,
+.admin-console .mono {
+  font-size: var(--text-label);
+}
+
+.admin-console .data-table .ant-table-thead > tr > th {
+  font-size: var(--text-label);
+}
+
+.admin-console .data-table .ant-table-tbody > tr > td,
+.admin-console .data-table--compact th,
+.admin-console .data-table--compact td {
+  font-size: var(--text-body);
+}
+
+/* Settings / About: record-section headers match AdminPageSection. */
+.admin-console .admin-page .record-section {
+  border: none;
+  background: transparent;
+  margin-bottom: 0;
+  overflow: visible;
+}
+
+.admin-console .admin-page .record-section__header,
+.admin-console .admin-page .record-section__header.record-section__header--static,
+.admin-console .admin-page .record-section__header.ant-btn {
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid var(--accent);
+  padding: 0 0 0.5rem;
+  margin-bottom: 0.5rem;
+  cursor: default;
+}
+
+.admin-console .admin-page .record-section__header:hover,
+.admin-console .admin-page .record-section__header.record-section__header--static:hover,
+.admin-console .admin-page .record-section__header.ant-btn:not(:disabled):hover {
+  background: transparent;
+}
+
+.admin-console .admin-page .record-section__title,
+.admin-console .admin-page .record-section__header .record-section__title {
+  font-size: var(--text-heading);
+  font-weight: 600;
+  letter-spacing: normal;
+  text-transform: none;
+  color: var(--text);
+}
+
+.admin-console .admin-page .record-section__help {
+  font-size: var(--text-caption);
+}
+
+.admin-console .admin-page .record-section__body {
+  padding: 0;
+}
+
+/* list-page__content already pads; keep shell flush to that content box. */
+.list-page__content > .page.admin-page {
+  padding: 0 0 1.5rem;
+  min-height: auto;
+  background: transparent;
+}
+
+/* Business Admin Objects: Recent/Favorites sidebar inside admin-console content. */
+.admin-console__content > .list-page.business-admin-objects-layout {
+  flex: 1;
+  min-height: 0;
+  margin: -16px;
+  width: calc(100% + 32px);
+  min-height: calc(100% + 32px);
+}
+
+.business-admin-sidebar__empty {
+  margin: 0;
+  padding: 0.35rem 1rem;
+  color: var(--muted);
+  font-size: var(--text-label);
+}
+
+.business-admin-objects-table__favorite-col {
+  width: 2rem;
+  padding-right: 0;
+}
+
+.business-admin-objects-table__favorite-col .record-favorite-star.ant-btn {
+  font-size: 0.95rem;
+  padding: 0;
+}
+
+.business-admin-objects-table__source {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: var(--text);
+}
+
+.business-admin-objects-table__source-icon {
+  width: 0.85rem;
+  height: 0.85rem;
+  background: center / contain no-repeat;
+}
+
+.business-admin-objects-table__source--standard .business-admin-objects-table__source-icon,
+.business-admin-objects-table__source--system .business-admin-objects-table__source-icon,
+.business-admin-objects-table__source--application .business-admin-objects-table__source-icon {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' fill='%230077c8' viewBox='0 0 16 16'%3E%3Cpath d='M8 1.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13zM4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0z'/%3E%3C/svg%3E");
+}
+
+.business-admin-objects-table__source--custom .business-admin-objects-table__source-icon {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' fill='%23666' viewBox='0 0 16 16'%3E%3Cpath d='M8.5 1.5a.5.5 0 0 0-1 0v1.4l-2.2 1.27a.5.5 0 0 0 .25.866l2.45.71v2.8l-2.1 1.21a.5.5 0 0 0 .25.866l1.85.54V14.5a.5.5 0 0 0 1 0v-2.04l1.85-.54a.5.5 0 0 0 .25-.866l-2.1-1.21V5.736l2.45-.71a.5.5 0 0 0 .25-.866L8.5 2.9V1.5z'/%3E%3C/svg%3E");
+}
+
+.admin-page {
+  padding-bottom: 1.5rem;
+}
+
+.admin-page--loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 12rem;
+}
+
+.admin-page__body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.admin-page__body .record-section,
+.admin-page__body .admin-page__section {
+  margin-bottom: 0;
+}
+
+/* Section blocks (Deployment, multi-table pages, etc.) */
+.admin-page__section {
+  margin-bottom: 1.75rem;
+}
+
+.admin-page__section:last-child {
+  margin-bottom: 0;
+}
+
+.admin-page__section-header {
+  margin-bottom: 0.5rem;
+}
+
+.admin-page__section-header-row {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid var(--accent);
+}
+
+.admin-page__section-note {
+  display: inline-block;
+  margin-bottom: 0.25rem;
+  color: var(--brand);
+  font-size: var(--text-label);
+}
+
+.admin-page__section-title {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  font-size: var(--text-heading);
+  font-weight: 600;
+  letter-spacing: normal;
+  text-transform: none;
+  color: var(--text);
+}
+
+.admin-page__section-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.admin-page__meta {
+  font-size: var(--text-label);
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.admin-page__create-header {
+  margin-bottom: 1.25rem;
+}
+
+.admin-page__create-header .page-title {
+  margin: 0.25rem 0 0;
+}
+
+.admin-page__details-title {
+  margin: 0 0 1rem;
+  padding-bottom: 0.5rem;
+  font-size: var(--text-heading);
+  font-weight: 600;
+  border-bottom: 2px solid var(--accent);
+}
+
+.admin-page__create-form {
+  margin-top: 0.5rem;
+  max-width: 45rem;
+}
+
+.admin-page__create-form .ant-form-item {
+  margin-bottom: 1rem;
+}
+
+.admin-page__required {
+  margin-left: 0.125rem;
+  color: var(--danger);
+}
+
+.admin-page__create-actions {
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
+  margin-top: 1.5rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border);
+}
+
+/* Settings form layout shared across Search / Branding / Language / Domain pages */
+.admin-settings-form__body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.admin-settings-form__row {
+  display: grid;
+  grid-template-columns: 11rem minmax(0, 1fr);
+  gap: 0.75rem 1rem;
+  align-items: center;
+}
+
+.admin-settings-form__row--start {
+  align-items: start;
+}
+
+.admin-settings-form__label {
+  font-size: var(--text-label);
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+.admin-settings-form__label--strong {
+  padding-top: 0.2rem;
+  font-weight: 600;
+  color: var(--text);
+  text-align: right;
+}
+
+.admin-settings-form__control {
+  min-width: 0;
+}
+
+.admin-settings-form__control .ant-select,
+.admin-settings-form__control .ant-input-number {
+  width: 100%;
+  max-width: 26rem;
+}
+
+.admin-settings-form__hint--flush {
+  margin-left: 0;
+  margin-top: 0.35rem;
+}
+
+.admin-page__banner {
+  margin-bottom: 1rem;
+}
+
+.admin-page__block {
+  margin-bottom: 1rem;
+}
+
+.admin-page__stack {
+  margin-bottom: 0.75rem;
+}
+
+.admin-page__stack--top {
+  margin-top: 1rem;
+}
+
+.admin-form--narrow {
+  max-width: 30rem;
+}
+
+.admin-form--wide {
+  max-width: 45rem;
+}
+
+.admin-page__summary {
+  margin-bottom: 0.5rem;
+  font-size: var(--text-label);
+  color: var(--muted);
+}
+
+.admin-form--narrow .ant-input-number,
+.admin-form--wide .ant-input-number {
+  width: 100%;
+}
+
+.admin-page__wizard-steps {
+  margin-bottom: 1.25rem;
+  max-width: 26.25rem;
+}
+
+.admin-page__descriptions {
+  margin-bottom: 0.75rem;
+}
+
+.admin-page__modal-note {
+  margin-bottom: 1rem;
+  color: var(--muted);
+}
+
+.admin-page__stack--between {
+  width: 100%;
+  justify-content: space-between;
+}
+
+.admin-table__link-btn {
+  padding: 0;
+}
+
+.admin-page__full-width {
+  width: 100%;
+}
+
+.admin-page__note-spaced {
+  margin-top: 0.5rem;
+}
+
+.admin-form__stack {
+  width: 100%;
+}
+
+.admin-form__stack--spaced {
+  width: 100%;
+  margin-bottom: 1rem;
+}
+
+.admin-form__panel {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.75rem;
+}
+
+.admin-form__condition-lhs {
+  width: 200px;
+}
+
+.admin-form__condition-op {
+  width: 140px;
+}
+
+.admin-form__condition-rhs {
+  width: 180px;
+}
+
+.admin-settings-form__row--wide-label {
+  grid-template-columns: 14rem minmax(0, 1fr);
+}
+
+.admin-settings-form__row--bordered {
+  align-items: start;
+  padding: 0.65rem 1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.admin-settings-form__fields .admin-settings-form__row--bordered:last-child {
+  border-bottom: none;
+}
+
+.admin-settings-form__fields {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.admin-settings-form__label--policy {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  justify-content: flex-end;
+  text-align: right;
+  font-size: var(--text-label);
+  color: var(--muted);
+  padding-top: 0.35rem;
+}
+
+.admin-settings-form__field-help {
+  color: var(--muted);
+  font-size: var(--text-caption);
+}
+
+.admin-settings-form__control--wide .ant-select,
+.admin-settings-form__control--wide .ant-input,
+.admin-settings-form__control--wide .ant-input-number {
+  width: 100%;
+  max-width: 28rem;
+}
+
+.admin-settings-form__checkbox-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding-top: 0.15rem;
+  color: var(--text);
+  font-size: var(--text-body);
+}
+
+.admin-page__body.admin-settings-form__body .record-section {
+  margin-bottom: 0;
+}
+
+.admin-page__body.admin-settings-form__body .record-section__body {
+  padding: 0;
+}
+
+.admin-page__hint {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.45;
+  font-size: var(--text-label);
+}
+
+.admin-settings-form__options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.admin-settings-form__toggle {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  cursor: pointer;
+}
+
+.admin-settings-form__toggle-label {
+  font-size: var(--text-body);
+  line-height: 1.4;
+}
+
+.admin-settings-form__hint {
+  margin: 0 0 0 1.5rem;
+  font-size: var(--text-label);
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.admin-settings-form__note {
+  margin: 0.35rem 0 0.75rem;
+  font-size: var(--text-label);
+  color: var(--muted);
+  font-style: italic;
+}
+
+.admin-settings-form__footer-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.65rem 0 0;
+  margin-top: 0.75rem;
+  border-top: 1px solid var(--border);
+}
+
+.admin-settings-form__footer-actions .ant-btn-link {
+  padding: 0 0.35rem;
+  height: auto;
+}
+
+.admin-settings-form__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.admin-settings-form__help {
+  margin: 0 0 1rem;
+  color: var(--muted);
+  line-height: 1.5;
+  font-size: var(--text-label);
+}
+
+.admin-settings-form__body--medium {
+  max-width: 55rem;
+}
+
+/* Inline setting rows: title + description left, controls right */
+.admin-settings-form__items {
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-settings-form__item {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: center;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.admin-settings-form__item:last-child {
+  border-bottom: none;
+}
+
+.admin-settings-form__item-copy {
+  min-width: 0;
+}
+
+.admin-settings-form__item-title {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.admin-settings-form__item-desc {
+  margin-top: 0.25rem;
+  color: var(--muted);
+  font-size: var(--text-label);
+}
+
+.admin-settings-form__item-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-shrink: 0;
+}
+
+.admin-settings-form__item-actions--stacked {
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.5rem;
+}
+
+/* Drag-and-drop reorder lists (Security Settings, etc.) */
+.admin-reorder-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.admin-reorder-section__title {
+  margin: 0 0 0.5rem;
+  font-size: var(--text-heading);
+  font-weight: 600;
+}
+
+.admin-reorder-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--border);
+}
+
+.admin-reorder-list__item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 0.75rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.admin-reorder-list__item:last-child {
+  border-bottom: none;
+}
+
+.admin-reorder-list__item--draggable {
+  cursor: grab;
+  background: var(--surface-muted);
+}
+
+.admin-reorder-list__item--locked {
+  background: var(--surface-alt);
+  color: var(--muted);
+}
+
+.admin-reorder-list__label {
+  font-weight: 500;
+}
+
+.admin-reorder-list__meta {
+  color: var(--muted);
+  font-size: var(--text-caption);
+}
+
+.admin-reorder-list__hint {
+  margin-left: auto;
+  font-size: var(--text-caption);
+  color: var(--muted);
+}
+
+.admin-reorder-list__actions {
+  margin-left: auto;
+  display: inline-flex;
+  gap: 0.25rem;
+}
+
+@media (max-width: 900px) {
+  .admin-settings-form__row {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-settings-form__label--strong {
+    text-align: left;
+  }
+
+  .admin-settings-form__row--wide-label {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-settings-form__label--policy {
+    justify-content: flex-start;
+    text-align: left;
+    padding-top: 0;
+  }
+
+  .admin-settings-form__item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .admin-settings-form__item-actions,
+  .admin-settings-form__item-actions--stacked {
+    align-items: flex-start;
+    width: 100%;
+  }
+}

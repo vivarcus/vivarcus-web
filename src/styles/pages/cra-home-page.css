@@ -1,0 +1,245 @@
+.cra-home-page__context {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.cra-home-page__context-main {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.cra-home-page__context-main h1 {
+  margin: 0;
+  font-size: 1.35rem;
+}
+
+.cra-home-page__breadcrumb {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.cra-home-page__breadcrumb-sep {
+  color: var(--muted);
+}
+
+.cra-home-page__loading {
+  display: grid;
+  place-items: center;
+  min-height: 240px;
+}
+
+.cra-home-page__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.cra-widget {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 1rem;
+  min-height: 180px;
+}
+
+.cra-widget--wide {
+  grid-column: 1 / -1;
+}
+
+.cra-widget__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.cra-widget__header h2 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.cra-widget__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.cra-widget__action,
+.cra-widget__link {
+  color: var(--accent, #1677ff);
+  font-size: 0.875rem;
+}
+
+.cra-widget__empty {
+  margin: 0;
+  color: var(--muted);
+}
+
+.cra-widget__footer {
+  margin: 0.75rem 0 0;
+  color: var(--muted);
+  font-size: 0.8rem;
+  text-align: right;
+}
+
+.cra-widget__footer-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 0.75rem;
+}
+
+.cra-details {
+  margin: 0;
+  display: grid;
+  gap: 0.65rem;
+}
+
+.cra-details__row {
+  display: grid;
+  gap: 0.15rem;
+}
+
+.cra-details__row dt {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.cra-details__row dd {
+  margin: 0;
+  font-weight: 500;
+}
+
+.cra-summary-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+  align-items: start;
+}
+
+.cra-summary-metrics__label {
+  margin: 0 0 0.5rem;
+  font-size: 0.85rem;
+  color: var(--muted);
+  text-align: center;
+}
+
+.cra-summary-metrics__item {
+  display: grid;
+  justify-items: center;
+}
+
+.cra-summary-metrics__value {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+.cra-enrollment-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.25rem;
+  margin: 0.75rem 0 0;
+  padding: 0;
+  list-style: none;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.cra-quality-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.25rem;
+}
+
+.cra-quality-chart__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.cra-quality-chart__header h3 {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.cra-quality-bars {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.cra-quality-bars__label {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.25rem;
+  font-size: 0.85rem;
+}
+
+.cra-quality-bars__track {
+  display: flex;
+  height: 14px;
+  background: var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.cra-quality-bars__seg {
+  display: block;
+  height: 100%;
+  background: #1677ff;
+  min-width: 2px;
+}
+
+.cra-quality-bars__seg--major {
+  background: #faad14;
+}
+
+.cra-quality-bars__seg--minor {
+  background: #1677ff;
+}
+
+.cra-quality-bars__seg--blank {
+  background: #8c8c8c;
+}
+
+.cra-quality-bars__seg--low {
+  background: #52c41a;
+}
+
+.cra-quality-bars__seg--medium {
+  background: #faad14;
+}
+
+.cra-quality-bars__seg--high {
+  background: #ff4d4f;
+}
+
+.cra-quality-bars__average {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+@media (max-width: 960px) {
+  .cra-home-page__grid,
+  .cra-quality-grid,
+  .cra-summary-metrics {
+    grid-template-columns: 1fr;
+  }
+}

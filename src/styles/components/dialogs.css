@@ -1,0 +1,294 @@
+.edit-columns-dialog {
+  width: min(44rem, 96vw);
+  max-height: 90vh;
+  padding: 0;
+  border-radius: 4px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.edit-columns-dialog__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.edit-columns-dialog__title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.edit-columns-dialog__close {
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  font-size: 1.35rem;
+  line-height: 1;
+  padding: 0.15rem 0.35rem;
+  cursor: pointer;
+}
+
+.edit-columns-dialog__close:hover {
+  color: var(--text);
+}
+
+.edit-columns-dialog__controls {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.75rem 1rem;
+  align-items: center;
+  padding: 0.75rem 1rem 0.5rem;
+}
+
+.edit-columns-dialog__search {
+  margin: 0;
+}
+
+.edit-columns-dialog__search input {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  padding: 0.4rem 2rem 0.4rem 0.55rem;
+  font-size: 0.875rem;
+  background: var(--surface)
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' fill='%23888' viewBox='0 0 16 16'%3E%3Cpath d='M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z'/%3E%3C/svg%3E")
+    right 0.55rem center no-repeat;
+}
+
+.edit-columns-dialog__restore {
+  border: none;
+  background: transparent;
+  padding: 0;
+  color: var(--brand);
+  font: inherit;
+  font-size: 0.875rem;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.edit-columns-dialog__restore:hover:not(:disabled) {
+  text-decoration: underline;
+}
+
+.edit-columns-dialog__restore:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.edit-columns-dialog__transfer {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto;
+  gap: 0.5rem;
+  align-items: stretch;
+  padding: 0 1rem 0.75rem;
+  min-height: 0;
+}
+
+.edit-columns-dialog__panel {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+}
+
+.edit-columns-dialog__panel-title {
+  padding: 0.45rem 0.65rem;
+  background: #f4f6f8;
+  border: 1px solid var(--border);
+  border-bottom: none;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.edit-columns-dialog__listbox {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  flex: 1;
+  min-height: 14rem;
+  max-height: 18rem;
+  overflow: auto;
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.edit-columns-dialog__option {
+  padding: 0.35rem 0.65rem;
+  font-size: 0.875rem;
+  color: var(--text);
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.edit-columns-dialog__option:hover {
+  background: rgba(0, 109, 204, 0.06);
+}
+
+.edit-columns-dialog__option--active {
+  background: #dbe9ff;
+  color: #111;
+}
+
+.edit-columns-dialog__option--active:hover {
+  background: #dbe9ff;
+}
+
+.edit-columns-dialog__transfer-actions,
+.edit-columns-dialog__reorder-actions {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.35rem;
+  padding-top: 1.75rem;
+}
+
+.edit-columns-dialog__icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 0.95rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.edit-columns-dialog__icon-btn:hover:not(:disabled) {
+  background: var(--surface-muted);
+  border-color: #c5cad0;
+}
+
+.edit-columns-dialog__icon-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.edit-columns-dialog__preferences {
+  padding: 0.65rem 1rem;
+  border-top: 1px solid var(--border);
+  background: #fafbfc;
+}
+
+.edit-columns-dialog__preferences-title {
+  margin: 0 0 0.5rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.edit-columns-dialog__preferences-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 0.75rem 1rem;
+  align-items: start;
+}
+
+.edit-columns-dialog__preferences .field {
+  gap: 0.25rem;
+}
+
+.edit-columns-dialog__preferences .field span {
+  font-size: 0.8125rem;
+  color: var(--muted);
+}
+
+.edit-columns-dialog__preferences select {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  padding: 0.35rem 0.5rem;
+  font-size: 0.875rem;
+  background: var(--surface);
+}
+
+.edit-columns-dialog__radio {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  margin: 0;
+  border: 0;
+  padding: 0;
+}
+
+.edit-columns-dialog__radio legend {
+  margin-bottom: 0.25rem;
+  font-size: 0.8125rem;
+  color: var(--muted);
+}
+
+.edit-columns-dialog__radio label {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.875rem;
+}
+
+.edit-columns-dialog__footer {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-top: 1px solid var(--border);
+}
+
+.edit-columns-dialog__cancel {
+  border: none;
+  background: transparent;
+  padding: 0.35rem 0.5rem;
+  color: var(--brand);
+  font: inherit;
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+.edit-columns-dialog__cancel:hover:not(:disabled) {
+  text-decoration: underline;
+}
+
+.edit-columns-dialog__cancel:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.edit-columns-dialog__save {
+  padding: 0.45rem 1.1rem;
+  border-radius: 4px;
+  font-size: 0.875rem;
+}
+
+@media (max-width: 760px) {
+  .edit-columns-dialog__transfer {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto auto auto auto;
+  }
+
+  .edit-columns-dialog__transfer-actions,
+  .edit-columns-dialog__reorder-actions {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    padding-top: 0;
+  }
+
+  .edit-columns-dialog__preferences-grid {
+    grid-template-columns: 1fr;
+  }
+}

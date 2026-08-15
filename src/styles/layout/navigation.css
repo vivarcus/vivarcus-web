@@ -1,0 +1,139 @@
+.sidebar-nav {
+  padding: 0.75rem 0.75rem 2rem;
+}
+
+.nav-search {
+  padding: 0.5rem 0.25rem 0.75rem;
+  position: sticky;
+  top: 0;
+  background: var(--surface);
+  z-index: var(--z-sticky);
+}
+
+.nav-search__input {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.45rem 0.6rem;
+  background: var(--bg);
+}
+
+.nav-empty {
+  padding: 0.5rem;
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+.nav-subtabs {
+  margin-bottom: 0.15rem;
+}
+
+.nav-subtabs__head {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+}
+
+.nav-subtabs__head .nav-tab {
+  flex: 1;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.nav-subtabs__toggle {
+  border: none;
+  background: transparent;
+  padding: 0 0.45rem;
+  cursor: pointer;
+  color: var(--muted);
+  border-radius: 0 6px 6px 0;
+}
+
+.nav-subtabs__toggle:hover {
+  background: var(--bg);
+}
+
+.nav-subtabs__toggle.ant-btn {
+  height: auto;
+  box-shadow: none;
+}
+
+.nav-subtabs__items {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  margin-top: 0.1rem;
+}
+
+.nav-collection + .nav-collection {
+  margin-top: 1.25rem;
+}
+
+.nav-collection__title {
+  margin: 0 0 0.5rem;
+  padding: 0 0.5rem;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+
+.nav-collection__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.nav-tab,
+.nav-subtab {
+  display: block;
+  padding: 0.45rem 0.65rem;
+  border-radius: 6px;
+  color: var(--text);
+  text-decoration: none;
+}
+
+.nav-tab:hover,
+.nav-subtab:hover {
+  background: var(--bg);
+  text-decoration: none;
+}
+
+.nav-tab--active,
+.nav-subtab--active {
+  background: #e8f1fb;
+  color: var(--brand-dark);
+  font-weight: 600;
+}
+
+.nav-tab--menu {
+  cursor: default;
+}
+
+.nav-subtab {
+  margin-left: 0.75rem;
+  font-size: 0.925rem;
+}
+
+.nav-menu__label {
+  display: block;
+  padding: 0.35rem 0.65rem;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.nav-menu__tabs {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.nav-loading,
+.nav-error {
+  padding: 1rem;
+  color: var(--muted);
+}
+
+.nav-error {
+  color: var(--danger);
+}

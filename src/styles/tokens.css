@@ -1,0 +1,94 @@
+:root {
+  color-scheme: light;
+
+  /* ── Typography ─────────────────────────────────────────────── */
+  /* 纯系统栈，零 Web 字体请求。CJK 回退保证中英混排一致：
+     Windows→微软雅黑 / macOS→苹方 / Linux→Noto。等宽栈同理收口。 */
+  --font-sans: "Segoe UI", system-ui, -apple-system, "Microsoft YaHei",
+    "PingFang SC", "Hiragino Sans GB", "Noto Sans CJK SC", sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    monospace;
+  /* CJK 字体在同字号下视觉偏大；根字号 15px 为可读性与信息密度的折中。 */
+  --font-size-root: 15px;
+  /* Type scale (rem @ --font-size-root). Prefer over ad-hoc font-size values. */
+  --text-caption: 0.75rem;
+  --text-label: 0.8125rem;
+  --text-body: 0.875rem;
+  --text-heading: 1rem;
+  --text-page-title: 1.125rem;
+  --text-page-title-lg: 1.25rem;
+
+  /* ── Surfaces & text ──────────────────────────────────────────── */
+  --bg: #eef0f2;
+  --surface: #ffffff;
+  --surface-muted: #f5f6f7;
+  --surface-alt: #f4f6f8;
+  --border: #d5d9de;
+  --border-strong: #c5cad0;
+  --text: #333333;
+  --muted: #666666;
+
+  /* ── Header / brand ───────────────────────────────────────────── */
+  --header-bg: #38612d;
+  --header-bg-dark: #2d4f24;
+  --brand: #006dcc;
+  --brand-dark: #005bb5;
+  --accent: #f58220;
+  --accent-dark: #e67e22;
+  --accent-light: #fff3e8;
+  --accent-star: #f5a623;
+
+  /* ── Status colors ────────────────────────────────────────────── */
+  --danger: #b42318;
+  --danger-strong: #991b1b;
+  --danger-bg: #fef3f2;
+  --danger-border: #f0a030;
+  --info-bg: #eff6ff;
+  --info-strong: #0369a1;
+  --success: #4caf50;
+  --success-bg: #e8f4e8;
+  --success-border: #c5dfc5;
+  --warning-text: #9a6700;
+  --warning-bg: #fff8e6;
+  --warning-border: #f0d78c;
+
+  /* ── Workflow / task states ─────────────────────────────────────
+     Used by workflow-timeline. Kept as tokens so a future theme can
+     retint without hunting hex values across record-sections.css. */
+  --workflow-row-alt-bg: #fafafa;
+  --workflow-row-hover-bg: #f8fafc;
+  --workflow-active-bg: #ffe0a8;
+  --workflow-task-active-bg: #fff1d4;
+  --workflow-state-accent: #d48806;
+  --workflow-cancelled: #cf1322;
+  --workflow-grid-border: #d8d8d8;
+  --workflow-grid-border-strong: #cfcfcf;
+  --workflow-grid-header-text: #999999;
+  --workflow-highlight-input: #fffecd;
+
+  /* ── Sidebar / section headers ────────────────────────────────── */
+  --section-header-bg: #eceef0;
+  --section-header-border: var(--border);
+  --section-header-bg-hover: #e4e7ea;
+
+  --sidebar-width: 220px;
+  --list-sidebar-width: 260px;
+
+  /* ── Z-index scale ──────────────────────────────────────────────
+     Use these instead of magic numbers so stacking stays legible.
+     base<sticky<header<tabbar<dropdown<overlay<list-toolbar<modal */
+  --z-base: 1;
+  --z-sticky: 10;
+  --z-header: 40;
+  --z-tabbar: 30;
+  --z-dropdown: 50;
+  --z-overlay: 60;
+  /* Above ant table sticky header (calc(columns*2+3); ~65 at 30 cols). */
+  --z-list-toolbar: 80;
+  --z-modal: 100;
+
+  font-family: var(--font-sans);
+  line-height: 1.5;
+  color: var(--text);
+  background: var(--bg);
+}

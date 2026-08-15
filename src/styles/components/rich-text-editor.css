@@ -1,0 +1,72 @@
+.rich-text-editor {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+}
+
+.rich-text-editor__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  padding: 4px 6px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-muted);
+}
+
+.rich-text-editor__toolbar-btn {
+  min-width: 28px;
+  font-weight: 600;
+}
+
+.rich-text-editor__surface {
+  min-height: 120px;
+}
+
+.rich-text-editor__surface .tiptap,
+.rich-text-editor__surface .ProseMirror {
+  min-height: 120px;
+  padding: 8px 10px;
+  outline: none;
+  line-height: 1.5;
+}
+
+.rich-text-editor__surface .tiptap:focus,
+.rich-text-editor__surface .ProseMirror:focus {
+  box-shadow: inset 0 0 0 1px var(--brand);
+}
+
+.rich-text-editor__surface p {
+  margin: 0 0 0.5em;
+}
+
+.rich-text-editor__surface ul,
+.rich-text-editor__surface ol {
+  margin: 0.25em 0 0.5em 1.25em;
+  padding: 0;
+}
+
+.rich-text-editor__surface a {
+  color: var(--brand);
+}
+
+.field-value--richtext {
+  line-height: 1.5;
+}
+
+.field-value--richtext p {
+  margin: 0 0 0.5em;
+}
+
+.field-value--richtext p:last-child {
+  margin-bottom: 0;
+}
+
+.field-value--richtext ul,
+.field-value--richtext ol {
+  margin: 0.25em 0 0.5em 1.25em;
+  padding: 0;
+}
+
+.field-value--richtext a {
+  color: var(--brand);
+}

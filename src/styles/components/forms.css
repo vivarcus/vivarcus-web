@@ -1,0 +1,45 @@
+.select {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.45rem 0.6rem;
+  background: var(--surface);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.field.ant-form-item {
+  margin-bottom: 0.75rem;
+}
+
+.field.ant-form-item .ant-input,
+.field.ant-form-item .ant-input-number,
+.field.ant-form-item .ant-select,
+.field.ant-form-item .ant-picker {
+  width: 100%;
+}
+
+.field--checkbox.ant-checkbox-wrapper {
+  align-items: flex-start;
+  margin-bottom: 0.75rem;
+}
+
+.field span {
+  font-size: 0.875rem;
+  color: var(--muted);
+}
+
+.field input {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.55rem 0.65rem;
+  background: var(--surface);
+}
+
+.field__required {
+  color: var(--danger);
+  margin-left: 0.2rem;
+}

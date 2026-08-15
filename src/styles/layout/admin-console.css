@@ -1,0 +1,14 @@
+.admin-console--loading,
+.admin-console--error,
+.admin-console__forbidden {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  min-height: 12rem;
+  padding: 2rem;
+}
+
+.admin-console__forbidden-link {
+  color: var(--brand);
+}

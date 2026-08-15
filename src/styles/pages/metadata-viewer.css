@@ -1,0 +1,688 @@
+/* Metadata (component configuration) viewer pages: object / field / layout list and detail. */
+
+/* Secondary section nav (Objects / Object Lifecycles / Page Layouts). */
+.metadata-viewer-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1rem;
+  margin: 0 0 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.metadata-viewer-nav__link {
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 0.875rem;
+  line-height: 1.4;
+  padding: 0.125rem 0;
+  border-bottom: 2px solid transparent;
+}
+
+.metadata-viewer-nav__link:hover {
+  color: var(--text);
+}
+
+.metadata-viewer-nav__link.is-active {
+  color: var(--text);
+  font-weight: 600;
+  border-bottom-color: var(--accent);
+}
+
+/* Result counts shown at the trailing edge of a filter bar (lists + tab search rows). */
+.metadata-count {
+  margin-left: auto;
+  white-space: nowrap;
+}
+
+/* Search rows that sit directly above an attribute/field table need a little breathing
+   room from the table below them. */
+.metadata-attr__bar {
+  margin-bottom: 8px;
+}
+
+/* Link-styled buttons/links inside metadata tables should read as inline links, not as
+   padded AntD buttons, so rows stay compact and scannable. */
+.metadata-link.ant-btn-link {
+  padding: 0;
+  height: auto;
+  border: 0;
+}
+
+.metadata-link {
+  text-align: left;
+}
+
+.metadata-collapse__gap {
+  margin-left: 0.5rem;
+}
+
+/* Attribute tables: give the name column a stable width and let long values wrap instead
+   of forcing horizontal scroll. */
+.metadata-attr__name {
+  width: 260px;
+  white-space: nowrap;
+}
+
+.metadata-attr__value {
+  word-break: break-word;
+}
+
+/* Sticky header for the long, unpaginated object / layout lists so column headers stay
+   visible while scrolling the page. */
+.table-wrap--metadata .data-table .ant-table-thead > tr > th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--surface-muted);
+}
+
+.metadata-summary-fields {
+  line-height: 1.5;
+}
+
+/* Configuration / Users & Groups component detail: stacked sections + sticky right anchors. */
+.lifecycle-detail,
+.object-detail:not(.object-detail--tabs),
+.security-profile-detail {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.5rem;
+}
+
+/* Object configuration: Veeva-style horizontal tabs (Details / Fields / …). */
+.object-detail--tabs {
+  display: block;
+  width: 100%;
+}
+
+.object-detail__tabs.ant-tabs .ant-tabs-nav {
+  margin-bottom: 1rem;
+}
+
+.object-detail__tabs.ant-tabs .ant-tabs-tab {
+  padding: 0.55rem 0.85rem;
+  font-size: 0.875rem;
+}
+
+.object-detail__panel {
+  min-width: 0;
+}
+
+.lifecycle-detail__sections,
+.object-detail__sections,
+.security-profile-detail__sections {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.lifecycle-detail__nav,
+.object-detail__nav,
+.security-profile-detail__nav {
+  flex: 0 0 auto;
+  position: sticky;
+  top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-width: 140px;
+  padding-left: 1rem;
+  border-left: 1px solid var(--border);
+}
+
+.lifecycle-detail__nav a,
+.object-detail__nav a,
+.security-profile-detail__nav a {
+  font-size: 0.8125rem;
+  color: var(--muted);
+  text-decoration: none;
+}
+
+.lifecycle-detail__nav a:hover,
+.object-detail__nav a:hover,
+.security-profile-detail__nav a:hover {
+  color: var(--brand, var(--accent, #e87722));
+}
+
+.lifecycle-detail__section,
+.object-detail__section,
+.security-profile-detail__section {
+  margin-bottom: 1.5rem;
+}
+
+.lifecycle-detail__section:last-child,
+.object-detail__section:last-child,
+.security-profile-detail__section:last-child {
+  margin-bottom: 0;
+}
+
+.lifecycle-detail__section-title,
+.object-detail__section-title,
+.security-profile-detail__section-title {
+  margin: 0 0 0.75rem;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.object-detail__details {
+  max-width: 760px;
+}
+
+.object-detail__details > .object-detail__fields + .object-detail__subsection-title,
+.object-detail__details > .object-detail__options + .object-detail__subsection-title,
+.object-detail__details > .object-detail__fields + .object-detail__fields {
+  margin-top: 1.25rem;
+}
+
+.object-detail__details > .object-detail__subsection-title + .object-detail__options,
+.object-detail__details > .object-detail__subsection-title + .object-detail__fields {
+  margin-top: 0.5rem;
+}
+
+.object-detail__options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin: 0 0 0.75rem;
+  /* Align under the value column of .object-detail__fields (220px label + 1rem gap). */
+  padding-left: 236px;
+  max-width: 760px;
+}
+
+.object-detail__options--flush {
+  padding-left: 0;
+}
+
+.object-detail__option.ant-checkbox-wrapper {
+  font-size: 0.875rem;
+  color: var(--text);
+  margin-inline-start: 0;
+}
+
+.object-detail__option.ant-checkbox-wrapper-disabled {
+  cursor: default;
+}
+
+.lifecycle-detail__fields,
+.object-detail__fields,
+.security-profile-detail__fields {
+  margin: 0;
+  display: grid;
+  grid-template-columns: minmax(160px, 220px) 1fr;
+  gap: 0.45rem 1rem;
+  max-width: 760px;
+}
+
+.lifecycle-detail__fields--compact {
+  margin-bottom: 1rem;
+}
+
+.lifecycle-detail__field,
+.object-detail__field,
+.security-profile-detail__field {
+  display: contents;
+}
+
+.lifecycle-detail__field dt,
+.object-detail__field dt,
+.security-profile-detail__field dt {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.8125rem;
+  line-height: 1.4;
+}
+
+.object-detail__field dt {
+  text-align: right;
+}
+
+.lifecycle-detail__field dd,
+.object-detail__field dd,
+.security-profile-detail__field dd {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+
+.lifecycle-detail__state-panel {
+  margin-top: 0.75rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border-subtle, #e5e7eb);
+  border-radius: 4px;
+  background: var(--surface-muted, #fafafa);
+}
+
+.lifecycle-detail__state-panel-title {
+  margin: 0 0 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.lifecycle-detail__rules {
+  margin-top: 0.75rem;
+}
+
+.lifecycle-detail__rules-title {
+  margin: 0 0 0.35rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.lifecycle-detail__row--active > td {
+  background: color-mix(in srgb, var(--accent, #e87722) 8%, transparent) !important;
+}
+
+.lifecycle-list__objects .metadata-link.ant-btn-link {
+  padding: 0;
+  height: auto;
+}
+
+.metadata-chip-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  max-width: 28rem;
+}
+
+.metadata-chip {
+  display: inline-flex;
+  align-items: center;
+  max-width: 12rem;
+  padding: 0.1rem 0.45rem;
+  border: 1px solid var(--border-subtle, #e5e7eb);
+  border-radius: 3px;
+  background: var(--surface-muted, #f5f5f5);
+  color: var(--text);
+  font-size: 0.75rem;
+  line-height: 1.35;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.metadata-chip--more {
+  color: var(--muted);
+  background: transparent;
+  border-style: dashed;
+}
+
+.metadata-chip--type {
+  flex: 0 0 auto;
+  color: var(--muted);
+  background: var(--surface, #fff);
+}
+
+.metadata-chip--start {
+  border-color: color-mix(in srgb, var(--brand, var(--accent, #e87722)) 45%, var(--border));
+  background: color-mix(in srgb, var(--brand, var(--accent, #e87722)) 10%, transparent);
+}
+
+.metadata-chip--clickable {
+  cursor: pointer;
+  font: inherit;
+}
+
+.metadata-chip--clickable:hover,
+.metadata-chip--clickable.is-active {
+  border-color: var(--brand, var(--accent, #e87722));
+  color: var(--brand, var(--accent, #e87722));
+}
+
+.metadata-state-overview {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem 0.25rem;
+  margin: 0 0 0.75rem;
+}
+
+.metadata-state-overview__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.metadata-flow-arrow {
+  color: var(--muted);
+  font-size: 0.75rem;
+  user-select: none;
+}
+
+.metadata-step-flow {
+  margin: 0 0 0.75rem;
+  padding: 0.65rem 0.75rem;
+  border: 1px solid var(--border-subtle, #e5e7eb);
+  border-radius: 4px;
+  background: var(--surface-muted, #fafafa);
+}
+
+.metadata-step-flow__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.metadata-step-flow__item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.metadata-step-flow__label {
+  font-size: 0.8125rem;
+  font-weight: 500;
+}
+
+.metadata-step-flow__next {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  align-items: center;
+}
+
+/* Veeva Configuration > Workflow Steps flowchart */
+.wf-flowchart {
+  margin: 0 0 1rem;
+  padding: 0.75rem;
+  overflow: auto;
+  border: 1px solid var(--border-subtle, #e5e7eb);
+  border-radius: 4px;
+  background: var(--surface-muted, #fafafa);
+}
+
+.wf-flowchart__canvas {
+  position: relative;
+}
+
+.wf-flowchart__svg {
+  display: block;
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: visible;
+}
+
+.wf-flowchart__edge {
+  stroke: var(--muted, #9ca3af);
+  stroke-width: 1.25;
+}
+
+.wf-flowchart__arrow {
+  fill: var(--muted, #9ca3af);
+}
+
+.wf-flowchart__node {
+  position: absolute;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.1rem;
+  padding: 0.35rem 0.55rem;
+  border: 1px solid var(--border, #d1d5db);
+  border-radius: 3px;
+  background: var(--surface, #fff);
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
+  font-size: 0.75rem;
+  line-height: 1.25;
+  overflow: hidden;
+}
+
+.wf-flowchart__node--link {
+  margin: 0;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  appearance: none;
+}
+
+.wf-flowchart__node--link:hover {
+  border-color: var(--brand, var(--accent, #e87722));
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--brand, var(--accent, #e87722)) 35%, transparent);
+}
+
+.wf-flowchart__node--link:focus-visible {
+  outline: 2px solid var(--brand, var(--accent, #e87722));
+  outline-offset: 2px;
+}
+
+.wf-flowchart__type {
+  color: var(--muted);
+  font-size: 0.6875rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.wf-flowchart__label {
+  color: var(--text);
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.wf-flowchart__node--start {
+  border-color: color-mix(in srgb, var(--brand, var(--accent, #e87722)) 40%, var(--border));
+}
+
+.wf-flowchart__node--end {
+  border-style: dashed;
+}
+
+.wf-flowchart__node--decision {
+  border-color: color-mix(in srgb, #6366f1 35%, var(--border));
+  background: color-mix(in srgb, #6366f1 6%, var(--surface, #fff));
+}
+
+.wf-flowchart__node--task {
+  border-color: color-mix(in srgb, #2563eb 30%, var(--border));
+}
+
+.wf-flowchart__node--action {
+  border-color: color-mix(in srgb, #059669 30%, var(--border));
+}
+
+.metadata-view-only {
+  margin: 0 0 0.75rem;
+  color: var(--muted);
+  font-size: 0.8125rem;
+}
+
+.metadata-flag {
+  display: inline-block;
+  min-width: 2rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+}
+
+.metadata-flag--on {
+  color: var(--text);
+}
+
+.metadata-flag--off {
+  color: var(--muted);
+}
+
+.object-detail__subsection {
+  margin-top: 1rem;
+}
+
+.object-detail__subsection-title {
+  margin: 0 0 0.35rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+/* Configuration layout viewer: field label preview instead of raw element tables. */
+.layout-sections__detailform {
+  margin-bottom: 0.75rem;
+}
+
+.layout-sections__detailform-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0 0 0.5rem;
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+
+.layout-form-preview {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--surface, #fff) 92%, var(--border));
+  padding: 0.75rem 1rem;
+}
+
+.layout-form-preview--empty {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--muted);
+}
+
+.layout-form-preview--one {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.layout-form-preview--two {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem 1.5rem;
+}
+
+.layout-form-preview__col {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.layout-form-preview__field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  padding: 0.35rem 0.5rem;
+  border-radius: 4px;
+  background: var(--surface, #fff);
+  border: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+}
+
+.layout-form-preview__field--link {
+  text-decoration: none;
+  color: inherit;
+}
+
+.layout-form-preview__field--link:hover {
+  border-color: var(--brand, var(--accent, #e87722));
+}
+
+.layout-form-preview__label {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.layout-form-preview__label--missing {
+  color: var(--muted);
+  font-weight: 400;
+}
+
+.layout-form-preview__name {
+  font-size: 0.6875rem;
+  color: var(--muted);
+}
+
+.layout-section-items {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.layout-section-items__row {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 0.25rem 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 60%, transparent);
+}
+
+.layout-section-items__row:last-child {
+  border-bottom: 0;
+}
+
+.layout-section-items__label {
+  font-size: 0.8125rem;
+}
+
+.layout-section-items__label--missing {
+  color: var(--muted);
+}
+
+.layout-section-items__ref {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.layout-object-api {
+  color: var(--muted);
+  font-weight: 400;
+}
+
+.metadata-secondary-name {
+  color: var(--muted);
+  font-size: 0.875em;
+}
+
+@media (max-width: 700px) {
+  .layout-form-preview--two {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 900px) {
+  .lifecycle-detail,
+  .object-detail:not(.object-detail--tabs),
+  .security-profile-detail {
+    flex-direction: column;
+  }
+
+  .lifecycle-detail__nav,
+  .object-detail__nav,
+  .security-profile-detail__nav {
+    position: static;
+    flex-direction: row;
+    flex-wrap: wrap;
+    min-width: 0;
+    padding-left: 0;
+    padding-bottom: 0.5rem;
+    border-left: 0;
+    border-bottom: 1px solid var(--border);
+    width: 100%;
+    order: -1;
+  }
+
+  .object-detail__fields {
+    grid-template-columns: minmax(120px, 160px) 1fr;
+  }
+
+  .object-detail__options {
+    padding-left: 0;
+  }
+
+  .object-detail__field dt {
+    text-align: left;
+  }
+}

@@ -1,0 +1,136 @@
+.list-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  flex-shrink: 0;
+  position: relative;
+  /* Above ant table sticky header so list-actions menu (Edit Columns, etc.)
+     is not covered when the table has many columns. */
+  z-index: var(--z-list-toolbar);
+  margin: 0 0 0.5rem;
+}
+
+.list-toolbar__start,
+.list-toolbar__end {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  min-width: 0;
+}
+
+.list-toolbar__end {
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.list-toolbar--veeva .list-toolbar__start {
+  flex: 1;
+  min-width: 0;
+}
+
+.list-toolbar__view-select {
+  min-width: 10rem;
+}
+
+.list-toolbar__view-select .ant-select-selector {
+  border-radius: 2px !important;
+}
+
+.list-toolbar__search {
+  max-width: 16rem;
+  flex: 1;
+  min-width: 10rem;
+}
+
+.list-toolbar__search .ant-input-search-button {
+  border-start-end-radius: 2px !important;
+  border-end-end-radius: 2px !important;
+}
+
+.list-create-button__link {
+  display: inline-flex;
+  text-decoration: none;
+  color: inherit;
+}
+
+.list-create-button__link:hover {
+  text-decoration: none;
+  color: inherit;
+}
+
+.list-toolbar__create.ant-btn {
+  font-weight: 600;
+  border-radius: 2px;
+}
+
+.list-toolbar__create.ant-btn::before {
+  content: "+";
+  margin-right: 0.3rem;
+  font-weight: 700;
+}
+
+.list-toolbar__sort {
+  border: none;
+  background: transparent;
+  padding: 0;
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.list-toolbar__sort:hover:not(:disabled) {
+  color: var(--brand);
+}
+
+.list-toolbar__sort:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.list-toolbar__sort.ant-btn {
+  height: auto;
+  padding: 0;
+  font-weight: 600;
+}
+
+.list-toolbar__actions {
+  position: relative;
+}
+
+.list-toolbar__actions--open {
+  z-index: var(--z-overlay);
+}
+
+.list-toolbar__actions-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  background: var(--surface)
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23666' viewBox='0 0 16 16'%3E%3Ccircle cx='2.5' cy='4' r='1'/%3E%3Ccircle cx='2.5' cy='8' r='1'/%3E%3Ccircle cx='2.5' cy='12' r='1'/%3E%3Cpath d='M5.5 3.5h8a.5.5 0 0 1 0 1h-8a.5.5 0 0 1 0-1zm0 4h8a.5.5 0 0 1 0 1h-8a.5.5 0 0 1 0-1zm0 4h8a.5.5 0 0 1 0 1h-8a.5.5 0 0 1 0-1z'/%3E%3C/svg%3E")
+    center no-repeat;
+  cursor: pointer;
+}
+
+.list-toolbar__actions-trigger:hover:not(:disabled),
+.list-toolbar__actions--open .list-toolbar__actions-trigger {
+  background-color: var(--surface-muted);
+  border-color: #c5cad0;
+}
+
+.list-toolbar__actions-trigger:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.list-toolbar__actions-trigger.ant-btn {
+  min-width: 2rem;
+  box-shadow: none;
+}

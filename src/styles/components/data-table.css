@@ -1,0 +1,720 @@
+.table-wrap {
+  overflow: visible;
+  border: none;
+  border-radius: 0;
+  background: var(--surface);
+  position: relative;
+}
+
+/* Wide tables without antd scroll.x: native horizontal scroll avoids rc-table resize loops.
+   overflow-y: clip keeps this from becoming a nested vertical scrollport (CSS would
+   otherwise compute overflow-y to auto when overflow-x is not visible). */
+.table-wrap--native-x-scroll {
+  overflow-x: auto;
+  overflow-y: clip;
+  max-width: 100%;
+}
+
+/* Fixed column widths must size the table to the column sum. Otherwise table-layout:fixed
+   + width:100% compresses every column into the viewport and native overflow never runs. */
+.table-wrap--native-x-scroll.table-wrap--resizable .data-table table,
+.table-wrap--native-x-scroll.table-wrap--column-widths .data-table table {
+  width: max-content;
+  min-width: 100%;
+}
+
+/* Preserve sticky headers without antd/rc-table ResizeObserver sticky path (React 19 loop). */
+.table-wrap--native-x-scroll .data-table .ant-table-thead > tr > th {
+  position: sticky;
+  top: 0;
+  z-index: calc(var(--z-base) + 1);
+}
+
+/* 已有数据时重新加载（翻页/排序/筛选），给表格加半透明遮罩反馈，避免无感知刷新 */
+.table-wrap--loading .data-table.ant-table-wrapper {
+  opacity: 0.55;
+  pointer-events: none;
+  transition: opacity 0.15s ease-in-out;
+}
+
+.data-table.ant-table-wrapper {
+  width: 100%;
+}
+
+.data-table .ant-table {
+  background: var(--surface);
+}
+
+.data-table .ant-table-thead > tr > th,
+.data-table .ant-table-tbody > tr > td {
+  padding: 0.5rem 0.65rem;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+  vertical-align: middle;
+  font-size: 0.875rem;
+}
+
+.data-table .ant-table-thead > tr > th {
+  position: relative;
+  background: var(--surface);
+  font-size: 0.8125rem;
+  color: var(--muted);
+  font-weight: 600;
+  border-top: none;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+.data-table .ant-table-thead > tr > th::before {
+  display: none;
+}
+
+.data-table td .field-value--link,
+.data-table .ant-table-tbody > tr > td .field-value--link {
+  color: var(--brand);
+  font-weight: 500;
+}
+
+.table-wrap:not(.table-wrap--wrap-cells) .data-table .ant-table-tbody > tr > td {
+  max-width: 16rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.data-table .ant-table-tbody > tr:last-child > td {
+  border-bottom: none;
+}
+
+.data-table__empty {
+  display: block;
+  text-align: center;
+  color: var(--muted);
+}
+
+/* Permission action checkbox matrix (admin metadata viewer → permission set detail).
+   Candidate actions are laid out in an aligned grid so the checked/unchecked pattern reads
+   as a matrix at a glance; each cell holds one read-only checkbox and auto-wraps to the
+   column width. */
+.perm-actions {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(8rem, 1fr));
+  gap: 0.15rem 0.5rem;
+  align-items: center;
+}
+
+.perm-actions__check.ant-checkbox-wrapper {
+  margin-inline-end: 0;
+  font-size: 0.8125rem;
+  color: var(--text);
+  cursor: default;
+}
+
+/* Unchecked candidate = a supported-but-ungranted action. Dim it so the granted actions stand
+   out, mirroring Veeva's matrix where only held capabilities draw full contrast. */
+.perm-actions__check--off.ant-checkbox-wrapper-disabled {
+  color: var(--muted);
+  opacity: 0.7;
+}
+
+/* Overflow group: granted actions outside the known candidate set (exotic/custom kinds).
+   Kept on its own row with a leading divider so it reads as "other granted", distinct from
+   the aligned candidate matrix above. */
+.perm-actions__other {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.15rem 0.25rem;
+  margin-top: 0.2rem;
+  padding-top: 0.25rem;
+  border-top: 1px dashed var(--border);
+}
+
+/* Object group header (permission set detail → Objects tab): object name + a compact
+   record-access (CRUD) summary so an admin can scan an object's access without expanding. */
+.perm-obj-header {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+/* When an object label is resolved, show the human label on top and the api_name (mono) as a
+   smaller secondary line so the header stays scannable without hiding the api_name. */
+.perm-obj-header__title {
+  display: inline-flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.2;
+}
+
+.perm-obj-header__label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.perm-obj-header__title .perm-obj-header__name {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.perm-obj-header__name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Objects-tab Permission column: when a sub-entry (field / object-type / record-action) label is
+   resolved, show the human label on top and its api_name (mono) as a smaller secondary line,
+   mirroring the object group header, so the row is scannable without hiding the api_name. */
+.perm-entry-target {
+  display: inline-flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.2;
+}
+
+.perm-entry-target__name {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+/* Objects tab: object-type child rows are indented under their parent object, matching Veeva
+   (plain label, not a link). */
+.perm-entry-target--type {
+  display: inline-block;
+  padding-left: 1.5rem;
+  color: var(--text);
+}
+
+/* Objects-tab / object-detail CRUD columns: keep the checkbox centered in the narrow cells. */
+.data-table .perm-actions__check.ant-checkbox-wrapper {
+  margin-inline-end: 0;
+}
+
+/* Inherited (All / wildcard) grant marker — Veeva's checkmark-with-asterisk. */
+.perm-crud-cell {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.1rem;
+  min-width: 1.75rem;
+}
+
+.perm-crud-cell__star {
+  font-size: 0.75rem;
+  line-height: 1;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.perm-obj-header__crud {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+.perm-obj-header__none {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.perm-obj-header__count {
+  color: var(--muted);
+  font-size: 0.8125rem;
+}
+
+/* Objects tab rows link to each object's dedicated permission page: the whole row is clickable
+   (the object-name cell is a keyboard-accessible link) so a pointer cursor signals the affordance. */
+.data-table__row--link {
+  cursor: pointer;
+}
+
+/* Permission set "Used By" (impact) block: which Security Profiles / Application Roles reference
+   the set, rendered as labelled tag rows so an admin can gauge blast radius at a glance. */
+.perm-usage__title {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem;
+}
+
+.perm-usage__groups {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.perm-usage__group {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.perm-usage__label {
+  min-width: 140px;
+  color: var(--muted);
+  font-size: 0.8125rem;
+}
+
+.perm-usage__tags {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.perm-usage__tag-api {
+  margin-left: 0.375rem;
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.perm-usage__tag--inactive {
+  opacity: 0.55;
+}
+
+.perm-usage__tag-inactive {
+  margin-left: 0.25rem;
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+/* One CRUD pill. Ungranted is faint so only held capabilities draw the eye; granted uses the
+   brand accent, mirroring the checkbox matrix at the object level. */
+.perm-crud {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.15rem;
+  height: 1.15rem;
+  border-radius: 0.25rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--muted);
+  background: var(--surface-muted, rgba(0, 0, 0, 0.05));
+  border: 1px solid var(--border);
+}
+
+.perm-crud--on {
+  color: #fff;
+  background: var(--brand);
+  border-color: var(--brand);
+}
+
+.perm-kind-tag.ant-tag {
+  margin-inline-end: 0;
+}
+
+/* Per-object permission detail (permission set detail → Objects tab → expanded object): the
+   Veeva sections (Object / Field / Control Permissions) on the left and a sticky anchor nav on
+   the right, mirroring Veeva's per-object permission page. */
+.perm-object-detail {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.5rem;
+}
+
+.perm-object-sections {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.perm-object-nav {
+  flex: 0 0 auto;
+  position: sticky;
+  top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-width: 180px;
+  padding-left: 1rem;
+  border-left: 1px solid var(--border);
+}
+
+.perm-object-nav a {
+  font-size: 0.8125rem;
+  color: var(--muted);
+}
+
+.perm-object-nav a:hover {
+  color: var(--brand);
+}
+
+/* Each Veeva section is a titled table stacked with a little breathing room so the sections read
+   as distinct groups. The head row aligns the title with the optional object-type selector. */
+.perm-object-sections > .perm-object-section {
+  margin-bottom: 1rem;
+}
+
+.perm-object-sections > .perm-object-section:last-child {
+  margin-bottom: 0;
+}
+
+.perm-object-section__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin: 0 0 0.35rem;
+}
+
+.perm-object-section__title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin: 0;
+  color: var(--text);
+}
+
+/* Admin / Application capability tabs: stack Veeva section headings (Security, Vault Actions, …)
+   with the same section chrome used by the per-object permission detail. */
+.perm-capability-sections > .perm-object-section {
+  margin-bottom: 1rem;
+}
+
+.perm-capability-sections > .perm-object-section:last-child {
+  margin-bottom: 0;
+}
+
+.data-table .ant-table-column-sorter {
+  color: var(--muted);
+}
+
+.data-table .ant-table-column-sorter-up.active,
+.data-table .ant-table-column-sorter-down.active {
+  color: var(--accent);
+}
+
+.filter-bar__actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.table-wrap--wrap-cells .data-table .ant-table-tbody > tr > td,
+.table-wrap--wrap-cells .data-table .ant-table-thead > tr > th {
+  white-space: normal;
+  word-break: break-word;
+}
+
+.data-table__cell--frozen {
+  position: sticky;
+  left: 0;
+  z-index: var(--z-base);
+  background: var(--surface);
+  box-shadow: 1px 0 0 var(--border);
+}
+
+.data-table__actions-col {
+  white-space: nowrap;
+}
+
+.data-table__first-col-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  width: 100%;
+  min-width: 0;
+}
+
+.data-table__first-col-value {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.data-table__first-col-actions {
+  flex: 0 0 auto;
+  margin-left: auto;
+}
+
+.data-table__name-cell {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr);
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  min-width: 0;
+}
+
+.data-table__name-cell--with-actions {
+  grid-template-columns: 20px minmax(0, 1fr) auto;
+}
+
+.data-table__name-cell--with-actions:not(:has(.data-table__row-star)) {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.data-table__name-main {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.data-table__row-star.ant-btn {
+  width: 20px;
+  height: 20px;
+  min-width: 20px;
+  padding: 0;
+  color: var(--border);
+  font-size: 1rem;
+}
+
+.data-table__row-star--active.ant-btn,
+.data-table__row-star.ant-btn:hover {
+  color: var(--accent);
+}
+
+.data-table__favorite-col {
+  width: 2.5rem;
+  padding-inline: 0.25rem !important;
+  text-align: center;
+}
+
+.data-table__favorite-col .data-table__row-star {
+  min-width: 1.75rem;
+}
+
+.data-table__header-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.125rem;
+  max-width: 100%;
+  width: 100%;
+  min-height: 1.25rem;
+}
+
+.data-table__header-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.table-wrap--resizing {
+  cursor: col-resize;
+  user-select: none;
+}
+
+.table-wrap--resizing .data-table .ant-table-tbody > tr > td {
+  pointer-events: none;
+}
+
+.data-table__header-th--resizable {
+  overflow: visible;
+}
+
+.data-table__col-resize-handle {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 0.75rem;
+  height: 100%;
+  transform: translateX(50%);
+  cursor: col-resize;
+  z-index: 3;
+  touch-action: none;
+  user-select: none;
+}
+
+/* Last column handle must stay inside the table: translateX(50%) would stick ~6px
+   past .table-wrap--native-x-scroll and force a permanent horizontal scrollbar. */
+.data-table .ant-table-thead > tr > th:last-child .data-table__col-resize-handle {
+  transform: none;
+}
+
+.data-table__header-th--resizable:hover .data-table__col-resize-handle,
+.data-table__col-resize-handle:active {
+  background: rgba(0, 0, 0, 0.08);
+}
+
+.table-wrap--resizable:not(.table-wrap--wrap-cells) .data-table .ant-table-thead > tr > th,
+.table-wrap--resizable:not(.table-wrap--wrap-cells) .data-table .ant-table-tbody > tr > td,
+.table-wrap--column-widths:not(.table-wrap--wrap-cells) .data-table .ant-table-thead > tr > th,
+.table-wrap--column-widths:not(.table-wrap--wrap-cells) .data-table .ant-table-tbody > tr > td {
+  max-width: none;
+}
+
+.column-header-filter {
+  flex: 0 0 auto;
+  color: var(--muted);
+  padding-inline: 0.125rem;
+}
+
+.column-header-filter--active {
+  color: var(--accent);
+}
+
+.column-header-filter__popover {
+  min-width: 16rem;
+  max-width: 20rem;
+}
+
+.field-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1rem;
+  height: 1rem;
+  line-height: 1;
+  vertical-align: middle;
+}
+
+.field-icon__fa {
+  display: block;
+  width: 1rem;
+  height: 1rem;
+  font-size: 1rem;
+  line-height: 1rem;
+  text-align: center;
+}
+
+.field-icon svg {
+  display: block;
+}
+
+.field-icon--empty {
+  font-size: 0.875rem;
+  color: var(--muted);
+}
+
+.field-icon-wrap {
+  display: inline-flex;
+  cursor: help;
+}
+
+.milestone-completeness-hovercard-popover .ant-popover-inner {
+  padding: 0;
+}
+
+.milestone-completeness-hovercard {
+  width: 34rem;
+  max-width: min(34rem, calc(100vw - 2rem));
+  padding: 0.85rem 1rem 0.75rem;
+  font-size: 0.8125rem;
+  line-height: 1.35;
+  color: var(--text);
+}
+
+.milestone-completeness-hovercard__header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 0.75rem;
+  padding-bottom: 0.65rem;
+  border-bottom: 2px solid #f0a030;
+}
+
+.milestone-completeness-hovercard__milestone-link,
+.milestone-completeness-hovercard__milestone-name {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--brand);
+  text-decoration: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.milestone-completeness-hovercard__milestone-link:hover {
+  text-decoration: underline;
+}
+
+.milestone-completeness-hovercard__header-percent {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text);
+  min-width: 1.5rem;
+  text-align: right;
+}
+
+.milestone-completeness-hovercard__header-icon {
+  line-height: 1;
+}
+
+.milestone-completeness-hovercard__section {
+  padding: 0.65rem 0 0.55rem;
+  border-bottom: 2px solid #f0a030;
+}
+
+.milestone-completeness-hovercard__section--last {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.milestone-completeness-hovercard__section-title {
+  margin: 0 0 0.45rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.milestone-completeness-hovercard__data-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.milestone-completeness-hovercard__data-table thead th {
+  padding: 0.35rem 0.5rem;
+  background: #f3f3f3;
+  border: 1px solid #d8d8d8;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-align: left;
+  color: var(--muted);
+}
+
+.milestone-completeness-hovercard__data-table tbody td {
+  padding: 0.35rem 0.5rem;
+  border: 1px solid #e2e2e2;
+  vertical-align: top;
+  word-break: break-word;
+}
+
+.milestone-completeness-hovercard__empty-row td {
+  height: 1.75rem;
+  padding: 0;
+}
+
+.milestone-completeness-hovercard__row-link {
+  color: var(--brand);
+  text-decoration: none;
+}
+
+.milestone-completeness-hovercard__row-link:hover {
+  text-decoration: underline;
+}
+
+.milestone-completeness-hovercard__stat-line {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.25rem;
+  margin-bottom: 0.35rem;
+}
+
+.milestone-completeness-hovercard__task-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.35rem 1.5rem;
+  margin-bottom: 0.35rem;
+}
+
+.milestone-completeness-hovercard__footer-link {
+  text-align: right;
+}
+
+.milestone-completeness-hovercard__footer-link a {
+  color: var(--brand);
+  text-decoration: none;
+  font-size: 0.8125rem;
+}
+
+.milestone-completeness-hovercard__footer-link a:hover {
+  text-decoration: underline;
+}

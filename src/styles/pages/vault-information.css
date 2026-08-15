@@ -1,0 +1,51 @@
+.vault-information__page-header {
+  margin-bottom: 0.85rem;
+}
+
+.vault-information__body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.vault-information__body .record-section {
+  margin-bottom: 0;
+}
+
+.vault-information__info-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.vault-information__info-row {
+  display: grid;
+  grid-template-columns: 12rem minmax(0, 1fr);
+  gap: 0.75rem 1rem;
+  align-items: start;
+}
+
+.vault-information__field-label {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.vault-information__field-value {
+  color: var(--text);
+  word-break: break-word;
+}
+
+.vault-information__version-value {
+  cursor: help;
+  border-bottom: 1px dotted var(--muted);
+}
+
+.vault-information__tooltip-preline {
+  white-space: pre-line;
+}
+
+.vault-information--loading {
+  display: flex;
+  justify-content: center;
+  padding: 2rem 0;
+}

@@ -1,0 +1,48 @@
+.search-settings {
+  width: 100%;
+  min-width: 0;
+}
+
+.search-settings__thesaurus-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.search-settings__file-input {
+  display: none;
+}
+
+.search-settings__reindex-status {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.75rem;
+  margin: 0 0 0.75rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.search-settings__reindex-status-label {
+  color: var(--muted);
+}
+
+.search-settings__reindex-counts {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.75rem;
+}
+
+.search-settings__reindex-count {
+  color: var(--text);
+}
+
+.search-settings__reindex-count--failed {
+  color: var(--danger);
+}
+
+.search-settings__reindex-progress {
+  margin: 0 0 0.75rem;
+  font-size: 0.8125rem;
+  color: var(--brand);
+}
