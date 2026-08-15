@@ -66,6 +66,11 @@ function capabilitySegmentCatalog(shell: ShellChrome): Record<string, DisplayTex
     ui_diagnostics: shell.metadata_capability_ui_diagnostics,
     ui_metadata: shell.metadata_capability_ui_metadata,
     bulk_translation: shell.metadata_capability_bulk_translation,
+    formatted_output_templates: shell.metadata_capability_formatted_output_templates,
+    overlays: shell.metadata_capability_overlays,
+    report_types: shell.metadata_capability_report_types,
+    signature_and_cover_pages: shell.metadata_capability_signature_and_cover_pages,
+    layout_profiles: shell.metadata_capability_layout_profiles,
   };
 }
 

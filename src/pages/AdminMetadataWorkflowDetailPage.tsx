@@ -335,8 +335,26 @@ function OptionCheckbox({ checked, label }: { checked: boolean; label: string })
 }
 
 function OptionsFields({ model, shell }: { model: MetadataWorkflowDetailModel; shell: Shell }) {
+  const actionLabel = (action: string) => {
+    switch (action) {
+      case "cancel_workflow":
+        return displayText(shell.metadata_workflow_action_cancel_workflow);
+      case "reassign_task":
+        return displayText(shell.metadata_workflow_action_reassign_task);
+      case "email_participants":
+        return displayText(shell.metadata_workflow_action_email_participants);
+      case "add_participants":
+        return displayText(shell.metadata_workflow_action_add_participants);
+      case "update_due_date":
+        return displayText(shell.metadata_workflow_action_update_due_date);
+      case "cancel_task":
+        return displayText(shell.metadata_workflow_action_cancel_task);
+      default:
+        return action;
+    }
+  };
   const joinList = (items: string[] | null | undefined) =>
-    items && items.length ? items.join(", ") : "—";
+    items && items.length ? items.map(actionLabel).join(", ") : "—";
 
   return (
     <div className="lifecycle-detail__rules">

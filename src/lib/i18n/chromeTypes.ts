@@ -140,6 +140,17 @@ export type ShellChrome = {
   metadata_workflow_step_type_notification: DisplayText;
   metadata_workflow_step_type_join: DisplayText;
   metadata_workflow_step_type_placeholder: DisplayText;
+  metadata_workflow_step_type_job: DisplayText;
+  metadata_workflow_step_type_update_record_field: DisplayText;
+  metadata_workflow_step_type_update_sharing: DisplayText;
+  metadata_workflow_step_type_update_document_sharing: DisplayText;
+  metadata_workflow_step_type_update_related_record_field: DisplayText;
+  metadata_workflow_action_cancel_workflow: DisplayText;
+  metadata_workflow_action_reassign_task: DisplayText;
+  metadata_workflow_action_email_participants: DisplayText;
+  metadata_workflow_action_add_participants: DisplayText;
+  metadata_workflow_action_update_due_date: DisplayText;
+  metadata_workflow_action_cancel_task: DisplayText;
   metadata_config_view_only: DisplayText;
   metadata_more_count: DisplayText;
   metadata_lifecycle_state_overview: DisplayText;
@@ -459,6 +470,11 @@ export type ShellChrome = {
   metadata_capability_ui_diagnostics: DisplayText;
   metadata_capability_ui_metadata: DisplayText;
   metadata_capability_bulk_translation: DisplayText;
+  metadata_capability_formatted_output_templates: DisplayText;
+  metadata_capability_overlays: DisplayText;
+  metadata_capability_report_types: DisplayText;
+  metadata_capability_signature_and_cover_pages: DisplayText;
+  metadata_capability_layout_profiles: DisplayText;
   expand_subtabs: DisplayText;
   collapse_subtabs: DisplayText;
   subtabs_suffix: DisplayText;
@@ -3375,6 +3391,50 @@ export const defaultShellChrome: ShellChrome = {
     "Placeholder",
     "metadata.workflow_step_type_placeholder",
   ),
+  metadata_workflow_step_type_job: t(
+    "Job",
+    "metadata.workflow_step_type_job",
+  ),
+  metadata_workflow_step_type_update_record_field: t(
+    "Update Record Field",
+    "metadata.workflow_step_type_update_record_field",
+  ),
+  metadata_workflow_step_type_update_sharing: t(
+    "Update Sharing Settings",
+    "metadata.workflow_step_type_update_sharing",
+  ),
+  metadata_workflow_step_type_update_document_sharing: t(
+    "Update Document Sharing Settings",
+    "metadata.workflow_step_type_update_document_sharing",
+  ),
+  metadata_workflow_step_type_update_related_record_field: t(
+    "Update Related Record Field",
+    "metadata.workflow_step_type_update_related_record_field",
+  ),
+  metadata_workflow_action_cancel_workflow: t(
+    "Cancel Workflow",
+    "metadata.workflow_action_cancel_workflow",
+  ),
+  metadata_workflow_action_reassign_task: t(
+    "Reassign Task",
+    "metadata.workflow_action_reassign_task",
+  ),
+  metadata_workflow_action_email_participants: t(
+    "Email Participants",
+    "metadata.workflow_action_email_participants",
+  ),
+  metadata_workflow_action_add_participants: t(
+    "Add Participants",
+    "metadata.workflow_action_add_participants",
+  ),
+  metadata_workflow_action_update_due_date: t(
+    "Update Due Date",
+    "metadata.workflow_action_update_due_date",
+  ),
+  metadata_workflow_action_cancel_task: t(
+    "Cancel Task",
+    "metadata.workflow_action_cancel_task",
+  ),
   metadata_config_view_only: t(
     "View only — configuration cannot be edited here.",
     "metadata.config_view_only",
@@ -4313,6 +4373,26 @@ export const defaultShellChrome: ShellChrome = {
   metadata_capability_bulk_translation: t(
     "Bulk Translation",
     "metadata.capability.bulk_translation",
+  ),
+  metadata_capability_formatted_output_templates: t(
+    "Formatted Output Templates",
+    "metadata.capability.formatted_output_templates",
+  ),
+  metadata_capability_overlays: t(
+    "Overlays",
+    "metadata.capability.overlays",
+  ),
+  metadata_capability_report_types: t(
+    "Report Types",
+    "metadata.capability.report_types",
+  ),
+  metadata_capability_signature_and_cover_pages: t(
+    "Signature and Cover Pages",
+    "metadata.capability.signature_and_cover_pages",
+  ),
+  metadata_capability_layout_profiles: t(
+    "Layout Profiles",
+    "metadata.capability.layout_profiles",
   ),
   expand_subtabs: t("Expand", "nav.expand_subtabs"),
   collapse_subtabs: t("Collapse", "nav.collapse_subtabs"),

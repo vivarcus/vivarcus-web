@@ -522,7 +522,7 @@ function StateDetail({ state, shell }: { state: MetadataLifecycleStateSummary; s
         </div>
         <div className="lifecycle-detail__field">
           <dt>{displayText(shell.metadata_lifecycle_record_status)}</dt>
-          <dd className="mono">{state.record_status || "—"}</dd>
+          <dd>{state.record_status || "—"}</dd>
         </div>
         <div className="lifecycle-detail__field">
           <dt>{displayText(shell.metadata_lifecycle_record_inactive)}</dt>

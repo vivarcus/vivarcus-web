@@ -87,14 +87,21 @@ export function renderActions(
 // Edit / Delete pills (granted = solid, ungranted = faint) so an administrator can scan an
 // object's access at a glance. Empty grants render as faint unchecked pills (no "No record
 // access" copy) so the row never looks like a missing configuration.
-export function ObjectCrudBadges({ actions }: { actions: string[] }) {
+export function ObjectCrudBadges({
+  actions,
+  shell,
+}: {
+  actions: string[];
+  shell?: ShellChrome;
+}) {
   const granted = new Set(actions);
   return (
     <span className="perm-obj-header__crud">
       {OBJECT_CRUD_ACTIONS.map((action) => {
         const on = granted.has(action);
+        const title = shell ? permissionActionLabel(shell, action) : action;
         return (
-          <Tooltip key={action} title={action}>
+          <Tooltip key={action} title={title}>
             <span className={`perm-crud${on ? " perm-crud--on" : ""}`}>
               {action.charAt(0).toUpperCase()}
             </span>

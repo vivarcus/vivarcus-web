@@ -54,6 +54,16 @@ export function workflowStepTypeDisplay(
       return displayText(shell.metadata_workflow_step_type_join);
     case "placeholder":
       return displayText(shell.metadata_workflow_step_type_placeholder);
+    case "job":
+      return displayText(shell.metadata_workflow_step_type_job);
+    case "updaterecordfield":
+      return displayText(shell.metadata_workflow_step_type_update_record_field);
+    case "updatesharingsettings":
+      return displayText(shell.metadata_workflow_step_type_update_sharing);
+    case "updatedocumentsharingsettings":
+      return displayText(shell.metadata_workflow_step_type_update_document_sharing);
+    case "updaterelatedrecordfield":
+      return displayText(shell.metadata_workflow_step_type_update_related_record_field);
     default:
       return fallback || type || "—";
   }
