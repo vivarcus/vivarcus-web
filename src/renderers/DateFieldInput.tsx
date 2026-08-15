@@ -21,6 +21,8 @@ export type DateFieldInputProps = {
   disabled?: boolean;
   allowClear?: boolean;
   placeholder?: string;
+  calendarAriaLabel?: string;
+  calendarLanguage?: string;
   className?: string;
   style?: CSSProperties;
   "aria-label"?: string;
@@ -52,6 +54,22 @@ function openCalendarAriaLabel(displayContext?: DisplayContext): string {
   return "Open calendar";
 }
 
+function calendarDisplayContext(
+  displayContext: DisplayContext | undefined,
+  calendarLanguage: string | undefined,
+): DisplayContext | undefined {
+  const language = calendarLanguage?.trim();
+  if (!language) {
+    return displayContext;
+  }
+  return {
+    language,
+    locale: language,
+    timezone: displayContext?.timezone ?? "UTC",
+    date_format_profile: displayContext?.date_format_profile,
+  };
+}
+
 /**
  * Text-first date entry with an optional calendar panel.
  * Commits on blur / Enter via flexible parse; calendar selection is only a helper.
@@ -63,6 +81,8 @@ export function DateFieldInput({
   disabled = false,
   allowClear = true,
   placeholder,
+  calendarAriaLabel,
+  calendarLanguage,
   className,
   style,
   "aria-label": ariaLabel,
@@ -137,15 +157,20 @@ export function DateFieldInput({
     focusTextInput();
   };
 
-  const locale = useMemo(
-    () => antdLocaleForDisplay(displayContext),
-    [displayContext],
+  const calendarContext = useMemo(
+    () => calendarDisplayContext(displayContext, calendarLanguage),
+    [calendarLanguage, displayContext],
   );
-  const calendarAria = openCalendarAriaLabel(displayContext);
+  const locale = useMemo(
+    () => antdLocaleForDisplay(calendarContext),
+    [calendarContext],
+  );
+  const calendarAria =
+    calendarAriaLabel?.trim() || openCalendarAriaLabel(calendarContext);
 
   useEffect(() => {
-    applyDayjsLocale(displayContext);
-  }, [displayContext]);
+    applyDayjsLocale(calendarContext);
+  }, [calendarContext]);
 
   return (
     <ConfigProvider locale={locale}>

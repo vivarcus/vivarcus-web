@@ -645,6 +645,7 @@ export function RecordFormPage() {
               sections={displaySections}
               values={values}
               onFieldChange={updateField}
+              chrome={chrome}
               recordIdPlaceholder={displayText(chrome.record_id_placeholder)}
               displayContext={form.display_context}
               localeReferencesByLanguage={form.l10n?.locale_references_by_language}

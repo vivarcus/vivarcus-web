@@ -17,6 +17,7 @@ export type DisplayText = {
   text: string;
   key?: string;
   fallback_source?: string;
+  language?: string;
 };
 
 export type LoginResponse = {
@@ -3851,6 +3852,7 @@ export type SearchSettingsModel = {
     export_search_criteria: boolean;
   };
   thesaurus: {
+    default_language?: string;
     languages: { value: string; label: DisplayText }[];
   };
   reindex: SearchReindexStatus;

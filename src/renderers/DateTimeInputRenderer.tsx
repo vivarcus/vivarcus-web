@@ -2,6 +2,7 @@ import { TimePicker } from "antd";
 import type { Dayjs } from "dayjs";
 import dayjs from "dayjs";
 import { useUi } from "../context/UiContext";
+import { useFormChrome } from "../context/FormChromeContext";
 import { dateFieldPlaceholder, defaultFormChrome, displayText } from "../lib/i18n";
 import type { FormRendererProps } from "./types";
 import { DateFieldInput } from "./DateFieldInput";
@@ -24,6 +25,7 @@ export function DateTimeInputRenderer({
   showLabel = true,
 }: FormRendererProps) {
   const { displayContext } = useUi();
+  const formChrome = useFormChrome();
   const label = resolveFieldLabel(element);
   const disabled = isFieldDisabled(element);
   const required = isFieldRequired(element);
@@ -83,6 +85,8 @@ export function DateTimeInputRenderer({
         disabled={disabled}
         allowClear={!required}
         displayContext={displayContext}
+        calendarAriaLabel={displayText(formChrome.open_calendar)}
+        calendarLanguage={formChrome.open_calendar.language}
         placeholder={dateFieldPlaceholder(displayContext, false)}
         aria-label={showLabel ? `${label} date` : label}
         onChange={onDatePartChange}

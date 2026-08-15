@@ -9,6 +9,7 @@ export type DisplayText = {
   text: string;
   key?: string;
   fallback_source?: string;
+  language?: string;
 };
 
 export const defaultDisplayContext: DisplayContext = {

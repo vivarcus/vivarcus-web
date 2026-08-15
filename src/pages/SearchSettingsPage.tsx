@@ -64,7 +64,13 @@ export function SearchSettingsPage() {
       setModel(data);
       setSavedDraft(nextDraft);
       setDraft(nextDraft);
-      setThesaurusLanguage((prev) => prev || data.thesaurus.languages[0]?.value || "");
+      setThesaurusLanguage((prev) => {
+        const languages = data.thesaurus.languages;
+        if (prev && languages.some((item) => item.value === prev)) {
+          return prev;
+        }
+        return data.thesaurus.default_language || languages[0]?.value || "";
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : displayText(shell.load_failed));
       setModel(null);

@@ -120,6 +120,25 @@ describe("DateFieldInput", () => {
     expect(input).toHaveFocus();
   });
 
+  it("uses the resolved chrome language when it differs from display formatting", () => {
+    const { container } = render(
+      <DateFieldInput
+        value={null}
+        displayContext={{ locale: "en-US", timezone: "UTC", language: "en" }}
+        calendarAriaLabel="打开日历"
+        calendarLanguage="zh"
+        onChange={vi.fn()}
+      />,
+    );
+
+    expect(
+      screen.getByRole("button", { name: "打开日历" }),
+    ).toBeInTheDocument();
+    expect(
+      container.querySelector<HTMLInputElement>(".ant-picker-input input"),
+    ).toHaveAttribute("placeholder", "请选择日期");
+  });
+
   it("opens the calendar panel from the suffix control", async () => {
     const user = userEvent.setup();
     render(

@@ -860,7 +860,10 @@ export function RecordDetailPage() {
             sections={displaySections}
             values={values}
             onFieldChange={updateField}
-            recordIdPlaceholder={displayText(defaultFormChrome.record_id_placeholder)}
+            chrome={form.chrome ?? defaultFormChrome}
+            recordIdPlaceholder={displayText(
+              (form.chrome ?? defaultFormChrome).record_id_placeholder,
+            )}
             displayContext={form.display_context}
           />
         </FormMetaProvider>

@@ -285,6 +285,7 @@ export function InlineReferenceCreateModal({
               sections={displaySections}
               values={values}
               onFieldChange={updateField}
+              chrome={formChrome}
               recordIdPlaceholder={displayText(formChrome.record_id_placeholder)}
               displayContext={form.display_context}
             />
