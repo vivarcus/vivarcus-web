@@ -25,4 +25,6 @@ A running Vivarcus backend is required for the console to be functional.
 
 ## License
 
-Pending.
+Apache License 2.0 — see [LICENSE](LICENSE).
+
+Apache License 2.0 — see [LICENSE](LICENSE).
