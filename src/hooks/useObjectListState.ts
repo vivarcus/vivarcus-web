@@ -154,14 +154,18 @@ export function useObjectListState({
     );
   }, [initialFilter?.facetFiltersKey]);
 
+  // Only the query-effective view should retrigger loads. Server echoes of
+  // selected_view (viewPinned=false) must not fan out a second identical compose.
+  const listView = viewPinned ? view : undefined;
+
   useEffect(() => {
     setPageToken(undefined);
     setPageHistory([]);
-  }, [viewPinned, view, sortBy, sortDir, filter, filterField, facetFilters, pageSize]);
+  }, [listView, sortBy, sortDir, filter, filterField, facetFilters, pageSize]);
 
   useEffect(() => {
     void load(currentQuery({ pageToken: undefined }));
-  }, [load, viewPinned, view, sortBy, sortDir, filter, filterField, facetFilters, pageSize]);
+  }, [load, listView, sortBy, sortDir, filter, filterField, facetFilters, pageSize]);
 
   useEffect(() => {
     if (!debounceKeywordMs || debounceKeywordMs <= 0) {

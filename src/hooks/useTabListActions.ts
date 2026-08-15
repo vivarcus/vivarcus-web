@@ -1,6 +1,5 @@
-import { useEffect, useState } from "react";
-import { api } from "../api/client";
 import type { DisplayText, ListRouting, ObjectTypeOption } from "../api/types";
+import { useOptionalPublishedTabListActions } from "../context/TabListActionsContext";
 import { buildListCreateHref as buildListCreateHrefFromRouting } from "../lib/listRouting";
 
 export type TabListActions = {
@@ -19,42 +18,25 @@ const emptyActions: TabListActions = {
   objectTypes: [],
 };
 
+/**
+ * Create-button actions for the active object tab.
+ *
+ * Prefer the ObjectListPage-published snapshot (same records response) so TabNav
+ * does not issue a redundant page_size=1 list compose on every tab switch.
+ */
 export function useTabListActions(
-  vaultId: string | undefined,
+  _vaultId: string | undefined,
   tabApiName: string | undefined,
   enabled: boolean,
 ) {
-  const [actions, setActions] = useState<TabListActions>(emptyActions);
-
-  useEffect(() => {
-    if (!enabled || !vaultId || !tabApiName) {
-      setActions(emptyActions);
-      return;
-    }
-    let cancelled = false;
-    api
-      .objectList(vaultId, tabApiName, { view: "all", pageSize: 1 })
-      .then((model) => {
-        if (cancelled) return;
-        setActions({
-          allowed: model.actions.allowed,
-          requiresTypeSelection: model.actions.requires_type_selection ?? false,
-          objectTypes: model.actions.object_types ?? [],
-          objectApiName: model.object_api_name,
-          objectLabel: model.actions.object_label,
-          defaultObjectType: model.actions.default_object_type,
-          listRouting: model.list_routing ?? null,
-        });
-      })
-      .catch(() => {
-        if (!cancelled) setActions(emptyActions);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [vaultId, tabApiName, enabled]);
-
-  return actions;
+  const published = useOptionalPublishedTabListActions();
+  if (!enabled || !tabApiName) {
+    return emptyActions;
+  }
+  if (published?.tabApiName === tabApiName) {
+    return published.actions;
+  }
+  return emptyActions;
 }
 
 export function buildCreateHref(
@@ -66,4 +48,26 @@ export function buildCreateHref(
 ) {
   void _vaultId;
   return buildListCreateHrefFromRouting(objectApiName, tabApiName, objectType, listRouting);
+}
+
+export function tabListActionsFromObjectList(model: {
+  object_api_name: string;
+  actions: {
+    allowed: boolean;
+    requires_type_selection?: boolean;
+    object_types?: ObjectTypeOption[];
+    default_object_type?: string;
+    object_label?: DisplayText;
+  };
+  list_routing?: ListRouting | null;
+}): TabListActions {
+  return {
+    allowed: model.actions.allowed,
+    requiresTypeSelection: model.actions.requires_type_selection ?? false,
+    objectTypes: model.actions.object_types ?? [],
+    objectApiName: model.object_api_name,
+    objectLabel: model.actions.object_label,
+    defaultObjectType: model.actions.default_object_type,
+    listRouting: model.list_routing ?? null,
+  };
 }

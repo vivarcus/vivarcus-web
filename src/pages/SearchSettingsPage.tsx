@@ -13,6 +13,7 @@ import { AdminPageShell } from "../components/admin/AdminPageShell";
 type SettingsDraft = {
   strict_matching_enabled: boolean;
   auto_filters_enabled: boolean;
+  multilingual_object_search_enabled: boolean;
   export_search_criteria: boolean;
 };
 
@@ -20,6 +21,7 @@ function draftFromModel(model: SearchSettingsModel): SettingsDraft {
   return {
     strict_matching_enabled: model.settings.strict_matching_enabled,
     auto_filters_enabled: model.settings.auto_filters_enabled,
+    multilingual_object_search_enabled: model.settings.multilingual_object_search_enabled,
     export_search_criteria: model.settings.export_search_criteria,
   };
 }
@@ -28,6 +30,7 @@ function draftsEqual(a: SettingsDraft, b: SettingsDraft): boolean {
   return (
     a.strict_matching_enabled === b.strict_matching_enabled &&
     a.auto_filters_enabled === b.auto_filters_enabled &&
+    a.multilingual_object_search_enabled === b.multilingual_object_search_enabled &&
     a.export_search_criteria === b.export_search_criteria
   );
 }
@@ -99,6 +102,7 @@ export function SearchSettingsPage() {
       const next = await api.patchSearchSettings(vaultId, {
         strict_matching_enabled: draft.strict_matching_enabled,
         auto_filters_enabled: draft.auto_filters_enabled,
+        multilingual_object_search_enabled: draft.multilingual_object_search_enabled,
         export_search_criteria: draft.export_search_criteria,
       });
       const nextDraft = draftFromModel(next);
@@ -228,8 +232,15 @@ export function SearchSettingsPage() {
             </label>
             <label className="admin-settings-form__toggle">
               <Checkbox
-                checked={model.settings.multilingual_object_search_enabled}
-                disabled={model.settings.multilingual_object_search_disabled || saving}
+                checked={draft.multilingual_object_search_enabled}
+                disabled={
+                  model.settings.multilingual_object_search_disabled ||
+                  model.reindex.in_progress ||
+                  saving
+                }
+                onChange={(event) =>
+                  setDraft({ ...draft, multilingual_object_search_enabled: event.target.checked })
+                }
               />
               <span className="admin-settings-form__toggle-label">
                 {displayText(chrome.multilingual_object_search_label)}

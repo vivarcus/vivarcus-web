@@ -24,27 +24,36 @@ type Shell = ShellChrome;
 
 /** Veeva-style Workflow step detail: Details + type-specific options (view-only). */
 export function AdminMetadataWorkflowStepPage() {
-  const { workflowName = "", stepName = "" } = useParams();
+  const { workflowName = "", stepName = "", version: versionParam } = useParams();
   const vaultId = useVaultId();
   const navigate = useNavigate();
   const { shell } = useUi();
   const [model, setModel] = useState<MetadataWorkflowStepDetailModel | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const historicalVersion = Number.parseInt(versionParam || "", 10);
+  const isHistorical = Number.isFinite(historicalVersion) && historicalVersion > 0;
 
   const load = useCallback(async () => {
     if (!vaultId || !workflowName || !stepName) return;
     setLoading(true);
     setError(null);
     try {
-      setModel(await api.metadataWorkflowStepDetail(vaultId, workflowName, stepName));
+      setModel(
+        await api.metadataWorkflowStepDetail(
+          vaultId,
+          workflowName,
+          stepName,
+          isHistorical ? historicalVersion : undefined,
+        ),
+      );
     } catch (err) {
       setError(err instanceof Error ? err.message : displayText(shell.metadata_load_failed));
       setModel(null);
     } finally {
       setLoading(false);
     }
-  }, [vaultId, workflowName, stepName, shell.metadata_load_failed]);
+  }, [vaultId, workflowName, stepName, isHistorical, historicalVersion, shell.metadata_load_failed]);
 
   useEffect(() => {
     void load();
@@ -56,6 +65,9 @@ export function AdminMetadataWorkflowStepPage() {
   const workflowTitle = model
     ? displayText(model.workflow_label || undefined, model.workflow_api_name)
     : workflowName;
+  const workflowHref = `/admin/configuration/workflows/${encodeURIComponent(workflowName)}`;
+  const versionsHref = `${workflowHref}/versions`;
+  const historicalDetailHref = isHistorical ? `${versionsHref}/${historicalVersion}` : workflowHref;
 
   return (
     <AdminPageShell
@@ -65,20 +77,30 @@ export function AdminMetadataWorkflowStepPage() {
             {displayText(shell.metadata_workflows_title)}
           </Link>
           {" › "}
-          <Link to={`/admin/configuration/workflows/${encodeURIComponent(workflowName)}`}>
-            {workflowTitle}
-          </Link>
+          <Link to={workflowHref}>{workflowTitle}</Link>
+          {isHistorical && (
+            <>
+              {" › "}
+              <Link to={versionsHref}>{displayText(shell.metadata_workflow_versions_title)}</Link>
+              {" › "}
+              <Link to={historicalDetailHref}>
+                {displayText(shell.metadata_workflow_version)} {historicalVersion}
+              </Link>
+            </>
+          )}
           {" › "}
           <span>{title}</span>
         </p>
       }
       title={title}
       actions={
-        <div className="page-header__actions">
-          <Button type="primary" disabled title={displayText(shell.metadata_config_view_only)}>
-            {displayText(defaultPageActionLabels.edit)}
-          </Button>
-        </div>
+        !isHistorical ? (
+          <div className="page-header__actions">
+            <Button type="primary" disabled title={displayText(shell.metadata_config_view_only)}>
+              {displayText(defaultPageActionLabels.edit)}
+            </Button>
+          </div>
+        ) : undefined
       }
     >
 
@@ -86,14 +108,24 @@ export function AdminMetadataWorkflowStepPage() {
       {loading && !model && (
         <Spin description={displayText(shell.loading)} className="page-loading page__loading" />
       )}
+      {(model?.historical || isHistorical) && (
+        <Alert
+          type="info"
+          showIcon
+          title={displayText(shell.metadata_workflow_historical_banner)}
+          className="admin-page__banner"
+        />
+      )}
 
       {model && (
         <StepDetailBody
           model={model}
           shell={shell}
-          onOpenStep={(api) =>
+          onOpenStep={(apiName) =>
             navigate(
-              `/admin/configuration/workflows/${encodeURIComponent(model.workflow_api_name)}/steps/${encodeURIComponent(api)}`,
+              isHistorical
+                ? `${historicalDetailHref}/steps/${encodeURIComponent(apiName)}`
+                : `${workflowHref}/steps/${encodeURIComponent(apiName)}`,
             )
           }
         />
@@ -254,7 +286,12 @@ function DetailsFields({
     },
     {
       label: displayText(shell.metadata_workflow_step_type),
-      value: workflowStepTypeDisplay(model.type, shell, model.type_label),
+      value: workflowStepTypeDisplay(
+        model.type,
+        shell,
+        model.type_label,
+        model.placeholder_error,
+      ),
     },
     {
       label: displayText(shell.description),

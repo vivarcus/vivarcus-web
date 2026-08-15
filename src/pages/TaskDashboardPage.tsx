@@ -272,6 +272,11 @@ function TaskRow({
                     {displayTextTemplate(chrome.tasks_count, { count: task.task_progress })}
                   </span>
                 )}
+                {task.workflow_version && task.workflow_version > 0 && (
+                  <span>
+                    {displayText(defaultWorkflowChrome.timeline_version)} {task.workflow_version}
+                  </span>
+                )}
               </>
             ) : task.assigned_to_you ? (
               <span>{displayText(chrome.assigned_to_you)}</span>
@@ -378,6 +383,12 @@ function TaskGrid({
             {task.required && (
               <span className="home-task-required" title={requiredLabel} aria-label={requiredLabel}>
                 *
+              </span>
+            )}
+            {task.task_kind === "active_workflow" && task.workflow_version && task.workflow_version > 0 && (
+              <span className="home-task-separator">
+                {" "}
+                · {displayText(defaultWorkflowChrome.timeline_version)} {task.workflow_version}
               </span>
             )}
           </div>

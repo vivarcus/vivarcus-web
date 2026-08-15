@@ -1,4 +1,4 @@
-import { Alert, Button, Modal, Spin, message } from "antd";
+import { Alert, Button, Checkbox, Modal, Spin, Tooltip, message } from "antd";
 import type { MenuProps } from "antd";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -23,7 +23,7 @@ function formatTemplate(template: string, name: string): string {
 }
 
 /** Sum of active column widths — keep ≤ typical admin content width to avoid forced scroll + clipped headers. */
-const ACTIVE_TABLE_SCROLL_X = 1090;
+const ACTIVE_TABLE_SCROLL_X = 1160;
 
 export function AdminSandboxVaultsPage() {
   const vaultId = useVaultId();
@@ -55,8 +55,16 @@ export function AdminSandboxVaultsPage() {
 
   const createEnabled = useMemo(() => {
     if (!model) return false;
-    return model.can_create && model.entitlements.some((row) => row.available > 0);
+    // AC-PLT-ENV-03 场景五/七：Create 入口按 Small 余量门禁（出厂验收 Size）。
+    const smallAvailable =
+      model.entitlements.find((row) => row.size === "Small")?.available ?? 0;
+    return model.can_create && smallAvailable > 0;
   }, [model]);
+
+  const createDisabledReason = useMemo(() => {
+    if (!model || createEnabled) return "";
+    return displayText(model.chrome.create_allowance_exhausted);
+  }, [model, createEnabled]);
 
   const confirmRefresh = (row: ActiveSandboxVault) => {
     if (!vaultId || !model) return;
@@ -82,20 +90,38 @@ export function AdminSandboxVaultsPage() {
 
   const confirmDelete = (row: ActiveSandboxVault) => {
     if (!vaultId || !model) return;
+    const deleteSnapshots = { current: true };
     Modal.confirm({
       title: displayText(model.chrome.delete_action),
-      content: formatTemplate(displayText(model.chrome.delete_confirm), row.name),
+      content: (
+        <div>
+          <p style={{ marginBottom: 12 }}>
+            {formatTemplate(displayText(model.chrome.delete_confirm), row.name)}
+          </p>
+          <Checkbox
+            defaultChecked
+            onChange={(e) => {
+              deleteSnapshots.current = e.target.checked;
+            }}
+          >
+            {displayText(model.chrome.delete_snapshots_option)}
+          </Checkbox>
+        </div>
+      ),
       okText: displayText(model.chrome.delete_action),
       okButtonProps: { danger: true },
       cancelText: displayText(model.chrome.cancel),
       onOk: async () => {
         setActingId(row.id);
         try {
-          const result = await api.deleteSandboxVault(vaultId, row.id);
+          const result = await api.deleteSandboxVault(vaultId, row.id, {
+            deleteSnapshots: deleteSnapshots.current,
+          });
           message.success(result.message || displayText(model.chrome.delete_success));
           await load();
         } catch (err) {
           message.error(err instanceof Error ? err.message : displayText(shell.load_failed));
+          throw err;
         } finally {
           setActingId(null);
         }
@@ -186,6 +212,29 @@ export function AdminSandboxVaultsPage() {
       render: (value: string | undefined) => sandboxEllipsisCell(value),
     },
     {
+      title: displayText(chrome.column_snapshots),
+      dataIndex: "snapshots",
+      key: "snapshots",
+      width: 90,
+      align: "right" as const,
+      render: (value: number | undefined, row: ActiveSandboxVault) => {
+        const count = value ?? 0;
+        return (
+          <Button
+            type="link"
+            style={{ padding: 0, height: "auto" }}
+            onClick={() =>
+              navigate(
+                `/admin/deployment/sandbox_snapshots?source_sandbox_id=${encodeURIComponent(row.id)}`,
+              )
+            }
+          >
+            {count}
+          </Button>
+        );
+      },
+    },
+    {
       title: displayText(chrome.column_release),
       dataIndex: "release",
       key: "release",
@@ -262,13 +311,17 @@ export function AdminSandboxVaultsPage() {
         <AdminPageSection
           title={displayText(chrome.active_section_title)}
           actions={
-            <Button
-              type="primary"
-              disabled={!createEnabled}
-              onClick={() => navigate("/admin/deployment/sandbox_vaults/new")}
-            >
-              {displayText(chrome.create_button)}
-            </Button>
+            <Tooltip title={createEnabled ? undefined : createDisabledReason}>
+              <span>
+                <Button
+                  type="primary"
+                  disabled={!createEnabled}
+                  onClick={() => navigate("/admin/deployment/sandbox_vaults/new")}
+                >
+                  {displayText(chrome.create_button)}
+                </Button>
+              </span>
+            </Tooltip>
           }
         >
           <Spin spinning={loading}>

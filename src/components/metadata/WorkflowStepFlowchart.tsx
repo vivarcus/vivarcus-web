@@ -24,7 +24,15 @@ const H_GAP = 36;
 const V_GAP = 56;
 
 /** Localize Veeva flowchart step-type chips (启动工作流 / 任务 / 决策 / 操作 / …). */
-export function workflowStepTypeDisplay(type: string, shell: Shell, fallback?: string): string {
+export function workflowStepTypeDisplay(
+  type: string,
+  shell: Shell,
+  fallback?: string,
+  placeholderError?: boolean,
+): string {
+  if (placeholderError) {
+    return displayText(shell.metadata_workflow_placeholder_error);
+  }
   switch (type.toLowerCase()) {
     case "start":
       return displayText(shell.metadata_workflow_step_type_start);
@@ -134,7 +142,12 @@ function layoutFlow(steps: MetadataWorkflowStepSummary[], shell: Shell): {
       const y = r * (NODE_H + V_GAP);
       pos.set(id, { x, y });
       const label = displayText(step.label || undefined, step.api_name);
-      const typeLabel = workflowStepTypeDisplay(step.type, shell, step.type_label);
+      const typeLabel = workflowStepTypeDisplay(
+        step.type,
+        shell,
+        step.type_label,
+        step.placeholder_error,
+      );
       nodes.push({
         id,
         label,

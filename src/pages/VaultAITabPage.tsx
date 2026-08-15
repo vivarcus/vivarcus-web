@@ -1,6 +1,7 @@
 import {
   Button,
   Drawer,
+  Dropdown,
   Input,
   Spin,
   Table,
@@ -10,22 +11,26 @@ import {
 } from "antd";
 import {
   ArrowUpOutlined,
+  BulbOutlined,
   CloseOutlined,
   CommentOutlined,
   DislikeOutlined,
   DoubleLeftOutlined,
   DoubleRightOutlined,
+  DownloadOutlined,
   HistoryOutlined,
   LikeOutlined,
   MenuOutlined,
   StopOutlined,
+  UnorderedListOutlined,
 } from "@ant-design/icons";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import Markdown from "react-markdown";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { api, HttpError } from "../api/client";
 import { useAuth } from "../auth/AuthProvider";
 import { useUi } from "../context/UiContext";
+import { useVaultAI } from "../context/VaultAIContext";
 import { useHeaderUserIdentity } from "../hooks/useHeaderUserIdentity";
 import { recordDetailHref } from "../lib/fields";
 import {
@@ -53,29 +58,38 @@ type ChatMessage = {
   action_name?: string;
   agent_name?: string;
   status?: string;
+  token_usage?: { canvas_id?: string };
 };
 
 type Conversation = {
   id: string;
   title: string;
   last_message_at: string;
+  surface?: string;
+  object_name?: string;
+  record_id?: string;
 };
 
 type Canvas = {
   id: string;
   vql: string;
   status: string;
+  message_id?: string;
   clarify_prompt?: string;
   result?: {
     object?: string;
     object_label?: string;
+    title?: string;
     columns?: Array<{ name: string; label: string }>;
     rows?: Array<Record<string, unknown>>;
     row_count?: number;
+    total?: number;
     truncated?: boolean;
     error?: string;
   };
   feedback?: string;
+  created_at?: string;
+  updated_at?: string;
 };
 
 type Chrome = VaultAIChrome;
@@ -159,6 +173,74 @@ function formatRelativeTime(iso: string, chrome: Chrome): string {
   return new Date(t).toLocaleDateString();
 }
 
+function formatResultTimestamp(iso?: string): string {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  return d.toLocaleString(undefined, {
+    month: "numeric",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    timeZoneName: "short",
+  });
+}
+
+function resultCardTitle(c: Canvas, chrome: Chrome): string {
+  const title = (c.result?.title || c.result?.object_label || "").trim();
+  return title || displayText(chrome.result_list_title_fallback);
+}
+
+function canvasForAssistantTurn(
+  messages: ChatMessage[],
+  index: number,
+  canvases: Canvas[],
+): Canvas | null {
+  const fromUsage = messages[index]?.token_usage?.canvas_id?.trim();
+  if (fromUsage) {
+    return canvases.find((c) => c.id === fromUsage) ?? null;
+  }
+  for (let i = index - 1; i >= 0; i--) {
+    if (messages[i]?.role === "user") {
+      const uid = messages[i]!.id;
+      return canvases.find((c) => c.message_id === uid) ?? null;
+    }
+  }
+  return null;
+}
+
+function csvCell(value: unknown): string {
+  const text = formatCanvasCellValue(value);
+  if (/[",\n]/.test(text)) return `"${text.replace(/"/g, '""')}"`;
+  return text;
+}
+
+function downloadCanvasCsv(c: Canvas, chrome: Chrome) {
+  const rows = c.result?.rows ?? [];
+  const cols = c.result?.columns?.length
+    ? c.result.columns.map((col) => ({
+        key: col.name,
+        title: col.label || col.name,
+      }))
+    : rows[0]
+      ? Object.keys(rows[0]).map((key) => ({ key, title: key }))
+      : [];
+  const lines = [
+    cols.map((col) => csvCell(col.title)).join(","),
+    ...rows.map((row) => cols.map((col) => csvCell(row[col.key])).join(",")),
+  ];
+  const blob = new Blob(["\uFEFF" + lines.join("\n")], {
+    type: "text/csv;charset=utf-8",
+  });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `${resultCardTitle(c, chrome)}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 function canvasStatusMeta(
   status: string,
   chrome: Chrome,
@@ -201,11 +283,13 @@ function TabMessageBubble({
   content,
   status,
   stoppedLabel,
+  card,
 }: {
   role: string;
   content: string;
   status?: string;
   stoppedLabel: string;
+  card?: ReactNode;
 }) {
   const isUser = role === "user";
   const streaming = status === "streaming";
@@ -237,6 +321,7 @@ function TabMessageBubble({
           </div>
         </div>
       )}
+      {card}
       {status === "cancelled" ? (
         <span className="vault-ai-tab__stopped">{stoppedLabel}</span>
       ) : null}
@@ -247,6 +332,8 @@ function TabMessageBubble({
 export function VaultAITabPage() {
   const { session } = useAuth();
   const vaultId = session?.selectedVaultId ?? "";
+  const navigate = useNavigate();
+  const { requestOpenChatConversation } = useVaultAI();
   const { shell } = useUi();
   const chrome = useMemo(
     () => ({ ...defaultVaultAIChrome, ...shell.vault_ai }),
@@ -262,6 +349,7 @@ export function VaultAITabPage() {
   const [unavailable, setUnavailable] = useState<string | null>(null);
   const [actions, setActions] = useState<ActionItem[]>([]);
   const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [historyItems, setHistoryItems] = useState<Conversation[]>([]);
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [canvases, setCanvases] = useState<Canvas[]>([]);
@@ -270,20 +358,24 @@ export function VaultAITabPage() {
   const [selectPrompt, setSelectPrompt] = useState<string | null>(null);
   const [selectActions, setSelectActions] = useState<ActionItem[]>([]);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [showAllActions, setShowAllActions] = useState(false);
-  const [showVql, setShowVql] = useState(true);
+  const [showVql, setShowVql] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [mobileCanvasOpen, setMobileCanvasOpen] = useState(false);
-  const [canvasDismissed, setCanvasDismissed] = useState(false);
+  const [openedCanvasId, setOpenedCanvasId] = useState<string | null>(null);
   const [approving, setApproving] = useState(false);
   const [isNarrow, setIsNarrow] = useState(false);
+  const [suggestedOpen, setSuggestedOpen] = useState(false);
+  const [taskCount, setTaskCount] = useState<number | null>(null);
   const messagesRef = useRef<HTMLDivElement | null>(null);
 
-  const activeCanvas = !canvasDismissed ? (canvases[0] ?? null) : null;
+  const openedCanvas =
+    openedCanvasId != null
+      ? (canvases.find((c) => c.id === openedCanvasId) ?? null)
+      : null;
+  const activeCanvas = openedCanvas;
   const isEmpty =
     messages.length === 0 && !selectPrompt && selectActions.length === 0;
-  const suggestionActions = showAllActions ? actions : actions.slice(0, 3);
   const starterPrompts = useMemo(
     () =>
       [
@@ -295,7 +387,12 @@ export function VaultAITabPage() {
         .filter(Boolean),
     [chrome.starter_prompt_1, chrome.starter_prompt_2, chrome.starter_prompt_3],
   );
-  const recentForEmpty = conversations.slice(0, 3);
+  const taskCountLabel =
+    taskCount == null
+      ? displayText(chrome.tasks_pill)
+      : taskCount > 100
+        ? displayTextTemplate(chrome.tasks_count, { count: "100+" })
+        : displayTextTemplate(chrome.tasks_count, { count: String(taskCount) });
 
   useEffect(() => {
     const mq = window.matchMedia("(max-width: 1100px)");
@@ -317,10 +414,8 @@ export function VaultAITabPage() {
   }, [messages, selectPrompt, selectActions, scrollToBottom]);
 
   useEffect(() => {
-    if (activeCanvas?.status === "pending_approval") {
-      setShowVql(true);
-    }
-  }, [activeCanvas?.id, activeCanvas?.status]);
+    setShowVql(false);
+  }, [activeCanvas?.id]);
 
   const loadActions = useCallback(async () => {
     if (!vaultId) return;
@@ -344,6 +439,29 @@ export function VaultAITabPage() {
     setConversations(res.items ?? []);
   }, [vaultId]);
 
+  const loadHistory = useCallback(async () => {
+    if (!vaultId) return;
+    const res = await api.vaultAITabListConversations(vaultId, {
+      pool: "history",
+    });
+    setHistoryItems(res.items ?? []);
+  }, [vaultId]);
+
+  const loadTaskCount = useCallback(async () => {
+    if (!vaultId) return;
+    try {
+      const data = await api.taskDashboard(vaultId, {
+        view: "my_tasks",
+        pageSize: 1,
+      });
+      const assigned = data.view_counts?.my_tasks ?? 0;
+      const available = data.view_counts?.available_tasks ?? 0;
+      setTaskCount(assigned + available);
+    } catch {
+      setTaskCount(null);
+    }
+  }, [vaultId]);
+
   const openConversation = useCallback(
     async (id: string) => {
       if (!vaultId) return;
@@ -351,10 +469,10 @@ export function VaultAITabPage() {
       setConversationId(res.conversation.id);
       setMessages(res.messages ?? []);
       setCanvases((res.canvases as Canvas[]) ?? []);
-      setCanvasDismissed(false);
+      setOpenedCanvasId(null);
+      setMobileCanvasOpen(false);
       setSelectPrompt(null);
       setSelectActions([]);
-      setShowAllActions(false);
       setHistoryOpen(false);
       setMobileNavOpen(false);
     },
@@ -378,6 +496,8 @@ export function VaultAITabPage() {
         await loadActions();
         if (cancelled) return;
         await loadConversations();
+        if (cancelled) return;
+        void loadTaskCount();
       } catch (err) {
         if (!cancelled) {
           setUnavailable(err instanceof Error ? err.message : "unavailable");
@@ -389,7 +509,7 @@ export function VaultAITabPage() {
     return () => {
       cancelled = true;
     };
-  }, [loadActions, loadConversations]);
+  }, [loadActions, loadConversations, loadTaskCount]);
 
   async function onNewChat() {
     if (!vaultId) return;
@@ -397,10 +517,11 @@ export function VaultAITabPage() {
     setConversationId(created.id);
     setMessages([]);
     setCanvases([]);
-    setCanvasDismissed(false);
+    setOpenedCanvasId(null);
+    setMobileCanvasOpen(false);
+    setSuggestedOpen(false);
     setSelectPrompt(null);
     setSelectActions([]);
-    setShowAllActions(false);
     setInput("");
     setHistoryOpen(false);
     setMobileNavOpen(false);
@@ -418,8 +539,7 @@ export function VaultAITabPage() {
     setSending(true);
     setSelectPrompt(null);
     setSelectActions([]);
-    setShowAllActions(false);
-    setCanvasDismissed(false);
+    setSuggestedOpen(false);
     try {
       const cid = await ensureConversation();
       if (!cid) return;
@@ -469,10 +589,17 @@ export function VaultAITabPage() {
               const withoutLocal = prev.filter(
                 (m) => !m.id.startsWith("local-"),
               );
+              const assistant = payload.assistant_message as ChatMessage;
+              if (payload.canvas && !assistant.token_usage?.canvas_id) {
+                assistant.token_usage = {
+                  ...assistant.token_usage,
+                  canvas_id: payload.canvas.id,
+                };
+              }
               return [
                 ...withoutLocal,
                 payload.user_message,
-                payload.assistant_message,
+                assistant,
               ] as ChatMessage[];
             });
             if (payload.canvas) {
@@ -480,7 +607,6 @@ export function VaultAITabPage() {
                 payload.canvas as Canvas,
                 ...prev.filter((c) => c.id !== payload.canvas!.id),
               ]);
-              setCanvasDismissed(false);
             }
             if (payload.select_actions?.length) {
               setSelectPrompt(displayText(chrome.select_action_prompt));
@@ -514,15 +640,12 @@ export function VaultAITabPage() {
     }
   }
 
-  async function onApprove(approve: boolean) {
-    if (!vaultId || !activeCanvas || approving) return;
+  async function onApprove(approve: boolean, canvasId?: string) {
+    const id = canvasId || activeCanvas?.id;
+    if (!vaultId || !id || approving) return;
     setApproving(true);
     try {
-      const res = await api.vaultAITabQueryApprove(
-        vaultId,
-        activeCanvas.id,
-        approve,
-      );
+      const res = await api.vaultAITabQueryApprove(vaultId, id, approve);
       const c = res.canvas;
       setCanvases((prev) =>
         prev.map((x) => (x.id === c.id ? { ...x, ...c } : x)),
@@ -531,10 +654,11 @@ export function VaultAITabPage() {
         setMessages((prev) => [...prev, res.assistant_message as ChatMessage]);
       }
       if (!approve) {
-        setCanvasDismissed(true);
+        setOpenedCanvasId(null);
         setMobileCanvasOpen(false);
-      } else if (isNarrow) {
-        setMobileCanvasOpen(true);
+      } else {
+        setOpenedCanvasId(c.id);
+        if (isNarrow) setMobileCanvasOpen(true);
       }
     } catch (err) {
       antMessage.error(err instanceof HttpError ? err.message : String(err));
@@ -624,8 +748,26 @@ export function VaultAITabPage() {
     );
   }
 
-  function renderConversationList(opts?: { compact?: boolean }) {
-    if (conversations.length === 0) {
+  function openHistoryItem(c: Conversation) {
+    if (c.surface === "chat") {
+      if (!c.object_name || !c.record_id) {
+        antMessage.error(displayText(chrome.history_chat_unavailable));
+        return;
+      }
+      requestOpenChatConversation(c.id);
+      navigate(recordDetailHref(vaultId, c.object_name, c.record_id));
+      setHistoryOpen(false);
+      setMobileNavOpen(false);
+      return;
+    }
+    void openConversation(c.id);
+  }
+
+  function renderConversationList(
+    items: Conversation[],
+    opts?: { compact?: boolean; mixed?: boolean },
+  ) {
+    if (items.length === 0) {
       return (
         <div className="vault-ai-tab__history-empty">
           {displayText(
@@ -634,16 +776,21 @@ export function VaultAITabPage() {
         </div>
       );
     }
-    return conversations.map((c) => (
+    return items.map((c) => (
       <button
         key={c.id}
         type="button"
         className={`vault-ai-tab__history-item${c.id === conversationId ? " is-active" : ""}`}
-        onClick={() => void openConversation(c.id)}
+        onClick={() => openHistoryItem(c)}
       >
         <span className="vault-ai-tab__history-title">
           {c.title || displayText(chrome.untitled_chat)}
         </span>
+        {opts?.mixed && c.surface === "chat" ? (
+          <span className="vault-ai-tab__history-source">
+            {displayText(chrome.history_from_chat)}
+          </span>
+        ) : null}
         {c.last_message_at ? (
           <span className="vault-ai-tab__history-time">
             {formatRelativeTime(c.last_message_at, chrome)}
@@ -686,7 +833,7 @@ export function VaultAITabPage() {
             {displayText(chrome.recent_chats)}
           </div>
           <div className="vault-ai-tab__history-list">
-            {renderConversationList({ compact: true })}
+            {renderConversationList(conversations, { compact: true })}
           </div>
         </section>
 
@@ -697,6 +844,7 @@ export function VaultAITabPage() {
             onClick={() => {
               setHistoryOpen(true);
               setMobileNavOpen(false);
+              void loadHistory();
             }}
           >
             <HistoryOutlined />
@@ -768,15 +916,17 @@ export function VaultAITabPage() {
         <div className="vault-ai-tab__canvas-header">
           <div className="vault-ai-tab__canvas-heading">
             <h2 className="vault-ai-tab__canvas-title">
-              {displayText(chrome.canvas_title)}
+              {resultCardTitle(activeCanvas, chrome)}
             </h2>
-            <Tag color={status.color}>{status.label}</Tag>
+            {activeCanvas.status !== "complete" ? (
+              <Tag color={status.color}>{status.label}</Tag>
+            ) : null}
           </div>
           <button
             type="button"
             className="vault-ai-tab__icon-btn"
             onClick={() => {
-              setCanvasDismissed(true);
+              setOpenedCanvasId(null);
               setMobileCanvasOpen(false);
             }}
             aria-label={displayText(chrome.canvas_close)}
@@ -843,16 +993,44 @@ export function VaultAITabPage() {
           </div>
         ) : null}
 
+        {activeCanvas.vql && activeCanvas.status !== "pending_approval" ? (
+          <div className="vault-ai-tab__vql-block">
+            <div className="vault-ai-tab__vql-toolbar">
+              <button
+                type="button"
+                className="vault-ai-tab__vql-toggle"
+                onClick={() => setShowVql((v) => !v)}
+              >
+                {displayText(
+                  showVql ? chrome.canvas_hide_query : chrome.generated_vql,
+                )}
+              </button>
+              <Button
+                type="text"
+                size="small"
+                icon={<DownloadOutlined />}
+                onClick={() => downloadCanvasCsv(activeCanvas, chrome)}
+                aria-label={displayText(chrome.download_excel)}
+              >
+                {displayText(chrome.download_excel)}
+              </Button>
+            </div>
+            {showVql ? (
+              <pre className="vault-ai-tab__vql">{activeCanvas.vql}</pre>
+            ) : null}
+          </div>
+        ) : null}
+
         {showResults && !activeCanvas.result?.error ? (
           <div className="vault-ai-tab__canvas-results">
             <div className="vault-ai-tab__canvas-meta">
-              {activeCanvas.result?.object ? (
-                <span>
-                  {displayText(chrome.canvas_object_label)}:{" "}
-                  {activeCanvas.result.object_label ||
-                    humanizeFieldKey(activeCanvas.result.object)}
-                </span>
-              ) : null}
+              <span>
+                {displayTextTemplate(chrome.result_as_of, {
+                  time: formatResultTimestamp(
+                    activeCanvas.updated_at || activeCanvas.created_at,
+                  ),
+                })}
+              </span>
               <span>
                 {activeCanvas.result?.truncated
                   ? displayTextTemplate(chrome.canvas_truncated, {
@@ -895,23 +1073,6 @@ export function VaultAITabPage() {
                   onClick={() => void onFeedback("down")}
                 />
               </div>
-            ) : null}
-          </div>
-        ) : null}
-
-        {activeCanvas.vql && activeCanvas.status !== "pending_approval" ? (
-          <div className="vault-ai-tab__vql-block">
-            <button
-              type="button"
-              className="vault-ai-tab__vql-toggle"
-              onClick={() => setShowVql((v) => !v)}
-            >
-              {displayText(
-                showVql ? chrome.canvas_hide_query : chrome.canvas_review_query,
-              )}
-            </button>
-            {showVql ? (
-              <pre className="vault-ai-tab__vql">{activeCanvas.vql}</pre>
             ) : null}
           </div>
         ) : null}
@@ -996,88 +1157,118 @@ export function VaultAITabPage() {
               <h1 className="vault-ai-tab__help-prompt">
                 {displayText(chrome.help_prompt)}
               </h1>
-              <p className="vault-ai-tab__empty-subtitle">
-                {displayText(chrome.tab_empty_subtitle)}
-              </p>
               {renderComposer()}
-              {recentForEmpty.length > 0 ? (
-                <div className="vault-ai-tab__empty-block">
-                  <div className="vault-ai-tab__empty-label">
-                    {displayText(chrome.continue_recent)}
-                  </div>
-                  <div className="vault-ai-tab__continue-list">
-                    {recentForEmpty.map((c) => (
-                      <button
-                        key={c.id}
-                        type="button"
-                        className="vault-ai-tab__continue-item"
-                        onClick={() => void openConversation(c.id)}
-                      >
-                        <span className="vault-ai-tab__continue-title">
-                          {c.title || displayText(chrome.untitled_chat)}
-                        </span>
-                        {c.last_message_at ? (
-                          <span className="vault-ai-tab__continue-time">
-                            {formatRelativeTime(c.last_message_at, chrome)}
-                          </span>
-                        ) : null}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              ) : null}
-              {starterPrompts.length > 0 ? (
-                <div className="vault-ai-tab__empty-block">
-                  <div className="vault-ai-tab__empty-label">
-                    {displayText(chrome.try_asking)}
-                  </div>
-                  <div className="vault-ai-tab__starters">
-                    {starterPrompts.map((prompt) => (
-                      <button
-                        key={prompt}
-                        type="button"
-                        className="vault-ai-tab__starter"
-                        disabled={sending}
-                        onClick={() => void send(prompt)}
-                      >
-                        <VaultAITitleIcon />
-                        <span>{prompt}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              ) : null}
-              {suggestionActions.length > 0 ? (
-                <div className="vault-ai-tab__empty-block">
-                  <div className="vault-ai-tab__empty-label">
-                    {displayText(chrome.actions_section)}
-                  </div>
-                  {renderActionChips(suggestionActions)}
-                  {actions.length > 3 ? (
+              <div className="vault-ai-tab__empty-pills">
+                <Dropdown
+                  trigger={["click"]}
+                  menu={{
+                    items: [
+                      {
+                        key: "show-my-tasks",
+                        label: displayText(chrome.show_my_tasks),
+                        onClick: () => navigate("/"),
+                      },
+                    ],
+                  }}
+                >
+                  <button type="button" className="vault-ai-tab__pill">
+                    <UnorderedListOutlined />
+                    <span>{taskCountLabel}</span>
+                  </button>
+                </Dropdown>
+                <button
+                  type="button"
+                  className={`vault-ai-tab__pill${suggestedOpen ? " is-active" : ""}`}
+                  onClick={() => setSuggestedOpen((v) => !v)}
+                >
+                  <BulbOutlined />
+                  <span>{displayText(chrome.suggested)}</span>
+                </button>
+              </div>
+              {suggestedOpen && starterPrompts.length > 0 ? (
+                <div className="vault-ai-tab__starters">
+                  {starterPrompts.map((prompt) => (
                     <button
+                      key={prompt}
                       type="button"
-                      className="vault-ai-tab__what-can"
-                      onClick={() => setShowAllActions((v) => !v)}
+                      className="vault-ai-tab__starter"
+                      disabled={sending}
+                      onClick={() => void send(prompt)}
                     >
                       <VaultAITitleIcon />
-                      <span>{displayText(chrome.what_can_i_do)}</span>
+                      <span>{prompt}</span>
                     </button>
-                  ) : null}
+                  ))}
                 </div>
               ) : null}
             </div>
           ) : (
             <>
               <div ref={messagesRef} className="vault-ai-tab__messages">
-                {messages.map((m) => (
-                  <TabMessageBubble
-                    key={m.id}
-                    role={m.role}
-                    content={m.content}
-                    status={m.status}
-                    stoppedLabel={displayText(chrome.stopped)}
-                  />
-                ))}
+                {messages.map((m, index) => {
+                  const cardCanvas =
+                    m.role === "assistant"
+                      ? canvasForAssistantTurn(messages, index, canvases)
+                      : null;
+                  const showCard =
+                    cardCanvas &&
+                    (cardCanvas.status === "complete" ||
+                      cardCanvas.status === "pending_approval" ||
+                      cardCanvas.status === "error");
+                  return (
+                    <TabMessageBubble
+                      key={m.id}
+                      role={m.role}
+                      content={m.content}
+                      status={m.status}
+                      stoppedLabel={displayText(chrome.stopped)}
+                      card={
+                        showCard && cardCanvas ? (
+                          <div className="vault-ai-tab__result-card">
+                            <div className="vault-ai-tab__result-card-copy">
+                              <strong>{resultCardTitle(cardCanvas, chrome)}</strong>
+                              <span>
+                                {formatResultTimestamp(
+                                  cardCanvas.updated_at ||
+                                    cardCanvas.created_at,
+                                )}
+                              </span>
+                            </div>
+                            {cardCanvas.status === "pending_approval" ? (
+                              <Button
+                                type="primary"
+                                size="small"
+                                loading={approving}
+                                onClick={() => {
+                                  setOpenedCanvasId(cardCanvas.id);
+                                  void onApprove(true, cardCanvas.id);
+                                }}
+                              >
+                                {displayText(chrome.canvas_run_query)}
+                              </Button>
+                            ) : (
+                              <Button
+                                type="primary"
+                                size="small"
+                                onClick={() => {
+                                  setOpenedCanvasId(cardCanvas.id);
+                                  setShowVql(false);
+                                  if (isNarrow) setMobileCanvasOpen(true);
+                                }}
+                              >
+                                {displayText(
+                                  openedCanvasId === cardCanvas.id
+                                    ? chrome.result_opened
+                                    : chrome.result_open,
+                                )}
+                              </Button>
+                            )}
+                          </div>
+                        ) : null
+                      }
+                    />
+                  );
+                })}
                 {(selectPrompt || selectActions.length > 0) && (
                   <div className="vault-ai-tab__select">
                     {selectPrompt ? (
@@ -1091,31 +1282,6 @@ export function VaultAITabPage() {
                     )}
                   </div>
                 )}
-                {activeCanvas?.status === "pending_approval" ? (
-                  <div className="vault-ai-tab__inline-canvas">
-                    <div className="vault-ai-tab__inline-canvas-copy">
-                      <strong>{displayText(chrome.canvas_title)}</strong>
-                      <span>{displayText(chrome.canvas_pending_hint)}</span>
-                    </div>
-                    <div className="vault-ai-tab__inline-canvas-actions">
-                      <Button
-                        type="primary"
-                        size="small"
-                        loading={approving}
-                        onClick={() => void onApprove(true)}
-                      >
-                        {displayText(chrome.canvas_run_query)}
-                      </Button>
-                      <Button
-                        size="small"
-                        className="vault-ai-tab__inline-canvas-open"
-                        onClick={() => setMobileCanvasOpen(true)}
-                      >
-                        {displayText(chrome.canvas_review_query)}
-                      </Button>
-                    </div>
-                  </div>
-                ) : null}
               </div>
               <div className="vault-ai-tab__composer-dock">
                 {renderComposer()}
@@ -1158,7 +1324,7 @@ export function VaultAITabPage() {
         className="vault-ai-tab__drawer"
       >
         <div className="vault-ai-tab__history-list vault-ai-tab__history-list--drawer">
-          {renderConversationList()}
+          {renderConversationList(historyItems, { mixed: true })}
         </div>
       </Drawer>
 

@@ -28,6 +28,7 @@ import { createPortal } from "react-dom";
 import Markdown from "react-markdown";
 import { api, HttpError } from "../api/client";
 import { useUi } from "../context/UiContext";
+import { useVaultAI } from "../context/VaultAIContext";
 import { defaultVaultAIChrome, displayText, displayTextTemplate } from "../lib/i18n";
 import { parseVaultAIPageHref, prepareVaultAIAssistantMarkdown } from "../lib/vaultAIPageLinks";
 import {
@@ -111,6 +112,7 @@ export function VaultAIChatPanel({
   onClose,
   onNavigateToPage,
 }: Props) {
+  const { takePendingChatConversationId } = useVaultAI();
   const { shell } = useUi();
   const chrome = useMemo(
     () => ({ ...defaultVaultAIChrome, ...shell.vault_ai }),
@@ -227,8 +229,9 @@ export function VaultAIChatPanel({
         );
         return;
       }
-      // Keep current chat when auto-switch is off and a conversation is already open.
-      if (!autoSwitch && conversationIdRef.current) {
+      const pendingId = takePendingChatConversationId();
+      // Keep current chat when auto-switch is off, unless History asked for a specific thread.
+      if (!pendingId && !autoSwitch && conversationIdRef.current) {
         const items = await refreshConversations(false);
         setConversations(items);
         return;
@@ -238,6 +241,14 @@ export function VaultAIChatPanel({
       setStreamingContent("");
       setDraft("");
       const items = await refreshConversations(autoSwitch);
+      if (pendingId) {
+        try {
+          await openConversation(pendingId);
+          return;
+        } catch {
+          // Fall through to the latest thread for this record.
+        }
+      }
       if (items.length > 0) {
         await openConversation(items[0].id);
       } else {
@@ -265,6 +276,7 @@ export function VaultAIChatPanel({
     chrome.unavailable_with_reason,
     refreshConversations,
     openConversation,
+    takePendingChatConversationId,
     scrollToBottom,
   ]);
 
