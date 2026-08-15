@@ -41,7 +41,10 @@ function groupKeyForTab(tab: NavTab): DeploymentSidebarGroup | null {
   return null;
 }
 
-export function buildDeploymentSidebarGroups(subtabs: NavTab[]): AdminDeploymentNavGroup[] {
+export function buildDeploymentSidebarGroups(
+  subtabs: NavTab[],
+  labels: Partial<Record<DeploymentSidebarGroup, DisplayText>> = {},
+): AdminDeploymentNavGroup[] {
   const buckets: Record<DeploymentSidebarGroup, NavTab[]> = {
     environment: [],
     migration: [],
@@ -60,7 +63,7 @@ export function buildDeploymentSidebarGroups(subtabs: NavTab[]): AdminDeployment
   }
   return GROUP_ORDER.filter((key) => buckets[key].length > 0).map((key) => ({
     key,
-    label: GROUP_LABEL[key],
+    label: labels[key] ?? GROUP_LABEL[key],
     subtabs: buckets[key],
   }));
 }

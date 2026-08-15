@@ -7,7 +7,8 @@ import { AdminCompactTable, adminTableEmptyText } from "../components/admin/Admi
 import { AdminPageShell } from "../components/admin/AdminPageShell";
 import { useUi } from "../context/UiContext";
 import { useVaultId } from "../hooks/useVaultId";
-import { displayText } from "../lib/i18n";
+import { displayText, displayTextTemplate } from "../lib/i18n";
+import type { OperationsChrome } from "../lib/i18n/chromeTypes";
 
 const STATUS_OPTIONS = [
   "Sent",
@@ -40,6 +41,20 @@ function formatSendDate(iso: string): string {
   return d.format("D MMM YYYY h:mm A");
 }
 
+function emailStatusLabel(status: string, operations: OperationsChrome): string {
+  const map: Record<string, string> = {
+    Sent: displayText(operations.email_status_sent),
+    Delivered: displayText(operations.email_status_delivered),
+    Failed: displayText(operations.email_status_failed),
+    Blocked: displayText(operations.email_status_blocked),
+    Skipped: displayText(operations.email_status_skipped),
+    Pending: displayText(operations.email_status_pending),
+    Summary: displayText(operations.email_status_summary),
+    "Sent - Unknown": displayText(operations.email_status_sent_unknown),
+  };
+  return map[status] ?? status;
+}
+
 type DraftFilters = {
   from: Dayjs | null;
   to: Dayjs | null;
@@ -50,6 +65,7 @@ type DraftFilters = {
 export function AdminEmailNotificationStatusPage() {
   const vaultId = useVaultId();
   const { shell } = useUi();
+  const operations = shell.operations;
   const initial = useMemo(() => defaultRange(), []);
   const [draft, setDraft] = useState<DraftFilters>({
     from: initial.from,
@@ -112,23 +128,27 @@ export function AdminEmailNotificationStatusPage() {
 
   const columns = [
     {
-      title: "Send Date",
+      title: displayText(operations.send_date),
       dataIndex: "send_date",
       width: 200,
       render: (v: string) => formatSendDate(v),
     },
-    { title: "Recipient Name", dataIndex: "recipient_name", ellipsis: true },
-    { title: "Email Address", dataIndex: "email_address", ellipsis: true },
+    { title: displayText(operations.recipient_name), dataIndex: "recipient_name", ellipsis: true },
+    { title: displayText(operations.email_address), dataIndex: "email_address", ellipsis: true },
     {
       title: displayText(shell.metadata_status),
       dataIndex: "status",
       width: 140,
-      render: (v: string) => <Tag>{v}</Tag>,
+      render: (v: string) => <Tag>{emailStatusLabel(v, operations)}</Tag>,
     },
-    { title: "Error Message", dataIndex: "error_message", ellipsis: true },
-    { title: "Document Number", dataIndex: "document_number", ellipsis: true },
-    { title: "Object Record Name", dataIndex: "object_record_name", ellipsis: true },
-    { title: "Subject", dataIndex: "subject", ellipsis: true },
+    { title: displayText(operations.error_message), dataIndex: "error_message", ellipsis: true },
+    { title: displayText(operations.document_number), dataIndex: "document_number", ellipsis: true },
+    {
+      title: displayText(operations.object_record_name),
+      dataIndex: "object_record_name",
+      ellipsis: true,
+    },
+    { title: displayText(operations.subject), dataIndex: "subject", ellipsis: true },
   ];
 
   if (!vaultId) return null;
@@ -139,7 +159,7 @@ export function AdminEmailNotificationStatusPage() {
 
   return (
     <AdminPageShell
-      title="Email Notification Status"
+      title={displayText(operations.email_notification_status)}
       actions={
         <Space>
           <Dropdown
@@ -147,14 +167,14 @@ export function AdminEmailNotificationStatusPage() {
               items: [
                 {
                   key: "export",
-                  label: "Export to CSV",
+                  label: displayText(operations.export_to_csv),
                   disabled: exporting,
                   onClick: () => void exportCsv(),
                 },
               ],
             }}
           >
-            <Button>Actions</Button>
+            <Button>{displayText(shell.domain_user.actions)}</Button>
           </Dropdown>
           <Button onClick={() => void load()}>{displayText(shell.refresh)}</Button>
         </Space>
@@ -166,7 +186,7 @@ export function AdminEmailNotificationStatusPage() {
         requiredMark={false}
         onFinish={() => setApplied({ ...draft })}
       >
-        <Form.Item label="Send Date">
+        <Form.Item label={displayText(operations.send_date)}>
           <DatePicker.RangePicker
             showTime
             value={draft.from && draft.to ? [draft.from, draft.to] : null}
@@ -179,7 +199,7 @@ export function AdminEmailNotificationStatusPage() {
             }
           />
         </Form.Item>
-        <Form.Item label="Email Address">
+        <Form.Item label={displayText(operations.email_address)}>
           <Input
             allowClear
             className="filter-bar__w-220"
@@ -192,13 +212,16 @@ export function AdminEmailNotificationStatusPage() {
             allowClear
             className="filter-bar__w-180"
             value={draft.status || undefined}
-            options={STATUS_OPTIONS.map((s) => ({ value: s, label: s }))}
+            options={STATUS_OPTIONS.map((s) => ({
+              value: s,
+              label: emailStatusLabel(s, operations),
+            }))}
             onChange={(v) => setDraft((prev) => ({ ...prev, status: v ?? "" }))}
           />
         </Form.Item>
         <Form.Item>
           <Button type="primary" htmlType="submit">
-            Apply
+            {displayText(shell.apply)}
           </Button>
         </Form.Item>
       </Form>
@@ -206,7 +229,11 @@ export function AdminEmailNotificationStatusPage() {
       {error ? <Alert type="error" showIcon title={error} className="admin-page__banner" /> : null}
 
       <p className="admin-page__summary">
-        Showing emails for {rangeFrom} to {rangeTo} ({total} results)
+        {displayTextTemplate(operations.emails_show_summary, {
+          from: rangeFrom,
+          to: rangeTo,
+          count: total,
+        })}
       </p>
 
       <Spin spinning={loading}>

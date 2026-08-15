@@ -50,7 +50,10 @@ function groupKeyForTab(tab: NavTab): OperationsSidebarGroup | null {
   return null;
 }
 
-export function buildOperationsSidebarGroups(subtabs: NavTab[]): AdminOperationsNavGroup[] {
+export function buildOperationsSidebarGroups(
+  subtabs: NavTab[],
+  labels: Partial<Record<OperationsSidebarGroup, DisplayText>> = {},
+): AdminOperationsNavGroup[] {
   const buckets: Record<OperationsSidebarGroup, NavTab[]> = {
     jobs: [],
     email_notifications: [],
@@ -69,7 +72,7 @@ export function buildOperationsSidebarGroups(subtabs: NavTab[]): AdminOperations
   }
   return GROUP_ORDER.filter((key) => buckets[key].length > 0).map((key) => ({
     key,
-    label: GROUP_LABEL[key],
+    label: labels[key] ?? GROUP_LABEL[key],
     subtabs: buckets[key],
   }));
 }

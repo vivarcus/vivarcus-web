@@ -18,12 +18,19 @@ const TIMEOUT_OPTIONS = [
   { value: 1380, label: "1380 minutes" },
 ];
 
-function formatSingleInstanceStates(states: string[] | undefined): string {
+function formatSingleInstanceStates(
+  states: string[] | undefined,
+  operations: {
+    scheduled: { text: string };
+    queued: { text: string };
+    running: { text: string };
+  },
+): string {
   if (!states?.length) return "";
   const map: Record<string, string> = {
-    scheduled: "Scheduled",
-    queued: "Queued",
-    running: "Running",
+    scheduled: displayText(operations.scheduled),
+    queued: displayText(operations.queued),
+    running: displayText(operations.running),
   };
   return states.map((s) => map[s.toLowerCase()] ?? s).join(", ");
 }
@@ -32,6 +39,7 @@ export function AdminJobMetadataPage() {
   const vaultId = useVaultId();
   const navigate = useNavigate();
   const { shell } = useUi();
+  const operations = shell.operations;
   const [items, setItems] = useState<JobMetadataListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -58,7 +66,7 @@ export function AdminJobMetadataPage() {
 
   return (
     <AdminPageShell
-      title="SDK Job Metadata"
+      title={displayText(operations.sdk_job_metadata)}
       actions={<Button onClick={() => void load()}>{displayText(shell.refresh)}</Button>}
     >
       {error && <Alert type="error" showIcon title={error} className="admin-page__banner" />}
@@ -82,14 +90,23 @@ export function AdminJobMetadataPage() {
               dataIndex: "status",
               width: 100,
               render: (status: string) => (
-                <Tag color={status === "Active" ? "success" : "default"}>{status}</Tag>
+                <Tag color={status === "Active" ? "success" : "default"}>
+                  {status === "Active"
+                    ? displayText(operations.status_active)
+                    : status === "Inactive"
+                      ? displayText(operations.status_inactive)
+                      : status}
+                </Tag>
               ),
             },
             {
-              title: "Source",
+              title: displayText(operations.source),
               dataIndex: "source",
               width: 100,
-              render: (source: string) => (source === "standard" ? "Standard" : "Custom"),
+              render: (source: string) =>
+                source === "standard"
+                  ? displayText(operations.source_standard)
+                  : displayText(operations.source_custom),
             },
           ]}
           onRow={(row) => ({
@@ -107,6 +124,7 @@ export function AdminJobMetadataDetailPage() {
   const { apiName: rawName } = useParams<{ apiName: string }>();
   const apiName = decodeURIComponent(rawName ?? "");
   const { shell } = useUi();
+  const operations = shell.operations;
   const [detail, setDetail] = useState<JobMetadataDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -161,7 +179,7 @@ export function AdminJobMetadataDetailPage() {
         timeout_duration_minutes: timeoutMins,
       });
       setDetail(next);
-      message.success("Saved");
+      message.success(displayText(operations.saved));
     } catch (err) {
       if (err instanceof Error) message.error(err.message);
     } finally {
@@ -180,10 +198,12 @@ export function AdminJobMetadataDetailPage() {
     <AdminPageShell
       breadcrumb={
         <p className="page-header__breadcrumb">
-          <Link to="/admin/operations/sdk_job_metadata">SDK Job Metadata</Link>
+          <Link to="/admin/operations/sdk_job_metadata">
+            {displayText(operations.sdk_job_metadata)}
+          </Link>
         </p>
       }
-      title={`SDK Job Metadata: ${detail?.label || apiName}`}
+      title={`${displayText(operations.sdk_job_metadata_detail)} ${detail?.label || apiName}`}
       actions={
         <Space>
           {detail?.can_edit && (
@@ -203,7 +223,7 @@ export function AdminJobMetadataDetailPage() {
             <Descriptions.Item label={displayText(shell.metadata_status)}>{detail.status}</Descriptions.Item>
             <Descriptions.Item label="Chunk Size">{detail.chunk_size}</Descriptions.Item>
             <Descriptions.Item label="Single Instance Status">
-              {formatSingleInstanceStates(detail.single_instance_states)}
+              {formatSingleInstanceStates(detail.single_instance_states, operations)}
             </Descriptions.Item>
             <Descriptions.Item label="Description">{detail.description || "—"}</Descriptions.Item>
             <Descriptions.Item label="Job Code">{detail.job_code}</Descriptions.Item>
@@ -234,9 +254,9 @@ export function AdminJobMetadataDetailPage() {
               <Select
                 mode="multiple"
                 options={[
-                  { value: "scheduled", label: "Scheduled" },
-                  { value: "queued", label: "Queued" },
-                  { value: "running", label: "Running" },
+                  { value: "scheduled", label: displayText(operations.scheduled) },
+                  { value: "queued", label: displayText(operations.queued) },
+                  { value: "running", label: displayText(operations.running) },
                 ]}
               />
             </Form.Item>

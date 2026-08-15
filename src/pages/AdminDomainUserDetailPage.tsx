@@ -56,6 +56,10 @@ export function AdminDomainUserDetailPage() {
     }
   }, [vaultId, userId, shell.load_failed]);
 
+  useEffect(() => {
+    void load();
+  }, [load]);
+
   const changeDomainStatus = useCallback(() => {
     if (!vaultId || !model || !model.can_change_domain_status || statusPending) return;
     const nextActive = !model.domain_active;

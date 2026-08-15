@@ -108,10 +108,16 @@ export function AdminSectionSidebar({
       )
     : null;
   const operationsGroups = isAdminOperationsSection(section.parent)
-    ? buildOperationsSidebarGroups(section.subtabs)
+    ? buildOperationsSidebarGroups(section.subtabs, {
+        jobs: shell.operations.group_jobs,
+        email_notifications: shell.operations.group_email_notifications,
+      })
     : null;
   const deploymentGroups = isAdminDeploymentSection(section.parent)
-    ? buildDeploymentSidebarGroups(section.subtabs)
+    ? buildDeploymentSidebarGroups(section.subtabs, {
+        environment: shell.deployment.group_environment,
+        migration: shell.deployment.group_migration,
+      })
     : null;
 
   if (settingsGroups && settingsGroups.length > 0) {

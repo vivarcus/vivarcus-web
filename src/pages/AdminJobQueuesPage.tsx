@@ -13,6 +13,7 @@ export function AdminJobQueuesPage() {
   const vaultId = useVaultId();
   const navigate = useNavigate();
   const { shell } = useUi();
+  const operations = shell.operations;
   const [items, setItems] = useState<JobQueueListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -39,7 +40,7 @@ export function AdminJobQueuesPage() {
 
   return (
     <AdminPageShell
-      title="Job Queues"
+      title={displayText(operations.job_queues_title)}
       actions={<Button onClick={() => void load()}>{displayText(shell.refresh)}</Button>}
     >
       {error && <Alert type="error" showIcon title={error} className="admin-page__banner" />}
@@ -63,10 +64,20 @@ export function AdminJobQueuesPage() {
               dataIndex: "status",
               width: 100,
               render: (status: string) => (
-                <Tag color={status === "Active" ? "success" : "default"}>{status}</Tag>
+                <Tag color={status === "Active" ? "success" : "default"}>
+                  {status === "Active"
+                    ? displayText(operations.status_active)
+                    : status === "Inactive"
+                      ? displayText(operations.status_inactive)
+                      : status}
+                </Tag>
               ),
             },
-            { title: "Max Concurrent Jobs", dataIndex: "max_concurrent_jobs", width: 160 },
+            {
+              title: displayText(operations.max_concurrent_jobs),
+              dataIndex: "max_concurrent_jobs",
+              width: 160,
+            },
           ]}
           onRow={(row) => ({
             onClick: () => navigate(`/admin/operations/job_queue/${encodeURIComponent(row.api_name)}`),
@@ -82,6 +93,7 @@ export function AdminJobQueueDetailPage() {
   const { apiName: rawName } = useParams<{ apiName: string }>();
   const apiName = decodeURIComponent(rawName ?? "");
   const { shell } = useUi();
+  const operations = shell.operations;
   const [detail, setDetail] = useState<JobQueueDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -119,7 +131,7 @@ export function AdminJobQueueDetailPage() {
       const values = await form.validateFields();
       const next = await api.updateJobQueue(vaultId, apiName, values);
       setDetail(next);
-      message.success("Saved");
+      message.success(displayText(operations.saved));
     } catch (err) {
       if (err instanceof Error) message.error(err.message);
     } finally {
@@ -133,7 +145,9 @@ export function AdminJobQueueDetailPage() {
     <AdminPageShell
       breadcrumb={
         <p className="page-header__breadcrumb">
-          <Link to="/admin/operations/job_queue">Job Queues</Link>
+          <Link to="/admin/operations/job_queue">
+            {displayText(operations.job_queues_title)}
+          </Link>
         </p>
       }
       title={detail?.label || apiName}
@@ -153,7 +167,7 @@ export function AdminJobQueueDetailPage() {
           <Form.Item name="label" label={displayText(shell.metadata_field_label)} rules={[{ required: true }]}>
             <Input />
           </Form.Item>
-          <Form.Item name="description" label="Description">
+          <Form.Item name="description" label={displayText(operations.description)}>
             <Input.TextArea rows={3} />
           </Form.Item>
           <Form.Item name="status" label={displayText(shell.metadata_status)} rules={[{ required: true }]}>
@@ -164,7 +178,11 @@ export function AdminJobQueueDetailPage() {
               ]}
             />
           </Form.Item>
-          <Form.Item name="max_concurrent_jobs" label="Max Concurrent Jobs" rules={[{ required: true }]}>
+          <Form.Item
+            name="max_concurrent_jobs"
+            label={displayText(operations.max_concurrent_jobs)}
+            rules={[{ required: true }]}
+          >
             <InputNumber min={1} />
           </Form.Item>
         </Form>

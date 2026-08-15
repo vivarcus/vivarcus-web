@@ -11,14 +11,32 @@ import { adminEllipsisCell, adminFirstColumnCell } from "../components/admin/adm
 import { useUi } from "../context/UiContext";
 import { useVaultId } from "../hooks/useVaultId";
 import { displayText } from "../lib/i18n";
+import type { OperationsChrome } from "../lib/i18n/chromeTypes";
 
 function jobRowHasActions(row: JobStatusInstance): boolean {
   return row.can_start_now || row.can_cancel;
 }
 
+function jobInstanceStatusLabel(label: string, operations: OperationsChrome): string {
+  const map: Record<string, string> = {
+    Scheduled: displayText(operations.scheduled),
+    Queued: displayText(operations.queued),
+    Running: displayText(operations.running),
+    Success: displayText(operations.success),
+    Failed: displayText(operations.failed),
+    Cancelled: displayText(operations.cancelled),
+    "Errors Encountered": displayText(operations.errors_encountered),
+    "Missed Schedule": displayText(operations.missed_schedule),
+    "Failed to Run": displayText(operations.failed_to_run),
+    "Completed due to Inactivity": displayText(operations.completed_due_to_inactivity),
+  };
+  return map[label] ?? label;
+}
+
 export function AdminJobStatusPage() {
   const vaultId = useVaultId();
   const { shell } = useUi();
+  const operations = shell.operations;
   const [board, setBoard] = useState<JobStatusBoard | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -47,7 +65,7 @@ export function AdminJobStatusPage() {
     setActingId(id);
     try {
       await api.startJobNow(vaultId, id);
-      message.success("Started");
+      message.success(displayText(operations.started));
       await load();
     } catch (err) {
       message.error(err instanceof Error ? err.message : displayText(shell.load_failed));
@@ -61,7 +79,7 @@ export function AdminJobStatusPage() {
     setActingId(id);
     try {
       await api.cancelJobInstance(vaultId, id);
-      message.success("Cancelled");
+      message.success(displayText(operations.cancelled));
       await load();
     } catch (err) {
       message.error(err instanceof Error ? err.message : displayText(shell.load_failed));
@@ -76,7 +94,7 @@ export function AdminJobStatusPage() {
       row.can_start_now
         ? {
             key: "start",
-            label: "Start Now",
+            label: displayText(operations.start_now),
             disabled: actingId === row.id,
             onClick: () => void startNow(row.id),
           }
@@ -96,24 +114,24 @@ export function AdminJobStatusPage() {
 
   const buildColumns = (history: boolean): TableColumnsType<JobStatusInstance> => [
     {
-      title: "Job Title",
+      title: displayText(operations.job_title),
       dataIndex: "job_title",
       ellipsis: true,
       render: (value: string | undefined, row) =>
         adminFirstColumnCell(value, adminEllipsisCell(value), renderRowActionMenu(row)),
     },
-    { title: "Job ID", dataIndex: "id", ellipsis: true, width: 280 },
+    { title: displayText(operations.job_id), dataIndex: "id", ellipsis: true, width: 280 },
     ...(history
       ? [
-          { title: "Started Time", dataIndex: "started_at" },
-          { title: "Completion Time", dataIndex: "completed_at" },
+          { title: displayText(operations.started_time), dataIndex: "started_at" },
+          { title: displayText(operations.completion_time), dataIndex: "completed_at" },
         ]
-      : [{ title: "Scheduled Start Time", dataIndex: "scheduled_at" }]),
+      : [{ title: displayText(operations.scheduled_start_time), dataIndex: "scheduled_at" }]),
     {
-      title: "Job Status",
+      title: displayText(operations.job_status),
       dataIndex: "status_label",
-      width: 120,
-      render: (label: string) => <Tag>{label}</Tag>,
+      width: 140,
+      render: (label: string) => <Tag>{jobInstanceStatusLabel(label, operations)}</Tag>,
     },
   ];
 
@@ -121,14 +139,14 @@ export function AdminJobStatusPage() {
 
   return (
     <AdminPageShell
-      title="Job Status"
+      title={displayText(operations.job_status_title)}
       actions={<Button onClick={() => void load()}>{displayText(shell.refresh)}</Button>}
     >
       {error && <Alert type="error" showIcon title={error} className="admin-page__banner" />}
       <Spin spinning={loading}>
         {board && (
           <>
-            <AdminPageSection title="Scheduled">
+            <AdminPageSection title={displayText(operations.scheduled)}>
               <AdminCompactTable<JobStatusInstance>
                 loadingOverlay={loading}
                 rowKey="id"
@@ -137,7 +155,7 @@ export function AdminJobStatusPage() {
                 columns={buildColumns(false)}
               />
             </AdminPageSection>
-            <AdminPageSection title="Running">
+            <AdminPageSection title={displayText(operations.running)}>
               <AdminCompactTable<JobStatusInstance>
                 loadingOverlay={loading}
                 rowKey="id"
@@ -146,7 +164,7 @@ export function AdminJobStatusPage() {
                 columns={buildColumns(false)}
               />
             </AdminPageSection>
-            <AdminPageSection title="History">
+            <AdminPageSection title={displayText(operations.history)}>
               <AdminCompactTable<JobStatusInstance>
                 loadingOverlay={loading}
                 rowKey="id"

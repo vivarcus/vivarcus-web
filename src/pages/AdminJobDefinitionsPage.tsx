@@ -132,6 +132,7 @@ export function AdminJobDefinitionsPage() {
   const vaultId = useVaultId();
   const navigate = useNavigate();
   const { shell } = useUi();
+  const operations = shell.operations;
   const [items, setItems] = useState<JobDefinitionListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -158,7 +159,7 @@ export function AdminJobDefinitionsPage() {
 
   return (
     <AdminPageShell
-      title="Job Definitions"
+      title={displayText(operations.job_definitions_title)}
       actions={
         <Space>
           <Button type="primary" onClick={() => navigate(`/admin/operations/job_definitions/new`)}>
@@ -178,24 +179,51 @@ export function AdminJobDefinitionsPage() {
           locale={{ emptyText: adminTableEmptyText(displayText(shell.empty_no_records, "No items found")) }}
           columns={[
             {
-              title: "Job Title",
+              title: displayText(operations.job_title),
               dataIndex: "label",
               render: (label: string, row) => (
                 <Link to={`/admin/operations/job_definitions/${encodeURIComponent(row.api_name)}`}>
-                  {label}
+                  {label === "User Account Activation"
+                    ? displayText(operations.user_account_activation)
+                    : label}
                 </Link>
               ),
             },
-            { title: "Job Type", dataIndex: "type" },
+            {
+              title: displayText(operations.job_type),
+              dataIndex: "type",
+              render: (type: string) =>
+                type === "Date Based Object Operation"
+                  ? displayText(operations.date_based_object_operation)
+                  : type,
+            },
             {
               title: displayText(shell.metadata_status),
               dataIndex: "status",
               width: 100,
               render: (status: string) => (
-                <Tag color={status === "Active" ? "success" : "default"}>{status}</Tag>
+                <Tag color={status === "Active" ? "success" : "default"}>
+                  {status === "Active"
+                    ? displayText(operations.status_active)
+                    : status === "Inactive"
+                      ? displayText(operations.status_inactive)
+                      : status}
+                </Tag>
               ),
             },
-            { title: "Schedule", dataIndex: "schedule" },
+            {
+              title: displayText(operations.schedule),
+              dataIndex: "schedule",
+              render: (schedule: string) => {
+                const labels: Record<string, string> = {
+                  Hourly: displayText(operations.schedule_hourly),
+                  Daily: displayText(operations.schedule_daily),
+                  Weekly: displayText(operations.schedule_weekly),
+                  Monthly: displayText(operations.schedule_monthly),
+                };
+                return labels[schedule] ?? schedule;
+              },
+            },
           ]}
         />
       </Spin>

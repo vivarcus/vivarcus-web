@@ -10,7 +10,7 @@ import { AdminRowActionMenu } from "../components/admin/AdminRowActionMenu";
 import { adminEllipsisCell, adminFirstColumnCell } from "../components/admin/adminTableCells";
 import { useUi } from "../context/UiContext";
 import { useVaultId } from "../hooks/useVaultId";
-import { displayText } from "../lib/i18n";
+import { displayText, displayTextTemplate } from "../lib/i18n";
 
 function formatSuppressionDate(iso: string): string {
   const d = dayjs(iso);
@@ -21,6 +21,7 @@ function formatSuppressionDate(iso: string): string {
 export function AdminEmailSuppressionListPage() {
   const vaultId = useVaultId();
   const { shell } = useUi();
+  const operations = shell.operations;
   const [draftQuery, setDraftQuery] = useState("");
   const [appliedQuery, setAppliedQuery] = useState("");
   const [data, setData] = useState<EmailSuppressionList | null>(null);
@@ -76,9 +77,10 @@ export function AdminEmailSuppressionListPage() {
       title,
       content:
         ids.length === 1
-          ? "Remove this email address from the suppression list?"
-          : `Remove ${ids.length} email addresses from the suppression list?`,
-      okText: "Delete",
+          ? displayText(operations.remove_one_confirm)
+          : displayTextTemplate(operations.remove_many_confirm, { count: ids.length }),
+      okText: displayText(operations.delete_action),
+      cancelText: displayText(shell.cancel),
       okButtonProps: { danger: true },
       onOk: () => removeIds(ids),
     });
@@ -88,12 +90,12 @@ export function AdminEmailSuppressionListPage() {
     items: [
       {
         key: "remove-multiple",
-        label: "Remove Multiple Email Addresses from Suppression List",
+        label: displayText(operations.remove_multiple_from_suppression),
         disabled: selectedKeys.length === 0 || removing,
         onClick: () =>
           confirmRemove(
             selectedKeys.map(String),
-            "Remove Multiple Email Addresses from Suppression List",
+            displayText(operations.remove_multiple_from_suppression),
           ),
       },
     ],
@@ -113,18 +115,19 @@ export function AdminEmailSuppressionListPage() {
             items={[
               {
                 key: "remove",
-                label: "Remove from Suppression List",
+                label: displayText(operations.remove_from_suppression),
                 disabled: removing,
-                onClick: () => confirmRemove([row.id], "Remove from Suppression List"),
+                onClick: () =>
+                  confirmRemove([row.id], displayText(operations.remove_from_suppression)),
               },
             ]}
           />,
         ),
     },
-    { title: "Email Address", dataIndex: "email_address", ellipsis: true },
-    { title: "Suppression Reason", dataIndex: "suppression_reason", ellipsis: true },
+    { title: displayText(operations.email_address), dataIndex: "email_address", ellipsis: true },
+    { title: displayText(operations.suppression_reason), dataIndex: "suppression_reason", ellipsis: true },
     {
-      title: "Suppression Date",
+      title: displayText(operations.suppression_date),
       dataIndex: "suppression_date",
       width: 200,
       render: (v: string) => formatSuppressionDate(v),
@@ -137,16 +140,14 @@ export function AdminEmailSuppressionListPage() {
 
   return (
     <AdminPageShell
-      title="Email Suppression List"
+      title={displayText(operations.email_suppression_list)}
       meta={
-        <p className="page-header__meta">
-          Use this page to view suppressed email addresses that Vault will not send emails to
-        </p>
+        <p className="page-header__meta">{displayText(operations.email_suppression_help)}</p>
       }
       actions={
         <Space>
           <Dropdown menu={actionMenu}>
-            <Button>Actions</Button>
+            <Button>{displayText(shell.domain_user.actions)}</Button>
           </Dropdown>
           <Button onClick={() => void load()}>{displayText(shell.refresh)}</Button>
         </Space>
@@ -158,11 +159,11 @@ export function AdminEmailSuppressionListPage() {
         requiredMark={false}
         onFinish={() => setAppliedQuery(draftQuery)}
       >
-        <Form.Item label="Search">
+        <Form.Item label={displayText(shell.global_search_submit)}>
           <Input
             allowClear
             className="filter-bar__max-280"
-            placeholder="Name, email, or reason (exact)"
+            placeholder={displayText(operations.suppression_search_placeholder)}
             value={draftQuery}
             onChange={(e) => setDraftQuery(e.target.value)}
             onPressEnter={() => setAppliedQuery(draftQuery)}
@@ -170,7 +171,7 @@ export function AdminEmailSuppressionListPage() {
         </Form.Item>
         <Form.Item>
           <Button type="primary" htmlType="submit">
-            Apply
+            {displayText(shell.apply)}
           </Button>
         </Form.Item>
       </Form>
@@ -178,7 +179,7 @@ export function AdminEmailSuppressionListPage() {
       {error ? <Alert type="error" showIcon title={error} className="admin-page__banner" /> : null}
 
       <p className="admin-page__summary">
-        {total} result{total === 1 ? "" : "s"}
+        {displayTextTemplate(operations.result_count, { count: total })}
       </p>
 
       <Spin spinning={loading}>

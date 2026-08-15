@@ -4,7 +4,6 @@ import { useOptionalNavigationContext } from "../context/NavigationContext";
 import { useUi } from "../context/UiContext";
 import { useVaultId } from "../hooks/useVaultId";
 import {
-  CONFIG_GROUP_LABELS,
   CONFIG_GROUP_ORDER,
   readFavoriteComponentKeys,
   toggleConfigurationFavorite,
@@ -20,17 +19,21 @@ function HubItem({
   item,
   favorited,
   onToggleFavorite,
+  addFavoriteAria,
+  removeFavoriteAria,
 }: {
   item: ConfigComponent;
   favorited: boolean;
   onToggleFavorite: (key: ConfigComponentKey) => void;
+  addFavoriteAria: string;
+  removeFavoriteAria: string;
 }) {
   return (
     <li className="config-hub__item">
       <button
         type="button"
         className={`config-hub__star${favorited ? " is-on" : ""}`}
-        aria-label={favorited ? "Remove from favorites" : "Add to favorites"}
+        aria-label={favorited ? removeFavoriteAria : addFavoriteAria}
         aria-pressed={favorited}
         onClick={() => onToggleFavorite(item.key)}
       >
@@ -46,6 +49,7 @@ export function AdminConfigurationHubPage() {
   const vaultId = useVaultId();
   const navCtx = useOptionalNavigationContext();
   const { shell } = useUi();
+  const configuration = shell.configuration;
   const components = useMemo(
     () => visibleConfigurationComponents(navCtx?.nav),
     [navCtx?.nav],
@@ -60,6 +64,15 @@ export function AdminConfigurationHubPage() {
     setFavoriteKeys(readFavoriteComponentKeys(vaultId));
   }, [vaultId]);
 
+  const groupLabels: Record<ConfigComponentGroup, string> = useMemo(
+    () => ({
+      object_setup: displayText(configuration.group_object_setup, "Object Setup"),
+      business_logic: displayText(configuration.group_business_logic, "Business Logic"),
+      tooling: displayText(configuration.group_tooling, "Tooling"),
+    }),
+    [configuration],
+  );
+
   const grouped = useMemo(() => {
     const map = new Map<ConfigComponentGroup, ConfigComponent[]>();
     for (const g of CONFIG_GROUP_ORDER) map.set(g, []);
@@ -68,12 +81,17 @@ export function AdminConfigurationHubPage() {
     }
     return CONFIG_GROUP_ORDER.map((group) => ({
       group,
-      label: CONFIG_GROUP_LABELS[group],
+      label: groupLabels[group],
       items: map.get(group) ?? [],
     })).filter((g) => g.items.length > 0);
-  }, [components]);
+  }, [components, groupLabels]);
 
   const favoriteSet = useMemo(() => new Set(favoriteKeys), [favoriteKeys]);
+  const addFavoriteAria = displayText(configuration.add_favorite_aria, "Add to favorites");
+  const removeFavoriteAria = displayText(
+    configuration.remove_favorite_aria,
+    "Remove from favorites",
+  );
 
   const onToggleFavorite = (key: ConfigComponentKey) => {
     if (!vaultId) return;
@@ -85,7 +103,6 @@ export function AdminConfigurationHubPage() {
       className="config-hub"
       title={displayText(shell.admin_configuration, "Configuration")}
     >
-
       <section className="config-hub__section">
         <h2 className="config-hub__section-title">
           {displayText(shell.admin_configuration_platform, "Platform Configurations")}
@@ -101,6 +118,8 @@ export function AdminConfigurationHubPage() {
                     item={item}
                     favorited={favoriteSet.has(item.key)}
                     onToggleFavorite={onToggleFavorite}
+                    addFavoriteAria={addFavoriteAria}
+                    removeFavoriteAria={removeFavoriteAria}
                   />
                 ))}
               </ul>

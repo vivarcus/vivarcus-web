@@ -42,6 +42,18 @@ export function UiProvider({
           ...defaultShellChrome.domain_user,
           ...shell?.domain_user,
         },
+        operations: {
+          ...defaultShellChrome.operations,
+          ...shell?.operations,
+        },
+        deployment: {
+          ...defaultShellChrome.deployment,
+          ...shell?.deployment,
+        },
+        configuration: {
+          ...defaultShellChrome.configuration,
+          ...shell?.configuration,
+        },
         completeness_hover: {
           ...defaultShellChrome.completeness_hover,
           ...shell?.completeness_hover,

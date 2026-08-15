@@ -520,6 +520,9 @@ export type ShellChrome = {
   cfg_packaging: CfgPackagingChrome;
   vault_ai: VaultAIChrome;
   domain_user: DomainUserChrome;
+  operations: OperationsChrome;
+  deployment: DeploymentChrome;
+  configuration: ConfigurationChrome;
   completeness_hover: CompletenessHoverChrome;
   unsupported_image_type: DisplayText;
   image_too_large: DisplayText;
@@ -926,6 +929,93 @@ export type DomainUserChrome = {
   change_status_active_help: DisplayText;
   change_status_inactive_help: DisplayText;
   export_csv: DisplayText;
+};
+
+export type OperationsChrome = {
+  group_jobs: DisplayText;
+  group_email_notifications: DisplayText;
+  job_definitions_title: DisplayText;
+  job_status_title: DisplayText;
+  job_queues_title: DisplayText;
+  sdk_job_metadata: DisplayText;
+  email_suppression_list: DisplayText;
+  email_notification_status: DisplayText;
+  job_title: DisplayText;
+  job_type: DisplayText;
+  schedule: DisplayText;
+  date_based_object_operation: DisplayText;
+  user_account_activation: DisplayText;
+  status_active: DisplayText;
+  status_inactive: DisplayText;
+  schedule_hourly: DisplayText;
+  schedule_daily: DisplayText;
+  schedule_weekly: DisplayText;
+  schedule_monthly: DisplayText;
+  job_id: DisplayText;
+  started_time: DisplayText;
+  completion_time: DisplayText;
+  scheduled_start_time: DisplayText;
+  job_status: DisplayText;
+  scheduled: DisplayText;
+  running: DisplayText;
+  history: DisplayText;
+  start_now: DisplayText;
+  started: DisplayText;
+  cancelled: DisplayText;
+  queued: DisplayText;
+  success: DisplayText;
+  failed: DisplayText;
+  errors_encountered: DisplayText;
+  missed_schedule: DisplayText;
+  failed_to_run: DisplayText;
+  completed_due_to_inactivity: DisplayText;
+  max_concurrent_jobs: DisplayText;
+  description: DisplayText;
+  saved: DisplayText;
+  source: DisplayText;
+  source_standard: DisplayText;
+  source_custom: DisplayText;
+  sdk_job_metadata_detail: DisplayText;
+  email_suppression_help: DisplayText;
+  email_address: DisplayText;
+  suppression_reason: DisplayText;
+  suppression_date: DisplayText;
+  suppression_search_placeholder: DisplayText;
+  result_count: DisplayText;
+  remove_from_suppression: DisplayText;
+  remove_multiple_from_suppression: DisplayText;
+  remove_one_confirm: DisplayText;
+  remove_many_confirm: DisplayText;
+  delete_action: DisplayText;
+  send_date: DisplayText;
+  recipient_name: DisplayText;
+  error_message: DisplayText;
+  document_number: DisplayText;
+  object_record_name: DisplayText;
+  subject: DisplayText;
+  export_to_csv: DisplayText;
+  emails_show_summary: DisplayText;
+  email_status_sent: DisplayText;
+  email_status_delivered: DisplayText;
+  email_status_failed: DisplayText;
+  email_status_blocked: DisplayText;
+  email_status_skipped: DisplayText;
+  email_status_pending: DisplayText;
+  email_status_summary: DisplayText;
+  email_status_sent_unknown: DisplayText;
+};
+
+export type DeploymentChrome = {
+  group_environment: DisplayText;
+  group_migration: DisplayText;
+};
+
+export type ConfigurationChrome = {
+  group_object_setup: DisplayText;
+  group_business_logic: DisplayText;
+  group_tooling: DisplayText;
+  add_favorite_aria: DisplayText;
+  remove_favorite_aria: DisplayText;
 };
 
 export type CompletenessHoverChrome = {
@@ -2684,6 +2774,138 @@ export const defaultDomainUserChrome: DomainUserChrome = {
   export_csv: t("Export CSV", "audit.export_csv"),
 };
 
+export const defaultOperationsChrome: OperationsChrome = {
+  group_jobs: t("Jobs", "navigation.admin.operations.group.jobs"),
+  group_email_notifications: t(
+    "Email Notifications",
+    "navigation.admin.operations.group.email_notifications",
+  ),
+  job_definitions_title: t("Job Definitions", "operations.job_definitions_title"),
+  job_status_title: t("Job Status", "operations.job_status_title"),
+  job_queues_title: t("Job Queues", "operations.job_queues_title"),
+  sdk_job_metadata: t("SDK Job Metadata", "navigation.admin.operations.sdk_job_metadata"),
+  email_suppression_list: t(
+    "Email Suppression List",
+    "navigation.admin.operations.email_suppression_list",
+  ),
+  email_notification_status: t(
+    "Email Notification Status",
+    "navigation.admin.operations.email_notification_status",
+  ),
+  job_title: t("Job Title", "operations.job_title"),
+  job_type: t("Job Type", "operations.job_type"),
+  schedule: t("Schedule", "operations.schedule"),
+  date_based_object_operation: t(
+    "Date Based Object Operation",
+    "operations.date_based_object_operation",
+  ),
+  user_account_activation: t("User Account Activation", "operations.user_account_activation"),
+  status_active: t("Active", "operations.status_active"),
+  status_inactive: t("Inactive", "operations.status_inactive"),
+  schedule_hourly: t("Hourly", "operations.schedule_hourly"),
+  schedule_daily: t("Daily", "operations.schedule_daily"),
+  schedule_weekly: t("Weekly", "operations.schedule_weekly"),
+  schedule_monthly: t("Monthly", "operations.schedule_monthly"),
+  job_id: t("Job ID", "operations.job_id"),
+  started_time: t("Started Time", "operations.started_time"),
+  completion_time: t("Completion Time", "operations.completion_time"),
+  scheduled_start_time: t("Scheduled Start Time", "operations.scheduled_start_time"),
+  job_status: t("Job Status", "operations.job_status"),
+  scheduled: t("Scheduled", "operations.scheduled"),
+  running: t("Running", "operations.running"),
+  history: t("History", "operations.history"),
+  start_now: t("Start Now", "operations.start_now"),
+  started: t("Started", "operations.started"),
+  cancelled: t("Cancelled", "operations.cancelled"),
+  queued: t("Queued", "operations.queued"),
+  success: t("Success", "operations.success"),
+  failed: t("Failed", "operations.failed"),
+  errors_encountered: t("Errors Encountered", "operations.errors_encountered"),
+  missed_schedule: t("Missed Schedule", "operations.missed_schedule"),
+  failed_to_run: t("Failed to Run", "operations.failed_to_run"),
+  completed_due_to_inactivity: t(
+    "Completed due to Inactivity",
+    "operations.completed_due_to_inactivity",
+  ),
+  max_concurrent_jobs: t("Max Concurrent Jobs", "operations.max_concurrent_jobs"),
+  description: t("Description", "operations.description"),
+  saved: t("Saved", "operations.saved"),
+  source: t("Source", "operations.source"),
+  source_standard: t("Standard", "operations.source_standard"),
+  source_custom: t("Custom", "operations.source_custom"),
+  sdk_job_metadata_detail: t("SDK Job Metadata:", "operations.sdk_job_metadata_detail"),
+  email_suppression_help: t(
+    "Use this page to view suppressed email addresses that Vault will not send emails to",
+    "operations.email_suppression_help",
+  ),
+  email_address: t("Email Address", "operations.email_address"),
+  suppression_reason: t("Suppression Reason", "operations.suppression_reason"),
+  suppression_date: t("Suppression Date", "operations.suppression_date"),
+  suppression_search_placeholder: t(
+    "Name, email, or reason (exact)",
+    "operations.suppression_search_placeholder",
+  ),
+  result_count: t("{count} results", "operations.result_count"),
+  remove_from_suppression: t(
+    "Remove from Suppression List",
+    "operations.remove_from_suppression",
+  ),
+  remove_multiple_from_suppression: t(
+    "Remove Multiple Email Addresses from Suppression List",
+    "operations.remove_multiple_from_suppression",
+  ),
+  remove_one_confirm: t(
+    "Remove this email address from the suppression list?",
+    "operations.remove_one_confirm",
+  ),
+  remove_many_confirm: t(
+    "Remove {count} email addresses from the suppression list?",
+    "operations.remove_many_confirm",
+  ),
+  delete_action: t("Delete", "action.delete"),
+  send_date: t("Send Date", "operations.send_date"),
+  recipient_name: t("Recipient Name", "operations.recipient_name"),
+  error_message: t("Error Message", "operations.error_message"),
+  document_number: t("Document Number", "operations.document_number"),
+  object_record_name: t("Object Record Name", "operations.object_record_name"),
+  subject: t("Subject", "operations.subject"),
+  export_to_csv: t("Export to CSV", "operations.export_to_csv"),
+  emails_show_summary: t(
+    "Showing emails for {from} to {to} ({count} results)",
+    "operations.emails_show_summary",
+  ),
+  email_status_sent: t("Sent", "operations.email_status_sent"),
+  email_status_delivered: t("Delivered", "operations.email_status_delivered"),
+  email_status_failed: t("Failed", "operations.email_status_failed"),
+  email_status_blocked: t("Blocked", "operations.email_status_blocked"),
+  email_status_skipped: t("Skipped", "operations.email_status_skipped"),
+  email_status_pending: t("Pending", "operations.email_status_pending"),
+  email_status_summary: t("Summary", "operations.email_status_summary"),
+  email_status_sent_unknown: t("Sent - Unknown", "operations.email_status_sent_unknown"),
+};
+
+export const defaultDeploymentChrome: DeploymentChrome = {
+  group_environment: t(
+    "Environment",
+    "navigation.admin.deployment.group.environment",
+  ),
+  group_migration: t("Migration", "navigation.admin.deployment.group.migration"),
+};
+
+export const defaultConfigurationChrome: ConfigurationChrome = {
+  group_object_setup: t(
+    "Object Setup",
+    "admin.configuration.group.object_setup",
+  ),
+  group_business_logic: t(
+    "Business Logic",
+    "admin.configuration.group.business_logic",
+  ),
+  group_tooling: t("Tooling", "admin.configuration.group.tooling"),
+  add_favorite_aria: t("Add to favorites", "list.add_favorite_aria"),
+  remove_favorite_aria: t("Remove from favorites", "list.remove_favorite_aria"),
+};
+
 export const defaultCompletenessHoverChrome: CompletenessHoverChrome = {
   dependencies_count: t(
     "{count} Dependencies",
@@ -4103,6 +4325,9 @@ export const defaultShellChrome: ShellChrome = {
   cfg_packaging: defaultCfgPackagingChrome,
   vault_ai: defaultVaultAIChrome,
   domain_user: defaultDomainUserChrome,
+  operations: defaultOperationsChrome,
+  deployment: defaultDeploymentChrome,
+  configuration: defaultConfigurationChrome,
   completeness_hover: defaultCompletenessHoverChrome,
   unsupported_image_type: t(
     "Unsupported image type",

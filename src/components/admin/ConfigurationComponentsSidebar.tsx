@@ -21,11 +21,15 @@ function ComponentNavLink({
   active,
   favorited,
   onToggleFavorite,
+  addFavoriteAria,
+  removeFavoriteAria,
 }: {
   item: ConfigComponent;
   active: boolean;
   favorited: boolean;
   onToggleFavorite: (key: ConfigComponentKey) => void;
+  addFavoriteAria: string;
+  removeFavoriteAria: string;
 }) {
   return (
     <div className={`config-components-sidebar__row${active ? " is-active" : ""}`}>
@@ -39,7 +43,7 @@ function ComponentNavLink({
       <button
         type="button"
         className={`config-components-sidebar__star${favorited ? " is-on" : ""}`}
-        aria-label={favorited ? "Remove from favorites" : "Add to favorites"}
+        aria-label={favorited ? removeFavoriteAria : addFavoriteAria}
         aria-pressed={favorited}
         onClick={(e) => {
           e.preventDefault();
@@ -99,6 +103,14 @@ export function ConfigurationComponentsSidebar({
   const onToggleFavorite = (key: ConfigComponentKey) => {
     setFavoriteKeys(toggleConfigurationFavorite(vaultId, key));
   };
+  const addFavoriteAria = displayText(
+    shell.configuration.add_favorite_aria,
+    "Add to favorites",
+  );
+  const removeFavoriteAria = displayText(
+    shell.configuration.remove_favorite_aria,
+    "Remove from favorites",
+  );
 
   return (
     <aside className="list-page__sidebar config-components-sidebar">
@@ -133,6 +145,8 @@ export function ConfigurationComponentsSidebar({
                   active={active?.key === item.key}
                   favorited={favoriteSet.has(item.key)}
                   onToggleFavorite={onToggleFavorite}
+                  addFavoriteAria={addFavoriteAria}
+                  removeFavoriteAria={removeFavoriteAria}
                 />
               ))
             )}
@@ -158,6 +172,8 @@ export function ConfigurationComponentsSidebar({
                     active={active?.key === item.key}
                     favorited={favoriteSet.has(item.key)}
                     onToggleFavorite={onToggleFavorite}
+                    addFavoriteAria={addFavoriteAria}
+                    removeFavoriteAria={removeFavoriteAria}
                   />
                 ))}
               </nav>
@@ -184,6 +200,8 @@ export function ConfigurationComponentsSidebar({
                     active={active?.key === item.key}
                     favorited={favoriteSet.has(item.key)}
                     onToggleFavorite={onToggleFavorite}
+                    addFavoriteAria={addFavoriteAria}
+                    removeFavoriteAria={removeFavoriteAria}
                   />
                 ))}
               </nav>
