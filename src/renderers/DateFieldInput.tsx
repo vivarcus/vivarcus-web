@@ -1,15 +1,16 @@
 import { CalendarOutlined } from "@ant-design/icons";
-import { DatePicker, Input } from "antd";
+import { ConfigProvider, DatePicker, Input } from "antd";
 import type { InputRef } from "antd/es/input";
 import type { Dayjs } from "dayjs";
 import type { CSSProperties } from "react";
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 import {
   dateFieldPlaceholder,
   datePickerFormat,
   normalizeDateInputText,
   type DisplayContext,
 } from "../lib/i18n";
+import { antdLocaleForDisplay, applyDayjsLocale } from "../lib/i18n/antdLocale";
 import { parseDayjsValue } from "./formUtils";
 
 export type DateFieldInputProps = {
@@ -25,7 +26,10 @@ export type DateFieldInputProps = {
   "aria-label"?: string;
 };
 
-function formatStoredForEdit(stored: unknown, displayContext?: DisplayContext): string {
+function formatStoredForEdit(
+  stored: unknown,
+  displayContext?: DisplayContext,
+): string {
   const parsed = parseDayjsValue(stored, displayContext);
   if (!parsed) {
     return "";
@@ -38,6 +42,14 @@ function isInsideDatePopup(node: Node | null): boolean {
     return false;
   }
   return Boolean(node.closest(".ant-picker-dropdown"));
+}
+
+function openCalendarAriaLabel(displayContext?: DisplayContext): string {
+  const language = (displayContext?.language ?? "").toLowerCase();
+  if (language.startsWith("zh")) {
+    return "打开日历";
+  }
+  return "Open calendar";
 }
 
 /**
@@ -58,7 +70,9 @@ export function DateFieldInput({
   const pickerId = useId();
   const rootRef = useRef<HTMLSpanElement>(null);
   const inputRef = useRef<InputRef>(null);
-  const [text, setText] = useState(() => formatStoredForEdit(value, displayContext));
+  const [text, setText] = useState(() =>
+    formatStoredForEdit(value, displayContext),
+  );
   const [focused, setFocused] = useState(false);
   const [invalid, setInvalid] = useState(false);
   const [open, setOpen] = useState(false);
@@ -123,108 +137,128 @@ export function DateFieldInput({
     focusTextInput();
   };
 
+  const locale = useMemo(
+    () => antdLocaleForDisplay(displayContext),
+    [displayContext],
+  );
+  const calendarAria = openCalendarAriaLabel(displayContext);
+
+  useEffect(() => {
+    applyDayjsLocale(displayContext);
+  }, [displayContext]);
+
   return (
-    <span
-      ref={rootRef}
-      className={["date-field-input", className].filter(Boolean).join(" ")}
-      style={style}
-    >
-      <Input
-        ref={inputRef}
-        value={text}
-        disabled={disabled}
-        placeholder={placeholder ?? dateFieldPlaceholder(displayContext, false)}
-        status={invalid ? "error" : undefined}
-        allowClear={allowClear && !disabled}
-        aria-label={ariaLabel}
-        aria-invalid={invalid}
-        onChange={(event) => {
-          setText(event.target.value);
-          if (invalid) {
-            setInvalid(false);
+    <ConfigProvider locale={locale}>
+      <span
+        ref={rootRef}
+        className={["date-field-input", className].filter(Boolean).join(" ")}
+        style={style}
+      >
+        <Input
+          ref={inputRef}
+          value={text}
+          disabled={disabled}
+          placeholder={
+            placeholder ?? dateFieldPlaceholder(displayContext, false)
           }
-        }}
-        onFocus={() => {
-          setFocused(true);
-          openCalendar();
-        }}
-        onBlur={(event) => {
-          const related = event.relatedTarget as Node | null;
-          // DatePicker steals focus onto its hidden input when the panel opens —
-          // restore typing focus and do not treat this as leaving the field.
-          if (related instanceof Element && related.closest(".date-field-input__picker")) {
-            focusTextInput();
-            return;
-          }
-          // Defer close so a calendar-day mousedown can commit via onCalendarChange.
-          window.setTimeout(() => {
-            const active = document.activeElement;
-            if (active === inputRef.current?.input || isInsideDatePopup(active)) {
+          status={invalid ? "error" : undefined}
+          allowClear={allowClear && !disabled}
+          aria-label={ariaLabel}
+          aria-invalid={invalid}
+          onChange={(event) => {
+            setText(event.target.value);
+            if (invalid) {
+              setInvalid(false);
+            }
+          }}
+          onFocus={() => {
+            setFocused(true);
+            openCalendar();
+          }}
+          onBlur={(event) => {
+            const related = event.relatedTarget as Node | null;
+            // DatePicker steals focus onto its hidden input when the panel opens —
+            // restore typing focus and do not treat this as leaving the field.
+            if (
+              related instanceof Element &&
+              related.closest(".date-field-input__picker")
+            ) {
+              focusTextInput();
               return;
             }
-            setFocused(false);
-            commitText(textRef.current);
-            setOpen(false);
-          }, 0);
-        }}
-        onPressEnter={(event) => {
-          commitText((event.target as HTMLInputElement).value);
-          setOpen(false);
-          (event.target as HTMLInputElement).blur();
-        }}
-        suffix={
-          <CalendarOutlined
-            className="date-field-input__calendar"
-            role="button"
-            aria-label="Open calendar"
-            aria-controls={pickerId}
-            aria-expanded={open}
-            onMouseDown={(event) => {
-              // Keep text focus; avoid Input blur racing the open.
-              event.preventDefault();
-            }}
-            onClick={() => {
-              if (disabled) {
+            // Defer close so a calendar-day mousedown can commit via onCalendarChange.
+            window.setTimeout(() => {
+              const active = document.activeElement;
+              if (
+                active === inputRef.current?.input ||
+                isInsideDatePopup(active)
+              ) {
                 return;
               }
-              if (open) {
-                setOpen(false);
-              } else {
-                openCalendar();
-              }
-            }}
-          />
-        }
-      />
-      <DatePicker
-        id={pickerId}
-        className="date-field-input__picker"
-        tabIndex={-1}
-        open={open}
-        placement="bottomLeft"
-        // Small gap so flipped top placement does not sit flush on the field border.
-        styles={{ popup: { root: { marginTop: 4, marginBottom: 4 } } }}
-        onOpenChange={(next) => {
-          if (next) {
-            openCalendar();
-            return;
+              setFocused(false);
+              commitText(textRef.current);
+              setOpen(false);
+            }, 0);
+          }}
+          onPressEnter={(event) => {
+            commitText((event.target as HTMLInputElement).value);
+            setOpen(false);
+            (event.target as HTMLInputElement).blur();
+          }}
+          suffix={
+            <CalendarOutlined
+              className="date-field-input__calendar"
+              role="button"
+              aria-label={calendarAria}
+              aria-controls={pickerId}
+              aria-expanded={open}
+              onMouseDown={(event) => {
+                // Keep text focus; avoid Input blur racing the open.
+                event.preventDefault();
+              }}
+              onClick={() => {
+                if (disabled) {
+                  return;
+                }
+                if (open) {
+                  setOpen(false);
+                } else {
+                  openCalendar();
+                }
+              }}
+            />
           }
-          // Ignore close when focus is still in our text input (DatePicker
-          // loses focus by design while the user types).
-          const active = document.activeElement;
-          if (rootRef.current?.contains(active)) {
-            return;
-          }
-          setOpen(false);
-        }}
-        value={parseDayjsValue(value, displayContext)}
-        disabled={disabled}
-        allowClear={false}
-        inputReadOnly
-        onChange={onCalendarChange}
-        // Mount outside .record-section (overflow:hidden) so the panel is not clipped.
-        getPopupContainer={() => document.body}
-      />
-    </span>
+        />
+        <DatePicker
+          id={pickerId}
+          className="date-field-input__picker"
+          tabIndex={-1}
+          open={open}
+          placement="bottomLeft"
+          // Small gap so flipped top placement does not sit flush on the field border.
+          styles={{ popup: { root: { marginTop: 4, marginBottom: 4 } } }}
+          onOpenChange={(next) => {
+            if (next) {
+              openCalendar();
+              return;
+            }
+            // Ignore close when focus is still in our text input (DatePicker
+            // loses focus by design while the user types).
+            const active = document.activeElement;
+            if (rootRef.current?.contains(active)) {
+              return;
+            }
+            setOpen(false);
+          }}
+          value={parseDayjsValue(value, displayContext)}
+          disabled={disabled}
+          allowClear={false}
+          inputReadOnly
+          onChange={onCalendarChange}
+          // Mount outside .record-section (overflow:hidden) so the panel is not clipped.
+          getPopupContainer={() => document.body}
+        />
+      </span>
+    </ConfigProvider>
   );
 }

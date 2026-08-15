@@ -20,7 +20,7 @@ import { useUnsavedChangesGuard } from "../hooks/useUnsavedChangesGuard";
 import { useUi } from "../context/UiContext";
 import { FormMetaProvider } from "../context/FormMetaContext";
 import { applyLayoutRuleEffects, visibleFormSections } from "../lib/layoutRules";
-import { defaultFormChrome, defaultPageMessages, displayText, displayTextTemplate } from "../lib/i18n";
+import { defaultFormChrome, displayText, displayTextTemplate } from "../lib/i18n";
 import { getLastTab, type RecordNavState } from "../lib/vaultNav";
 import {
   NAV_TRAIL_PARAM,
@@ -620,12 +620,12 @@ export function RecordFormPage() {
         showSectionNav ? (
           <RecordSectionNav
             sections={displaySections}
-            ariaLabel={displayText(defaultPageMessages.section_nav_aria)}
+            ariaLabel={displayText(chrome.section_nav_aria)}
             onNavigate={scrollToSection}
             collapsed={sectionNavCollapsed}
             onToggleCollapse={() => setSectionNavCollapsed((prev) => !prev)}
-            collapseLabel={displayText(defaultPageMessages.collapse_section_nav)}
-            expandLabel={displayText(defaultPageMessages.expand_section_nav)}
+            collapseLabel={displayText(chrome.collapse_section_nav)}
+            expandLabel={displayText(chrome.expand_section_nav)}
           />
         ) : undefined
       }

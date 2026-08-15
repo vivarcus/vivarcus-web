@@ -1298,6 +1298,10 @@ export type FormChrome = {
   validation_fix_fields: DisplayText;
   /** DateTime field shortcut — Veeva "Now" / 「现在」. */
   datetime_now: DisplayText;
+  section_nav_aria: DisplayText;
+  collapse_section_nav: DisplayText;
+  expand_section_nav: DisplayText;
+  open_calendar: DisplayText;
 };
 
 export type ClinicalHomeChrome = {
@@ -4693,6 +4697,10 @@ export const defaultFormChrome: FormChrome = {
     "form.validation_fix_fields",
   ),
   datetime_now: t("Now", "form.datetime_now"),
+  section_nav_aria: t("Page sections", "record.section_nav_aria"),
+  collapse_section_nav: t("Hide Navigation", "record.collapse_section_nav"),
+  expand_section_nav: t("Show Navigation", "record.expand_section_nav"),
+  open_calendar: t("Open calendar", "form.open_calendar"),
 };
 
 export const defaultRelatedChrome: RelatedChrome = {

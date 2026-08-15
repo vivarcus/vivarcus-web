@@ -4,6 +4,7 @@ import { describe, expect, it, vi } from "vitest";
 import { DateFieldInput } from "./DateFieldInput";
 
 const zhCtx = { locale: "zh-CN", timezone: "Asia/Shanghai", language: "zh" };
+const calendarAria = "打开日历";
 
 function getEditInput(container: HTMLElement): HTMLInputElement {
   const input = container.querySelector(
@@ -21,7 +22,11 @@ describe("DateFieldInput", () => {
     const onChange = vi.fn();
     const { container } = render(
       <div>
-        <DateFieldInput value={null} displayContext={zhCtx} onChange={onChange} />
+        <DateFieldInput
+          value={null}
+          displayContext={zhCtx}
+          onChange={onChange}
+        />
         <button type="button">away</button>
       </div>,
     );
@@ -38,7 +43,11 @@ describe("DateFieldInput", () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
     const { container } = render(
-      <DateFieldInput value={null} displayContext={zhCtx} onChange={onChange} />,
+      <DateFieldInput
+        value={null}
+        displayContext={zhCtx}
+        onChange={onChange}
+      />,
     );
 
     const input = getEditInput(container);
@@ -54,7 +63,11 @@ describe("DateFieldInput", () => {
     const onChange = vi.fn();
     const { container } = render(
       <div>
-        <DateFieldInput value="2026-06-25" displayContext={zhCtx} onChange={onChange} />
+        <DateFieldInput
+          value="2026-06-25"
+          displayContext={zhCtx}
+          onChange={onChange}
+        />
         <button type="button">away</button>
       </div>,
     );
@@ -71,7 +84,11 @@ describe("DateFieldInput", () => {
     const onChange = vi.fn();
     const { container } = render(
       <div>
-        <DateFieldInput value={null} displayContext={zhCtx} onChange={onChange} />
+        <DateFieldInput
+          value={null}
+          displayContext={zhCtx}
+          onChange={onChange}
+        />
         <button type="button">away</button>
       </div>,
     );
@@ -82,7 +99,9 @@ describe("DateFieldInput", () => {
     await user.click(screen.getByRole("button", { name: "away" }));
 
     expect(onChange).not.toHaveBeenCalled();
-    expect(input.closest(".ant-input-affix-wrapper")).toHaveClass("ant-input-status-error");
+    expect(input.closest(".ant-input-affix-wrapper")).toHaveClass(
+      "ant-input-status-error",
+    );
     expect(input).toHaveValue("not-a-date");
   });
 
@@ -93,7 +112,7 @@ describe("DateFieldInput", () => {
     );
 
     const input = getEditInput(container);
-    const calendar = screen.getByRole("button", { name: "Open calendar" });
+    const calendar = screen.getByRole("button", { name: calendarAria });
     expect(calendar).toHaveAttribute("aria-expanded", "false");
     await user.click(input);
     expect(calendar).toHaveAttribute("aria-expanded", "true");
@@ -103,9 +122,11 @@ describe("DateFieldInput", () => {
 
   it("opens the calendar panel from the suffix control", async () => {
     const user = userEvent.setup();
-    render(<DateFieldInput value={null} displayContext={zhCtx} onChange={vi.fn()} />);
+    render(
+      <DateFieldInput value={null} displayContext={zhCtx} onChange={vi.fn()} />,
+    );
 
-    const calendar = screen.getByRole("button", { name: "Open calendar" });
+    const calendar = screen.getByRole("button", { name: calendarAria });
     expect(calendar).toHaveAttribute("aria-expanded", "false");
     await user.click(calendar);
     expect(calendar).toHaveAttribute("aria-expanded", "true");
@@ -118,9 +139,15 @@ describe("DateFieldInput", () => {
   it("commits a day chosen from the calendar panel", async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
-    render(<DateFieldInput value="2026-07-25" displayContext={zhCtx} onChange={onChange} />);
+    render(
+      <DateFieldInput
+        value="2026-07-25"
+        displayContext={zhCtx}
+        onChange={onChange}
+      />,
+    );
 
-    await user.click(screen.getByRole("button", { name: "Open calendar" }));
+    await user.click(screen.getByRole("button", { name: calendarAria }));
     const day = document.querySelector(
       '.ant-picker-cell:not(.ant-picker-cell-disabled)[title="2026-07-10"] .ant-picker-cell-inner',
     );
@@ -133,13 +160,17 @@ describe("DateFieldInput", () => {
   it("keeps text-input focus after opening the calendar", async () => {
     const user = userEvent.setup();
     const { container } = render(
-      <DateFieldInput value="2026-07-25" displayContext={zhCtx} onChange={vi.fn()} />,
+      <DateFieldInput
+        value="2026-07-25"
+        displayContext={zhCtx}
+        onChange={vi.fn()}
+      />,
     );
 
     const input = getEditInput(container);
-    await user.click(screen.getByRole("button", { name: "Open calendar" }));
+    await user.click(screen.getByRole("button", { name: calendarAria }));
     expect(input).toHaveFocus();
-    expect(screen.getByRole("button", { name: "Open calendar" })).toHaveAttribute(
+    expect(screen.getByRole("button", { name: calendarAria })).toHaveAttribute(
       "aria-expanded",
       "true",
     );
