@@ -102,7 +102,7 @@ export function DomainInformationPage() {
   return (
     <AdminPageShell title={displayText(chrome.page_title)}>
       <div className="admin-page__body domain-information__body">
-        <RecordSectionBlock title={displayText(chrome.section_title)}>
+        <RecordSectionBlock>
           <div className="domain-information__info-grid">
             <div className="domain-information__info-row">
               <div className="domain-information__field-label">

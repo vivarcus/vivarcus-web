@@ -102,7 +102,7 @@ export function VaultInformationPage() {
   return (
     <AdminPageShell title={displayText(chrome.page_title)}>
       <div className="admin-page__body vault-information__body">
-        <RecordSectionBlock title={displayText(chrome.section_title)}>
+        <RecordSectionBlock>
           <div className="vault-information__info-grid">
             {rows.map((row) => (
               <div key={row.label} className="vault-information__info-row">
