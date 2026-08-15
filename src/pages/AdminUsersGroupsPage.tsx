@@ -14,11 +14,6 @@ import {
   type UsersGroupsView,
 } from "../lib/usersGroupsExport";
 
-const VIEW_LABELS: Record<UsersGroupsView, string> = {
-  domain_users: "Domain Users",
-  groups: "Groups",
-};
-
 const VALID_VIEWS = new Set<string>(["domain_users"]);
 
 function parseViewKind(view: string | undefined): UsersGroupsView | null {
@@ -32,6 +27,8 @@ export function AdminUsersGroupsPage() {
   const vaultId = useVaultId();
   const { view } = useParams<{ view: string }>();
   const { shell } = useUi();
+  const du = shell.domain_user;
+  const emptyValue = displayText(shell.empty_value);
   const [model, setModel] = useState<UsersGroupsPanelModel | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -41,7 +38,10 @@ export function AdminUsersGroupsPage() {
   const [exportError, setExportError] = useState<string | null>(null);
 
   const viewKind = parseViewKind(view);
-  const title = (viewKind && VIEW_LABELS[viewKind]) || displayText(shell.admin_users_groups);
+  const title =
+    viewKind === "domain_users"
+      ? displayText(du.list_title)
+      : displayText(shell.admin_users_groups);
 
   const load = useCallback(
     async (pageToken?: string, search = searchApplied) => {
@@ -106,14 +106,14 @@ export function AdminUsersGroupsPage() {
         if (viewKind === "domain_users" && col.key === "username" && row.user_id) {
           return (
             <Link to={`/admin/users-groups/domain_users/${encodeURIComponent(row.user_id)}`}>
-              {row.username || "—"}
+              {row.username || emptyValue}
             </Link>
           );
         }
-        return row[col.key] || "—";
+        return row[col.key] || emptyValue;
       },
     }));
-  }, [model, viewKind]);
+  }, [model, viewKind, emptyValue]);
 
   const dataSource = useMemo(() => {
     if (!model) return [];
@@ -128,7 +128,7 @@ export function AdminUsersGroupsPage() {
   }
 
   if (!viewKind) {
-    return <Alert type="error" showIcon title="Unknown Users & Groups view" />;
+    return <Alert type="error" showIcon title={displayText(du.unknown_view)} />;
   }
 
   return (
@@ -139,7 +139,7 @@ export function AdminUsersGroupsPage() {
           <Space>
             {model?.actions.export_allowed && (
               <Button loading={exporting} disabled={loading} onClick={() => void runExport()}>
-                Export CSV
+                {displayText(du.export_csv)}
               </Button>
             )}
           </Space>
@@ -152,22 +152,22 @@ export function AdminUsersGroupsPage() {
           requiredMark={false}
           onFinish={applySearch}
         >
-          <Form.Item label="Search">
+          <Form.Item label={displayText(shell.global_search_submit)}>
             <Input
               value={searchDraft}
-              placeholder="Search by username or name"
+              placeholder={displayText(du.search_placeholder)}
               onChange={(e) => setSearchDraft(e.target.value)}
               onPressEnter={applySearch}
             />
           </Form.Item>
           <Form.Item>
             <Button htmlType="submit" disabled={loading}>
-              Apply
+              {displayText(shell.apply)}
             </Button>
           </Form.Item>
           <Form.Item>
             <Button disabled={loading || (!searchDraft && !searchApplied)} onClick={clearSearch}>
-              Clear
+              {displayText(shell.clear)}
             </Button>
           </Form.Item>
         </Form>
@@ -193,7 +193,7 @@ export function AdminUsersGroupsPage() {
             <div className="pagination-bar">
               {model.pagination.has_previous && (
                 <Button disabled={loading} onClick={() => void load()}>
-                  First page
+                  {displayText(shell.first_page)}
                 </Button>
               )}
               {model.pagination.next_page_token && (

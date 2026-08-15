@@ -900,6 +900,32 @@ export type DomainUserChrome = {
   locale_label: DisplayText;
   timezone_label: DisplayText;
   user_name_label: DisplayText;
+  list_title: DisplayText;
+  col_home_domain: DisplayText;
+  col_domain_admin: DisplayText;
+  col_cross_domain: DisplayText;
+  col_status: DisplayText;
+  status_active: DisplayText;
+  status_inactive: DisplayText;
+  yes: DisplayText;
+  no: DisplayText;
+  empty: DisplayText;
+  empty_filtered: DisplayText;
+  unknown_view: DisplayText;
+  details: DisplayText;
+  vault_memberships: DisplayText;
+  actions: DisplayText;
+  company: DisplayText;
+  license_type: DisplayText;
+  security_profile: DisplayText;
+  vault: DisplayText;
+  membership_status: DisplayText;
+  no_memberships: DisplayText;
+  change_status_to_active: DisplayText;
+  change_status_to_inactive: DisplayText;
+  change_status_active_help: DisplayText;
+  change_status_inactive_help: DisplayText;
+  export_csv: DisplayText;
 };
 
 export type CompletenessHoverChrome = {
@@ -2615,6 +2641,47 @@ export const defaultDomainUserChrome: DomainUserChrome = {
   locale_label: t("Locale", "domain_user.locale_label"),
   timezone_label: t("Timezone", "domain_user.timezone_label"),
   user_name_label: t("User Name", "domain_user.user_name_label"),
+  list_title: t("Domain Users", "domain_user.list_title"),
+  col_home_domain: t("Home Domain", "domain_user.col_home_domain"),
+  col_domain_admin: t("Domain Admin", "domain_user.col_domain_admin"),
+  col_cross_domain: t("Cross-Domain", "domain_user.col_cross_domain"),
+  col_status: t("Domain Status", "domain_user.col_status"),
+  status_active: t("Active", "domain_user.status_active"),
+  status_inactive: t("Inactive", "domain_user.status_inactive"),
+  yes: t("Yes", "domain_user.yes"),
+  no: t("No", "domain_user.no"),
+  empty: t("No users found in this domain.", "domain_user.empty"),
+  empty_filtered: t(
+    "No users found matching the current filters.",
+    "domain_user.empty_filtered",
+  ),
+  unknown_view: t("Unknown Users & Groups view", "domain_user.unknown_view"),
+  details: t("Details", "domain_user.details"),
+  vault_memberships: t("Vault Memberships", "domain_user.vault_memberships"),
+  actions: t("Actions", "domain_user.actions"),
+  company: t("Company", "domain_user.company"),
+  license_type: t("License Type", "domain_user.license_type"),
+  security_profile: t("Security Profile", "domain_user.security_profile"),
+  vault: t("Vault", "domain_user.vault"),
+  membership_status: t("Status", "domain_user.membership_status"),
+  no_memberships: t("No vault memberships.", "domain_user.no_memberships"),
+  change_status_to_active: t(
+    "Change Domain Status to Active",
+    "domain_user.change_status_to_active",
+  ),
+  change_status_to_inactive: t(
+    "Change Domain Status to Inactive",
+    "domain_user.change_status_to_inactive",
+  ),
+  change_status_active_help: t(
+    "Re-enable this Domain User's domain identity? Vault memberships stay inactive until activated per Vault.",
+    "domain_user.change_status_active_help",
+  ),
+  change_status_inactive_help: t(
+    "Disable this Domain User across the whole home domain? Active login sessions will be revoked.",
+    "domain_user.change_status_inactive_help",
+  ),
+  export_csv: t("Export CSV", "audit.export_csv"),
 };
 
 export const defaultCompletenessHoverChrome: CompletenessHoverChrome = {

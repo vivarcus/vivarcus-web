@@ -7,6 +7,7 @@ import type { DomainUserDetailModel, DomainUserVaultMembership } from "../api/ty
 import { useVaultId } from "../hooks/useVaultId";
 import { useUi } from "../context/UiContext";
 import { displayText } from "../lib/i18n";
+import type { DomainUserChrome } from "../lib/i18n/chromeTypes";
 import { AdminCompactTable, adminTableEmptyText } from "../components/admin/AdminCompactTable";
 import { AdminPageShell } from "../components/admin/AdminPageShell";
 
@@ -20,13 +21,13 @@ function actionErrorMessage(err: unknown, fallback: string): string {
   return fallback;
 }
 
-function yesNo(v: boolean): string {
-  return v ? "Yes" : "No";
+function yesNo(v: boolean, chrome: DomainUserChrome): string {
+  return v ? displayText(chrome.yes) : displayText(chrome.no);
 }
 
-function displayName(model: DomainUserDetailModel): string {
+function displayName(model: DomainUserDetailModel, emptyValue: string): string {
   const parts = [model.first_name, model.last_name].map((p) => p.trim()).filter(Boolean);
-  return parts.length > 0 ? parts.join(" ") : "—";
+  return parts.length > 0 ? parts.join(" ") : emptyValue;
 }
 
 /** Veeva-style Domain User detail: identity + Domain Status + Vault Memberships (read-only). */
@@ -34,6 +35,7 @@ export function AdminDomainUserDetailPage() {
   const vaultId = useVaultId();
   const { userId = "" } = useParams<{ userId: string }>();
   const { shell } = useUi();
+  const du = shell.domain_user;
   const [model, setModel] = useState<DomainUserDetailModel | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -54,20 +56,18 @@ export function AdminDomainUserDetailPage() {
     }
   }, [vaultId, userId, shell.load_failed]);
 
-  useEffect(() => {
-    void load();
-  }, [load]);
-
   const changeDomainStatus = useCallback(() => {
     if (!vaultId || !model || !model.can_change_domain_status || statusPending) return;
     const nextActive = !model.domain_active;
     Modal.confirm({
       title: nextActive
-        ? "Change Domain Status to Active"
-        : "Change Domain Status to Inactive",
+        ? displayText(du.change_status_to_active)
+        : displayText(du.change_status_to_inactive),
       content: nextActive
-        ? "Re-enable this Domain User's domain identity? Vault memberships stay inactive until activated per Vault."
-        : "Disable this Domain User across the whole home domain? Active login sessions will be revoked.",
+        ? displayText(du.change_status_active_help)
+        : displayText(du.change_status_inactive_help),
+      okText: displayText(shell.confirm),
+      cancelText: displayText(shell.cancel),
       okButtonProps: nextActive ? undefined : { danger: true },
       onOk: async () => {
         setStatusError(null);
@@ -86,15 +86,15 @@ export function AdminDomainUserDetailPage() {
         }
       },
     });
-  }, [vaultId, model, statusPending, load, shell.action_failed]);
+  }, [vaultId, model, statusPending, load, shell.action_failed, shell.confirm, shell.cancel, du]);
 
   const actionMenu: MenuProps = useMemo(() => {
     if (!model?.can_change_domain_status) {
       return { items: [] };
     }
     const label = model.domain_active
-      ? "Change Domain Status to Inactive"
-      : "Change Domain Status to Active";
+      ? displayText(du.change_status_to_inactive)
+      : displayText(du.change_status_to_active);
     return {
       items: [
         {
@@ -106,7 +106,7 @@ export function AdminDomainUserDetailPage() {
         },
       ],
     };
-  }, [model, statusPending, changeDomainStatus]);
+  }, [model, statusPending, changeDomainStatus, du]);
 
   if (!vaultId) return null;
 
@@ -116,7 +116,7 @@ export function AdminDomainUserDetailPage() {
     <AdminPageShell
       breadcrumb={
         <p className="page-header__breadcrumb">
-          <Link to="/admin/users-groups/domain_users">Domain Users</Link>
+          <Link to="/admin/users-groups/domain_users">{displayText(du.list_title)}</Link>
           {" › "}
           <span>{title}</span>
         </p>
@@ -126,7 +126,7 @@ export function AdminDomainUserDetailPage() {
         model?.can_change_domain_status ? (
           <div className="page-header__actions">
             <Dropdown menu={actionMenu} trigger={["click"]}>
-              <Button loading={statusPending}>Actions</Button>
+              <Button loading={statusPending}>{displayText(du.actions)}</Button>
             </Dropdown>
           </div>
         ) : undefined
@@ -147,10 +147,12 @@ export function AdminDomainUserDetailPage() {
 }
 
 function DomainUserDetailBody({ model }: { model: DomainUserDetailModel }) {
+  const { shell } = useUi();
+  const du = shell.domain_user;
   const idBase = `domain-user-${model.user_id}`;
   const sections = [
-    { id: `${idBase}-details`, title: "Details" },
-    { id: `${idBase}-memberships`, title: "Vault Memberships" },
+    { id: `${idBase}-details`, title: displayText(du.details) },
+    { id: `${idBase}-memberships`, title: displayText(du.vault_memberships) },
   ];
 
   return (
@@ -167,7 +169,7 @@ function DomainUserDetailBody({ model }: { model: DomainUserDetailModel }) {
         </section>
       </div>
 
-      <nav className="security-profile-detail__nav" aria-label="Details">
+      <nav className="security-profile-detail__nav" aria-label={displayText(du.details)}>
         {sections.map((s) => (
           <a key={s.id} href={`#${s.id}`}>
             {s.title}
@@ -179,15 +181,18 @@ function DomainUserDetailBody({ model }: { model: DomainUserDetailModel }) {
 }
 
 function DetailsFields({ model }: { model: DomainUserDetailModel }) {
+  const { shell } = useUi();
+  const du = shell.domain_user;
+  const emptyValue = displayText(shell.empty_value);
   const rows: { label: string; value: ReactNode }[] = [
-    { label: "Username", value: model.username || "—" },
-    { label: "Name", value: displayName(model) },
-    { label: "Email", value: model.email || "—" },
-    { label: "Company", value: model.company_name || "—" },
-    { label: "Home Domain", value: model.home_domain_id || "—" },
-    { label: "Domain Status", value: model.domain_status || "—" },
-    { label: "Domain Admin", value: yesNo(model.domain_admin) },
-    { label: "Cross-Domain", value: yesNo(model.cross_domain) },
+    { label: displayText(du.username_label), value: model.username || emptyValue },
+    { label: displayText(du.name_label), value: displayName(model, emptyValue) },
+    { label: displayText(du.email_label), value: model.email || emptyValue },
+    { label: displayText(du.company), value: model.company_name || emptyValue },
+    { label: displayText(du.col_home_domain), value: model.home_domain_id || emptyValue },
+    { label: displayText(du.col_status), value: model.domain_status || emptyValue },
+    { label: displayText(du.col_domain_admin), value: yesNo(model.domain_admin, du) },
+    { label: displayText(du.col_cross_domain), value: yesNo(model.cross_domain, du) },
   ];
 
   return (
@@ -203,30 +208,33 @@ function DetailsFields({ model }: { model: DomainUserDetailModel }) {
 }
 
 function VaultMembershipsTable({ rows }: { rows: DomainUserVaultMembership[] }) {
+  const { shell } = useUi();
+  const du = shell.domain_user;
+  const emptyValue = displayText(shell.empty_value);
   const columns: TableColumnsType<DomainUserVaultMembership> = [
     {
       key: "vault_name",
-      title: "Vault",
+      title: displayText(du.vault),
       dataIndex: "vault_name",
-      render: (v: string) => v || "—",
+      render: (v: string) => v || emptyValue,
     },
     {
       key: "license_type",
-      title: "License Type",
+      title: displayText(du.license_type),
       dataIndex: "license_type",
-      render: (v: string) => v || "—",
+      render: (v: string) => v || emptyValue,
     },
     {
       key: "security_profile",
-      title: "Security Profile",
+      title: displayText(du.security_profile),
       dataIndex: "security_profile",
-      render: (v: string) => v || "—",
+      render: (v: string) => v || emptyValue,
     },
     {
       key: "status",
-      title: "Status",
+      title: displayText(du.membership_status),
       dataIndex: "status",
-      render: (v: string) => v || "—",
+      render: (v: string) => v || emptyValue,
     },
   ];
 
@@ -235,7 +243,7 @@ function VaultMembershipsTable({ rows }: { rows: DomainUserVaultMembership[] }) 
       rowKey={(row) => row.vault_id}
       columns={columns}
       dataSource={rows}
-      locale={{ emptyText: adminTableEmptyText("No vault memberships.") }}
+      locale={{ emptyText: adminTableEmptyText(displayText(du.no_memberships)) }}
     />
   );
 }
