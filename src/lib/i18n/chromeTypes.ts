@@ -3227,7 +3227,7 @@ export const defaultShellChrome: ShellChrome = {
     "metadata.workflow_detail_title",
   ),
   metadata_workflows_search_placeholder: t(
-    "Search columns",
+    "Search workflows",
     "metadata.workflows_search_placeholder",
   ),
   metadata_empty_workflows: t(

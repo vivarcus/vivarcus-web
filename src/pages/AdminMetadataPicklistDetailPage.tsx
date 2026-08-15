@@ -10,6 +10,7 @@ import { AdminPageShell } from "../components/admin/AdminPageShell";
 import { useVaultId } from "../hooks/useVaultId";
 import { useUi } from "../context/UiContext";
 import { displayText } from "../lib/i18n";
+import { sourceLabel } from "../lib/metadataFormat";
 
 const SUMMARY_ATTR_NAMES = new Set([
   "label",
@@ -132,7 +133,7 @@ export function AdminMetadataPicklistDetailPage() {
               {
                 key: "source",
                 label: displayText(shell.metadata_source),
-                children: <span className="mono">{model.source}</span>,
+                children: sourceLabel(model.source, shell),
               },
               {
                 key: "can_add",

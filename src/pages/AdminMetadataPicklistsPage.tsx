@@ -7,6 +7,7 @@ import type { MetadataPicklistSummary } from "../api/types";
 import { useVaultId } from "../hooks/useVaultId";
 import { useUi } from "../context/UiContext";
 import { displayText, displayTextTemplate } from "../lib/i18n";
+import { sourceLabel } from "../lib/metadataFormat";
 import { filterAndRankByQuery } from "../lib/metadataSearchRank";
 import { AdminCompactTable, adminTableEmptyText } from "../components/admin/AdminCompactTable";
 import { AdminPageShell } from "../components/admin/AdminPageShell";
@@ -98,6 +99,7 @@ export function AdminMetadataPicklistsPage() {
       dataIndex: "source",
       title: displayText(shell.metadata_source),
       className: "mono",
+      render: (source: string) => sourceLabel(source, shell),
     },
   ];
 
