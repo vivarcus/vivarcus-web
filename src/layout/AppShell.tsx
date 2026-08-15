@@ -3,7 +3,6 @@ import { Link, Navigate, Outlet, useLocation, useMatch, useNavigate, useSearchPa
 import { RouteFallback } from "./RouteFallback";
 import { useAuth } from "../auth/AuthProvider";
 import { NavigationProvider, useNavigationContext } from "../context/NavigationContext";
-import { TabListActionsProvider } from "../context/TabListActionsContext";
 import { UiProvider } from "../context/UiContext";
 import { DisplayLocaleAntdBridge } from "../theme/DisplayLocaleAntdBridge";
 import { VaultAIProvider, useVaultAI } from "../context/VaultAIContext";
@@ -35,7 +34,7 @@ function AppShellBody() {
   const isAdminRoute = /^\/admin(\/|$)/.test(location.pathname);
   const isBusinessAdminRoute = /^\/business-admin(\/|$)/.test(location.pathname);
   const { nav, error: navError, refetch } = useNavigationContext();
-  const { open: vaultAIOpen, setOpen: setVaultAIOpen, pageNavigator, pendingChatConversationId } = useVaultAI();
+  const { open: vaultAIOpen, setOpen: setVaultAIOpen, pageNavigator } = useVaultAI();
   // Keep a local hold so Strict Mode remount / consume cannot flash Tasks before /vault-ai.
   const [landingHold, setLandingHold] = useState(() => isPendingDefaultLanding());
 
@@ -66,21 +65,6 @@ function AppShellBody() {
     }
     navigate(landing, { replace: true });
   }, [landingHold, nav, navError, location.pathname, navigate]);
-
-  useEffect(() => {
-    if (
-      pendingChatConversationId &&
-      recordMatch?.params.objectName &&
-      recordMatch?.params.recordId
-    ) {
-      setVaultAIOpen(true);
-    }
-  }, [
-    pendingChatConversationId,
-    recordMatch?.params.objectName,
-    recordMatch?.params.recordId,
-    setVaultAIOpen,
-  ]);
 
   if (!session) {
     return <RequireLoginHost />;
@@ -191,11 +175,9 @@ export function AppShell() {
       search={location.search}
     >
       <NavigationProvider vaultId={vaultId ?? undefined}>
-        <TabListActionsProvider>
-          <VaultAIProvider>
-            <AppShellBody />
-          </VaultAIProvider>
-        </TabListActionsProvider>
+        <VaultAIProvider>
+          <AppShellBody />
+        </VaultAIProvider>
       </NavigationProvider>
     </LoginHostSessionGate>
   );

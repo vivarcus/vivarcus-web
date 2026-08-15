@@ -27,9 +27,7 @@ import { SaveViewNameDialog } from "../components/SaveViewNameDialog";
 import { SavedViewActionsMenu, type SavedViewAction } from "../components/SavedViewActionsMenu";
 import { useUi } from "../context/UiContext";
 import { useOptionalNavigationContext } from "../context/NavigationContext";
-import { useTabListActionsPublisher } from "../context/TabListActionsContext";
 import { useObjectListState } from "../hooks/useObjectListState";
-import { tabListActionsFromObjectList } from "../hooks/useTabListActions";
 import { handleStaleError } from "../lib/staleGuard";
 import { displayText, displayTextTemplate, defaultPageActionLabels, defaultRelatedChrome } from "../lib/i18n";
 import {
@@ -178,8 +176,6 @@ function ObjectListPageInner({
   const [facetLoading, setFacetLoading] = useState(false);
   const [columnWidths, setColumnWidths] = useState<Record<string, number>>({});
   const columnWidthSaveTimerRef = useRef<number | null>(null);
-  const { publish: publishTabListActions, clear: clearTabListActions } =
-    useTabListActionsPublisher();
 
   const navigationContext = useMemo(() => {
     if (isBusinessAdmin) {
@@ -393,22 +389,16 @@ function ObjectListPageInner({
       setFacetModel(null);
       return;
     }
-    // Wait for list to resolve selected_view so we do not fan out an unbound
-    // facets call that is immediately superseded once model arrives.
-    const selectedView = model?.selected_view;
-    if (!selectedView) {
-      return;
-    }
     let cancelled = false;
     setFacetLoading(true);
     const facetsPromise = isBusinessAdmin
       ? api.businessAdminObjectListFacets(vaultId, listKey, {
-          view: selectedView,
+          view: model?.selected_view,
           navigationContext,
           facetFilters: hasFacetFilters(facetFilters) ? facetFilters : undefined,
         })
       : api.objectListFacets(vaultId, listKey, {
-          view: selectedView,
+          view: model?.selected_view,
           navigationContext,
           facetFilters: hasFacetFilters(facetFilters) ? facetFilters : undefined,
         });
@@ -441,22 +431,6 @@ function ObjectListPageInner({
     model?.list_context_fingerprint,
     facetFilters,
   ]);
-
-  useEffect(() => {
-    if (isBusinessAdmin || !tabApiName || !model) {
-      return;
-    }
-    publishTabListActions(tabApiName, tabListActionsFromObjectList(model));
-  }, [isBusinessAdmin, tabApiName, model, publishTabListActions]);
-
-  useEffect(() => {
-    if (isBusinessAdmin || !tabApiName) {
-      return;
-    }
-    return () => {
-      clearTabListActions(tabApiName);
-    };
-  }, [isBusinessAdmin, tabApiName, clearTabListActions]);
 
   const {
     selectedView,
@@ -1187,7 +1161,7 @@ function ObjectListPageInner({
                             const targetRecordId = actions.target_record_id?.trim() || recordId;
                             handleRowSdkAction(objectName, targetRecordId, action);
                           }}
-                          actionsAria={chrome.list_actions_aria}
+                          actionsAria={defaultRelatedChrome.actions}
                         />
                       )
                     : undefined

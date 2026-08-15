@@ -46,7 +46,7 @@ export function AdminMetadataWorkflowsPage() {
       if (typeFilter === "Object" && wf.workflow_content_type !== "Object") return false;
       if (typeFilter === "Document" && wf.workflow_content_type !== "Document") return false;
       if (statusFilter === "active" && !wf.active) return false;
-      if (statusFilter === "editing" && wf.active) return false;
+      if (statusFilter === "inactive" && wf.active) return false;
       return true;
     });
     return filterAndRankByQuery(scoped, query, (wf) => [
@@ -125,7 +125,7 @@ export function AdminMetadataWorkflowsPage() {
       dataIndex: "active",
       title: displayText(shell.metadata_status),
       render: (v: boolean) =>
-        v ? displayText(shell.metadata_status_active) : displayText(shell.metadata_status_editing),
+        v ? displayText(shell.metadata_status_active) : displayText(shell.metadata_status_inactive),
     },
     {
       key: "description",
@@ -166,7 +166,7 @@ export function AdminMetadataWorkflowsPage() {
           options={[
             { value: "", label: displayText(shell.metadata_filter_all_statuses) },
             { value: "active", label: displayText(shell.metadata_status_active) },
-            { value: "editing", label: displayText(shell.metadata_status_editing) },
+            { value: "inactive", label: displayText(shell.metadata_status_inactive) },
           ]}
           className="filter-bar__min-140"
         />

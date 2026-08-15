@@ -2273,34 +2273,10 @@ export const api = {
     );
   },
 
-  activateMetadataWorkflow(vaultId: string, workflowName: string) {
-    return vaultFetch<import("./types").MetadataWorkflowDetailModel>(
-      vaultId,
-      `/ui/admin/metadata/workflows/${encodeURIComponent(workflowName)}/activate`,
-      { method: "POST", body: "{}" },
-    );
-  },
-
-  metadataWorkflowVersions(vaultId: string, workflowName: string) {
-    return vaultFetch<import("./types").MetadataWorkflowVersionListModel>(
-      vaultId,
-      `/ui/admin/metadata/workflows/${encodeURIComponent(workflowName)}/versions`,
-    );
-  },
-
-  metadataWorkflowVersionDetail(vaultId: string, workflowName: string, version: number) {
-    return vaultFetch<import("./types").MetadataWorkflowDetailModel>(
-      vaultId,
-      `/ui/admin/metadata/workflows/${encodeURIComponent(workflowName)}/versions/${version}`,
-    );
-  },
-
-  metadataWorkflowStepDetail(vaultId: string, workflowName: string, stepName: string, version?: number) {
-    const versionPath =
-      version && version > 0 ? `/versions/${version}` : "";
+  metadataWorkflowStepDetail(vaultId: string, workflowName: string, stepName: string) {
     return vaultFetch<import("./types").MetadataWorkflowStepDetailModel>(
       vaultId,
-      `/ui/admin/metadata/workflows/${encodeURIComponent(workflowName)}${versionPath}/steps/${encodeURIComponent(stepName)}`,
+      `/ui/admin/metadata/workflows/${encodeURIComponent(workflowName)}/steps/${encodeURIComponent(stepName)}`,
     );
   },
 
@@ -2592,16 +2568,10 @@ export const api = {
     );
   },
 
-  deleteSandboxVault(vaultId: string, sandboxId: string, opts?: { deleteSnapshots?: boolean }) {
-    const qs =
-      opts?.deleteSnapshots === true
-        ? "?delete_snapshots=true"
-        : opts?.deleteSnapshots === false
-          ? "?delete_snapshots=false"
-          : "";
+  deleteSandboxVault(vaultId: string, sandboxId: string) {
     return vaultFetch<import("./types").SandboxVaultActionResult>(
       vaultId,
-      `/ui/deployment/sandbox-vaults/${encodeURIComponent(sandboxId)}${qs}`,
+      `/ui/deployment/sandbox-vaults/${encodeURIComponent(sandboxId)}`,
       { method: "DELETE" },
     );
   },
@@ -4152,8 +4122,7 @@ export const api = {
     }>(vaultId, `/ui/vault-ai/tab/actions`);
   },
 
-  vaultAITabListConversations(vaultId: string, opts?: { pool?: "history" }) {
-    const q = opts?.pool === "history" ? "?pool=history" : "";
+  vaultAITabListConversations(vaultId: string) {
     return vaultFetch<{
       items: Array<{
         id: string;
@@ -4163,7 +4132,7 @@ export const api = {
         surface?: string;
         last_message_at: string;
       }>;
-    }>(vaultId, `/ui/vault-ai/tab/conversations${q}`);
+    }>(vaultId, `/ui/vault-ai/tab/conversations`);
   },
 
   vaultAITabCreateConversation(vaultId: string) {
@@ -4206,7 +4175,6 @@ export const api = {
           object?: string;
           rows?: Array<Record<string, unknown>>;
           row_count?: number;
-          total?: number;
           truncated?: boolean;
           vql?: string;
           error?: string;
@@ -4284,11 +4252,8 @@ export const api = {
           id: string;
           vql: string;
           status: string;
-          message_id?: string;
           clarify_prompt?: string;
           result?: Record<string, unknown>;
-          created_at?: string;
-          updated_at?: string;
         };
         select_actions?: Array<{
           agent_name: string;

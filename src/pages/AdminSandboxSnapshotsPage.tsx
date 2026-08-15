@@ -1,7 +1,7 @@
 import { Alert, Button, Modal, Select, Spin, message } from "antd";
 import type { MenuProps } from "antd";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { api } from "../api/client";
 import type { SandboxSnapshotRow, SandboxSnapshotsModel } from "../api/types";
 import { AdminPageLoading } from "../components/admin/AdminPageLoading";
@@ -28,8 +28,6 @@ const TABLE_SCROLL_X = 1120;
 export function AdminSandboxSnapshotsPage() {
   const vaultId = useVaultId();
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const sourceSandboxFilter = (searchParams.get("source_sandbox_id") || "").trim();
   const { shell } = useUi();
   const [model, setModel] = useState<SandboxSnapshotsModel | null>(null);
   const [loading, setLoading] = useState(true);
@@ -69,21 +67,6 @@ export function AdminSandboxSnapshotsPage() {
       })
       .map((opt) => ({ value: opt.id, label: `${opt.name} (${opt.available})` }));
   }, [model, changeRow]);
-
-  const visibleSnapshots = useMemo(() => {
-    if (!model) return [];
-    if (!sourceSandboxFilter) return model.snapshots;
-    return model.snapshots.filter((row) => row.source_sandbox_id === sourceSandboxFilter);
-  }, [model, sourceSandboxFilter]);
-
-  const sectionTitle = useMemo(() => {
-    if (!model) return "";
-    if (!sourceSandboxFilter) return displayText(model.chrome.all_snapshots_title);
-    const match = model.snapshots.find((row) => row.source_sandbox_id === sourceSandboxFilter);
-    const name = match?.source_sandbox?.trim();
-    if (name) return `${displayText(model.chrome.all_snapshots_title)} — ${name}`;
-    return displayText(model.chrome.all_snapshots_title);
-  }, [model, sourceSandboxFilter]);
 
   const confirmUpdate = (row: SandboxSnapshotRow) => {
     if (!vaultId || !model) return;
@@ -292,7 +275,7 @@ export function AdminSandboxSnapshotsPage() {
       {error && <Alert type="error" showIcon message={error} className="admin-page__banner" />}
 
       <AdminPageSection
-        title={sectionTitle}
+        title={displayText(chrome.all_snapshots_title)}
         actions={
           <Button
             type="primary"
@@ -308,7 +291,7 @@ export function AdminSandboxSnapshotsPage() {
             scrollX={TABLE_SCROLL_X}
             loading={loading}
             rowKey="id"
-            dataSource={visibleSnapshots}
+            dataSource={model.snapshots}
             columns={columns}
             locale={{ emptyText: displayText(chrome.empty_list) }}
           />

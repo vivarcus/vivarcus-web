@@ -132,7 +132,6 @@ export type TaskDashboardTaskItem = {
   workflow_task_id?: string;
   workflow_api_name?: string;
   workflow_label?: string;
-  workflow_version?: number;
   content_count?: number;
   complete_action?: string;
   can_accept?: boolean;
@@ -1465,8 +1464,7 @@ export type WorkflowTimelineInstance = {
   active_task_count: number;
   completed_task_count: number;
   total_task_count: number;
-	due_date?: string;
-  definition_version?: number;
+  due_date?: string;
   tasks: WorkflowTimelineTask[];
   actions: WorkflowTimelineInstanceActions;
 };
@@ -1926,8 +1924,6 @@ export type SharingMemberOption = {
   member_kind: string;
   member_id: string;
   label: string;
-  /** user__sys.username__sys when member_kind is user (often an email). */
-  username?: string;
 };
 
 export type SharingMemberOptionsModel = {
@@ -2593,7 +2589,6 @@ export type SandboxVaultsPageChrome = {
   active_section_title: DisplayText;
   prerelease_available_link: DisplayText;
   create_button: DisplayText;
-  create_allowance_exhausted: DisplayText;
   empty_list: DisplayText;
   column_size: DisplayText;
   column_available: DisplayText;
@@ -2601,7 +2596,6 @@ export type SandboxVaultsPageChrome = {
   column_prerelease_available: DisplayText;
   column_name: DisplayText;
   column_source_vault: DisplayText;
-  column_snapshots: DisplayText;
   column_release: DisplayText;
   column_type: DisplayText;
   column_status: DisplayText;
@@ -2632,7 +2626,6 @@ export type SandboxVaultsPageChrome = {
   delete_action: DisplayText;
   refresh_confirm: DisplayText;
   delete_confirm: DisplayText;
-  delete_snapshots_option: DisplayText;
   status_active: DisplayText;
   status_provisioning: DisplayText;
   status_refresh_in_progress: DisplayText;
@@ -2675,7 +2668,6 @@ export type ActiveSandboxVault = {
   expiration_date?: string;
   domain: string;
   pod: string;
-  snapshots: number;
   refresh_available: boolean;
   refresh_available_label: string;
   can_refresh: boolean;
@@ -3447,7 +3439,6 @@ export type MetadataWorkflowStepSummary = {
   tags?: string[];
   description?: string;
   step_detail_xml?: string;
-  placeholder_error?: boolean;
 };
 
 export type MetadataWorkflowCancelActionSummary = {
@@ -3475,9 +3466,6 @@ export type MetadataWorkflowDetailModel = {
   lifecycle_api_name?: string;
   lifecycle_label?: string;
   version: number;
-  can_activate?: boolean;
-  historical?: boolean;
-  version_activated_at?: string;
   start_states: MetadataWorkflowStartState[];
   cardinality: string;
   auto_start: boolean;
@@ -3493,21 +3481,6 @@ export type MetadataWorkflowDetailModel = {
   workflow_variables?: string;
   steps: MetadataWorkflowStepSummary[];
   cancellation_actions: MetadataWorkflowCancelActionSummary[];
-};
-
-export type MetadataWorkflowVersionListItem = {
-  definition_version: number;
-  label: string;
-  activated_at: string;
-  live: boolean;
-};
-
-export type MetadataWorkflowVersionListModel = {
-  model_type: string;
-  vault_id: string;
-  api_name: string;
-  label: string;
-  versions: MetadataWorkflowVersionListItem[];
 };
 
 export type MetadataWorkflowStepRef = {
@@ -3649,9 +3622,6 @@ export type MetadataWorkflowStepDetailModel = {
   notification?: MetadataWorkflowNotificationStepView | null;
   state_change?: MetadataWorkflowStateChangeStepView | null;
   step_detail_xml?: string;
-  historical?: boolean;
-  version?: number;
-  placeholder_error?: boolean;
 };
 
 export type MetadataPermissionSetSummary = {
@@ -4000,7 +3970,6 @@ export type SearchModifierSuggestModel = {
 export type SearchSettingsPatch = {
   strict_matching_enabled?: boolean;
   auto_filters_enabled?: boolean;
-  multilingual_object_search_enabled?: boolean;
   export_search_criteria?: boolean;
 };
 

@@ -398,33 +398,6 @@ const router = createBrowserRouter([
                 },
               },
               {
-                path: "workflows/:workflowName/versions",
-                lazy: async () => {
-                  const { AdminMetadataWorkflowVersionsPage } = await import(
-                    "./pages/AdminMetadataWorkflowVersionsPage"
-                  );
-                  return { Component: AdminMetadataWorkflowVersionsPage };
-                },
-              },
-              {
-                path: "workflows/:workflowName/versions/:version",
-                lazy: async () => {
-                  const { AdminMetadataWorkflowDetailPage } = await import(
-                    "./pages/AdminMetadataWorkflowDetailPage"
-                  );
-                  return { Component: AdminMetadataWorkflowDetailPage };
-                },
-              },
-              {
-                path: "workflows/:workflowName/versions/:version/steps/:stepName",
-                lazy: async () => {
-                  const { AdminMetadataWorkflowStepPage } = await import(
-                    "./pages/AdminMetadataWorkflowStepPage"
-                  );
-                  return { Component: AdminMetadataWorkflowStepPage };
-                },
-              },
-              {
                 path: "workflows/:workflowName/steps/:stepName",
                 lazy: async () => {
                   const { AdminMetadataWorkflowStepPage } = await import(

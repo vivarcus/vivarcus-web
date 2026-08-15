@@ -28,21 +28,4 @@ describe("VaultAIContext pageNavigator", () => {
     });
     expect(result.current.pageNavigator).toBeNull();
   });
-
-  it("hands a pending Chat conversation id to the panel once", () => {
-    const { result } = renderHook(() => useVaultAI(), { wrapper });
-
-    act(() => {
-      result.current.requestOpenChatConversation("conv-1");
-    });
-    expect(result.current.pendingChatConversationId).toBe("conv-1");
-
-    let taken: string | null = null;
-    act(() => {
-      taken = result.current.takePendingChatConversationId();
-    });
-    expect(taken).toBe("conv-1");
-    expect(result.current.pendingChatConversationId).toBeNull();
-    expect(result.current.takePendingChatConversationId()).toBeNull();
-  });
 });

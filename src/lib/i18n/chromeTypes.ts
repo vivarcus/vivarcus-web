@@ -24,7 +24,6 @@ export type ShellChrome = {
   back: DisplayText;
   sign_out: DisplayText;
   switch_vault: DisplayText;
-  all_vaults_label: DisplayText;
   loading_nav: DisplayText;
   stale_confirm: DisplayText;
   stale_reloaded: DisplayText;
@@ -113,14 +112,6 @@ export type ShellChrome = {
   metadata_workflow_type_filter_all: DisplayText;
   metadata_workflow_lifecycle: DisplayText;
   metadata_workflow_version: DisplayText;
-  metadata_view_workflow_versions: DisplayText;
-  metadata_workflow_versions_title: DisplayText;
-  metadata_workflow_version_live: DisplayText;
-  metadata_workflow_historical_banner: DisplayText;
-  metadata_workflow_placeholder_error: DisplayText;
-  metadata_empty_workflow_versions: DisplayText;
-  metadata_workflow_activated: DisplayText;
-  metadata_make_configuration_active: DisplayText;
   metadata_workflow_start_states: DisplayText;
   metadata_workflow_options: DisplayText;
   metadata_workflow_options_general: DisplayText;
@@ -202,7 +193,6 @@ export type ShellChrome = {
   metadata_status: DisplayText;
   metadata_status_active: DisplayText;
   metadata_status_inactive: DisplayText;
-  metadata_status_editing: DisplayText;
   metadata_namespace: DisplayText;
   metadata_in_menu: DisplayText;
   metadata_object_class: DisplayText;
@@ -435,12 +425,6 @@ export type ShellChrome = {
   admin_domain_settings: DisplayText;
   admin_vault_settings_group: DisplayText;
   admin_domain_settings_group: DisplayText;
-  admin_domain_settings_general_label: DisplayText;
-  admin_domain_settings_features_label: DisplayText;
-  admin_domain_settings_security_policies_label: DisplayText;
-  admin_domain_settings_network_access_label: DisplayText;
-  admin_domain_settings_saml_profiles_label: DisplayText;
-  admin_domain_settings_oauth_profiles_label: DisplayText;
   admin_layout_profile: DisplayText;
   layout_preview_subtitle: DisplayText;
   object_label: DisplayText;
@@ -601,19 +585,6 @@ export type VaultAIChrome = {
   canvas_empty_results: DisplayText;
   canvas_feedback_prompt: DisplayText;
   canvas_object_label: DisplayText;
-  suggested: DisplayText;
-  tasks_pill: DisplayText;
-  tasks_count: DisplayText;
-  show_my_tasks: DisplayText;
-  result_open: DisplayText;
-  result_opened: DisplayText;
-  generated_vql: DisplayText;
-  download_excel: DisplayText;
-  result_as_of: DisplayText;
-  history_from_chat: DisplayText;
-  history_chat_unavailable: DisplayText;
-  result_list_title: DisplayText;
-  result_list_title_fallback: DisplayText;
   ask_user_other: DisplayText;
   ask_user_placeholder: DisplayText;
   ask_user_submit: DisplayText;
@@ -1141,7 +1112,6 @@ export type WorkflowChrome = {
   timeline_no_tasks: DisplayText;
   timeline_unassigned: DisplayText;
   timeline_due: DisplayText;
-  timeline_version: DisplayText;
   due_overdue: DisplayText;
   due_coming_soon: DisplayText;
   due_on_track: DisplayText;
@@ -1763,7 +1733,7 @@ export const defaultVaultAIChrome: VaultAIChrome = {
     "vault_ai.input_placeholder",
   ),
   tab_input_placeholder: t(
-    "Type a question to ask Vault AI",
+    "Ask about records, documents, or tasks…",
     "vault_ai.tab_input_placeholder",
   ),
   select_action_prompt: t(
@@ -1825,7 +1795,7 @@ export const defaultVaultAIChrome: VaultAIChrome = {
   starter_prompt_3: t("List active studies", "vault_ai.starter_prompt_3"),
   continue_recent: t("Continue a recent chat", "vault_ai.continue_recent"),
   tab_disclaimer: t(
-    "AI Chat responses may be inaccurate and should be verified.",
+    "Vault AI responses may be inaccurate and should be verified.",
     "vault_ai.tab_disclaimer",
   ),
   what_can_i_do: t("What can I do?", "vault_ai.what_can_i_do"),
@@ -1865,28 +1835,6 @@ export const defaultVaultAIChrome: VaultAIChrome = {
     "vault_ai.canvas_feedback_prompt",
   ),
   canvas_object_label: t("Object", "vault_ai.canvas_object_label"),
-  suggested: t("Suggested", "vault_ai.suggested"),
-  tasks_pill: t("Tasks", "vault_ai.tasks_pill"),
-  tasks_count: t("Tasks ({count})", "vault_ai.tasks_count"),
-  show_my_tasks: t("Show my tasks", "vault_ai.show_my_tasks"),
-  result_open: t("Open", "vault_ai.result_open"),
-  result_opened: t("Opened", "vault_ai.result_opened"),
-  generated_vql: t("Generated VQL Query", "vault_ai.generated_vql"),
-  download_excel: t("Download", "vault_ai.download_excel"),
-  result_as_of: t(
-    "As of {time} (some links may have expired).",
-    "vault_ai.result_as_of",
-  ),
-  history_from_chat: t("Vault AI Chat", "vault_ai.history_from_chat"),
-  history_chat_unavailable: t(
-    "This Vault AI Chat cannot be opened from here.",
-    "vault_ai.history_chat_unavailable",
-  ),
-  result_list_title: t("{label} Records", "vault_ai.result_list_title"),
-  result_list_title_fallback: t(
-    "Query results",
-    "vault_ai.result_list_title_fallback",
-  ),
   ask_user_other: t("Other", "vault_ai.ask_user_other"),
   ask_user_placeholder: t("Type your answer…", "vault_ai.ask_user_placeholder"),
   ask_user_submit: t("Continue", "vault_ai.ask_user_submit"),
@@ -2699,7 +2647,6 @@ export const defaultShellChrome: ShellChrome = {
   back: t("Back", "ui.back"),
   sign_out: t("Sign out", "ui.sign_out"),
   switch_vault: t("Switch Vault", "ui.switch_vault"),
-  all_vaults_label: t("All Vaults", "ui.all_vaults"),
   loading_nav: t("Loading navigation…", "ui.loading_nav"),
   stale_confirm: t(
     "This page is stale (configuration or record changed). Reload now?",
@@ -2944,32 +2891,6 @@ export const defaultShellChrome: ShellChrome = {
   ),
   metadata_workflow_lifecycle: t("Lifecycle", "metadata.workflow_lifecycle"),
   metadata_workflow_version: t("Version", "metadata.workflow_version"),
-  metadata_view_workflow_versions: t(
-    "View Workflow Versions",
-    "metadata.view_workflow_versions",
-  ),
-  metadata_workflow_versions_title: t(
-    "Workflow Versions",
-    "metadata.workflow_versions_title",
-  ),
-  metadata_workflow_version_live: t("Live", "metadata.workflow_version_live"),
-  metadata_workflow_historical_banner: t(
-    "Historical version (read-only)",
-    "metadata.workflow_historical_banner",
-  ),
-  metadata_workflow_placeholder_error: t(
-    "Placeholder Error Building",
-    "metadata.workflow_placeholder_error",
-  ),
-  metadata_empty_workflow_versions: t(
-    "No activated versions.",
-    "metadata.empty_workflow_versions",
-  ),
-  metadata_workflow_activated: t("Activated", "metadata.workflow_activated"),
-  metadata_make_configuration_active: t(
-    "Make configuration active",
-    "metadata.make_configuration_active",
-  ),
   metadata_workflow_start_states: t(
     "Start States",
     "metadata.workflow_start_states",
@@ -3237,7 +3158,6 @@ export const defaultShellChrome: ShellChrome = {
   metadata_status: t("Status", "metadata.status"),
   metadata_status_active: t("Active", "metadata.status_active"),
   metadata_status_inactive: t("Inactive", "metadata.status_inactive"),
-  metadata_status_editing: t("Editing", "metadata.status_editing"),
   metadata_namespace: t("Namespace", "metadata.namespace"),
   metadata_in_menu: t("In menu", "metadata.in_menu"),
   metadata_object_class: t("Object Class", "metadata.object_class"),
@@ -3859,24 +3779,6 @@ export const defaultShellChrome: ShellChrome = {
     "Domain Settings",
     "admin.settings.domain_group",
   ),
-  admin_domain_settings_general_label: t("General", "domain_settings.general_label"),
-  admin_domain_settings_features_label: t("Features", "domain_settings.features_label"),
-  admin_domain_settings_security_policies_label: t(
-    "Security Policies",
-    "domain_settings.security_policies_label",
-  ),
-  admin_domain_settings_network_access_label: t(
-    "Network Access Rules",
-    "domain_settings.network_access_label",
-  ),
-  admin_domain_settings_saml_profiles_label: t(
-    "SAML Profiles",
-    "domain_settings.saml_profiles_label",
-  ),
-  admin_domain_settings_oauth_profiles_label: t(
-    "OAuth 2.0 / OIDC Profiles",
-    "domain_settings.oauth_profiles_label",
-  ),
   admin_layout_profile: t("Layout Profile", "admin.layout_profile"),
   layout_preview_subtitle: t(
     "Read-only admin preview (POST /ui/preview/page) using a synthetic record snapshot.",
@@ -4254,7 +4156,6 @@ export const defaultWorkflowChrome: WorkflowChrome = {
   ),
   timeline_unassigned: t("Unassigned", "workflow.timeline_unassigned"),
   timeline_due: t("Due", "workflow.timeline_due"),
-  timeline_version: t("Version", "workflow.timeline_version"),
   due_overdue: t("Overdue", "workflow.due_overdue"),
   due_coming_soon: t("Due soon", "workflow.due_coming_soon"),
   due_on_track: t("On track", "workflow.due_on_track"),

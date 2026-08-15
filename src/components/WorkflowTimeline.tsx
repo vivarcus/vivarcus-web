@@ -116,21 +116,11 @@ function workflowActionSummary(
     base = `${displayText(workflow.timeline_started)}: ${formatDateTime(inst.started_at)}`;
   }
   if (inst.status !== "active") {
-    return (
-      <>
-        {base}
-        {workflowVersionMeta(inst, workflow)}
-      </>
-    );
+    return base;
   }
   const due = activeWorkflowDueDate(inst);
   if (!due?.due_date) {
-    return (
-      <>
-        {base}
-        {workflowVersionMeta(inst, workflow)}
-      </>
-    );
+    return base;
   }
   return (
     <>
@@ -141,19 +131,6 @@ function workflowActionSummary(
         dueDateStatus={due.due_date_status}
         workflow={workflow}
       />
-      {workflowVersionMeta(inst, workflow)}
-    </>
-  );
-}
-
-function workflowVersionMeta(inst: WorkflowTimelineInstance, workflow: WorkflowChrome) {
-  if (!inst.definition_version || inst.definition_version < 1) {
-    return null;
-  }
-  return (
-    <>
-      {" · "}
-      {displayText(workflow.timeline_version)} {inst.definition_version}
     </>
   );
 }

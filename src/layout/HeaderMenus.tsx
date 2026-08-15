@@ -119,10 +119,7 @@ export function HeaderMenus({ vaultLabel, vaultId, canViewUserProfile = false }:
       key: "help",
       className: "dropdown__user-menu-item dropdown__user-menu-item--help",
       label: displayText(shell.help_menu),
-      onClick: () => {
-        setUserOpen(false);
-        window.open("https://vivarcus.com/help/zh/", "_blank", "noopener,noreferrer");
-      },
+      onClick: () => setUserOpen(false),
     },
     {
       key: "shortcuts",
@@ -152,7 +149,11 @@ export function HeaderMenus({ vaultLabel, vaultId, canViewUserProfile = false }:
           <div className="dropdown__panel dropdown__panel--vault">
             {session.vaults.length > 0 ? (
               <div className="dropdown__vault-heading">
-                {displayText(shell.all_vaults_label)}
+                {displayText({
+                  text: "All Vaults",
+                  key: "all_vaults",
+                  fallback_source: "base_language",
+                })}
               </div>
             ) : null}
             {menu}

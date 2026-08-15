@@ -1,4 +1,4 @@
-import { Alert, Button, Checkbox, Dropdown, Space, Spin } from "antd";
+import { Alert, Button, Checkbox, Spin } from "antd";
 import type { TableColumnsType } from "antd";
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
@@ -24,59 +24,35 @@ type Shell = ShellChrome;
 
 /** Veeva-style Workflow detail: single-page sections + right-hand anchors + flowchart. */
 export function AdminMetadataWorkflowDetailPage() {
-  const { workflowName = "", version: versionParam } = useParams();
+  const { workflowName = "" } = useParams();
   const vaultId = useVaultId();
   const navigate = useNavigate();
   const { shell } = useUi();
   const [model, setModel] = useState<MetadataWorkflowDetailModel | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const historicalVersion = Number.parseInt(versionParam || "", 10);
-  const isHistorical = Number.isFinite(historicalVersion) && historicalVersion > 0;
-
-  const [activating, setActivating] = useState(false);
 
   const load = useCallback(async () => {
     if (!vaultId || !workflowName) return;
     setLoading(true);
     setError(null);
     try {
-      setModel(
-        isHistorical
-          ? await api.metadataWorkflowVersionDetail(vaultId, workflowName, historicalVersion)
-          : await api.metadataWorkflowDetail(vaultId, workflowName),
-      );
+      setModel(await api.metadataWorkflowDetail(vaultId, workflowName));
     } catch (err) {
       setError(err instanceof Error ? err.message : displayText(shell.metadata_load_failed));
       setModel(null);
     } finally {
       setLoading(false);
     }
-  }, [vaultId, workflowName, isHistorical, historicalVersion, shell.metadata_load_failed]);
+  }, [vaultId, workflowName, shell.metadata_load_failed]);
 
   useEffect(() => {
     void load();
   }, [load]);
 
-  const activate = useCallback(async () => {
-    if (!vaultId || !workflowName || activating) return;
-    setActivating(true);
-    setError(null);
-    try {
-      setModel(await api.activateMetadataWorkflow(vaultId, workflowName));
-    } catch (err) {
-      setError(err instanceof Error ? err.message : displayText(shell.metadata_load_failed));
-    } finally {
-      setActivating(false);
-    }
-  }, [vaultId, workflowName, activating, shell.metadata_load_failed]);
-
   if (!vaultId) return null;
 
   const title = model ? displayText(model.label || undefined, model.api_name) : workflowName;
-  const versionsHref = `/admin/configuration/workflows/${encodeURIComponent(workflowName)}/versions`;
-  const workingCopyHref = `/admin/configuration/workflows/${encodeURIComponent(workflowName)}`;
-  const canActivate = Boolean(model && model.can_activate && !model.active && !isHistorical);
 
   return (
     <AdminPageShell
@@ -86,61 +62,15 @@ export function AdminMetadataWorkflowDetailPage() {
             {displayText(shell.metadata_workflows_title)}
           </Link>
           {" › "}
-          {isHistorical ? (
-            <>
-              <Link to={workingCopyHref}>{title}</Link>
-              {" › "}
-              <Link to={versionsHref}>{displayText(shell.metadata_workflow_versions_title)}</Link>
-              {" › "}
-              <span>
-                {displayText(shell.metadata_workflow_version)} {historicalVersion}
-              </span>
-            </>
-          ) : (
-            <span>{title}</span>
-          )}
+          <span>{title}</span>
         </p>
       }
       title={title}
       actions={
         <div className="page-header__actions">
-          <Space>
-            <Dropdown
-              menu={{
-                items: [
-                  ...(canActivate
-                    ? [
-                        {
-                          key: "activate",
-                          label: displayText(shell.metadata_make_configuration_active),
-                          disabled: activating,
-                          onClick: () => void activate(),
-                        },
-                      ]
-                    : []),
-                  {
-                    key: "versions",
-                    label: displayText(shell.metadata_view_workflow_versions),
-                    onClick: () => navigate(versionsHref),
-                  },
-                ],
-              }}
-              trigger={["click"]}
-            >
-              <Button>{displayText(shell.metadata_actions_tab)}</Button>
-            </Dropdown>
-            {canActivate ? (
-              <Button type="primary" loading={activating} onClick={() => void activate()}>
-                {displayText(shell.metadata_make_configuration_active)}
-              </Button>
-            ) : (
-              !isHistorical && (
-                <Button type="primary" disabled title={displayText(shell.metadata_config_view_only)}>
-                  {displayText(defaultPageActionLabels.edit)}
-                </Button>
-              )
-            )}
-          </Space>
+          <Button type="primary" disabled title={displayText(shell.metadata_config_view_only)}>
+            {displayText(defaultPageActionLabels.edit)}
+          </Button>
         </div>
       }
     >
@@ -148,14 +78,6 @@ export function AdminMetadataWorkflowDetailPage() {
       {error && <Alert type="error" title={error} showIcon role="alert" />}
       {loading && !model && (
         <Spin description={displayText(shell.loading)} className="page-loading page__loading" />
-      )}
-      {model?.historical && (
-        <Alert
-          type="info"
-          showIcon
-          title={displayText(shell.metadata_workflow_historical_banner)}
-          className="admin-page__banner"
-        />
       )}
 
       {model && (
@@ -214,7 +136,9 @@ function WorkflowDetailBody({
             steps={model.steps}
             shell={shell}
             onOpenStep={(name) =>
-              navigate(workflowStepHref(model.api_name, name, model.historical ? model.version : 0))
+              navigate(
+                `/admin/configuration/workflows/${encodeURIComponent(model.api_name)}/steps/${encodeURIComponent(name)}`,
+              )
             }
           />
         </section>
@@ -293,7 +217,9 @@ function DetailsFields({
     },
     {
       label: displayText(shell.metadata_status),
-      value: workflowWorkingCopyStatus(model.active, shell),
+      value: model.active
+        ? displayText(shell.metadata_status_active)
+        : displayText(shell.metadata_status_inactive),
     },
     {
       label: displayText(shell.metadata_workflow_start_states),
@@ -471,8 +397,7 @@ function StepsTable({
     {
       key: "type",
       title: displayText(shell.metadata_workflow_step_type),
-      render: (_v, row) =>
-        workflowStepTypeDisplay(row.type, shell, row.type_label, row.placeholder_error),
+      render: (_v, row) => workflowStepTypeDisplay(row.type, shell, row.type_label),
     },
     {
       key: "label",
@@ -507,20 +432,6 @@ function StepsTable({
       dataSource={steps}
     />
   );
-}
-
-function workflowWorkingCopyStatus(active: boolean, shell: Shell): string {
-  return active
-    ? displayText(shell.metadata_status_active)
-    : displayText(shell.metadata_status_editing);
-}
-
-function workflowStepHref(workflowName: string, stepName: string, version: number): string {
-  const base = `/admin/configuration/workflows/${encodeURIComponent(workflowName)}`;
-  if (version > 0) {
-    return `${base}/versions/${version}/steps/${encodeURIComponent(stepName)}`;
-  }
-  return `${base}/steps/${encodeURIComponent(stepName)}`;
 }
 
 function CancellationActionsTable({

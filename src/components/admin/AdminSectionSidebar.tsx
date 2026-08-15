@@ -13,32 +13,13 @@ import {
   buildSettingsSidebarGroups,
   isAdminSettingsSection,
   isDomainSettingsCategoryActive,
-  type DomainSettingsCategoryKey,
   type DomainSettingsCategoryNavItem,
 } from "../../lib/adminSettingsNav";
 import { useUi } from "../../context/UiContext";
-import { displayText, type DisplayText } from "../../lib/i18n";
+import { displayText } from "../../lib/i18n";
 import { tabHref } from "../../lib/tabHref";
 import { saveLastTab } from "../../lib/vaultNav";
 import type { NavTab } from "../../api/types";
-
-type DomainCategoryShellKey =
-  | "admin_domain_settings_general_label"
-  | "admin_domain_settings_features_label"
-  | "admin_domain_settings_security_policies_label"
-  | "admin_domain_settings_network_access_label"
-  | "admin_domain_settings_saml_profiles_label"
-  | "admin_domain_settings_oauth_profiles_label";
-
-/** Shell-resolved domain settings labels, keyed by sidebar category. */
-const DOMAIN_CATEGORY_SHELL_KEY: Record<DomainSettingsCategoryKey, DomainCategoryShellKey> = {
-  general: "admin_domain_settings_general_label",
-  features: "admin_domain_settings_features_label",
-  "security-policies": "admin_domain_settings_security_policies_label",
-  "network-access": "admin_domain_settings_network_access_label",
-  "saml-profiles": "admin_domain_settings_saml_profiles_label",
-  "oauth-profiles": "admin_domain_settings_oauth_profiles_label",
-};
 
 function SectionNavLink({
   vaultId,
@@ -64,12 +45,10 @@ function SectionNavLink({
 
 function DomainCategoryNavLink({
   item,
-  label,
   pathname,
   search,
 }: {
   item: DomainSettingsCategoryNavItem;
-  label: DisplayText;
   pathname: string;
   search: string;
 }) {
@@ -80,7 +59,7 @@ function DomainCategoryNavLink({
       className={`view-tab${active ? " view-tab--active" : ""}`}
       aria-current={active ? "page" : undefined}
     >
-      <span className="view-tab__label">{displayText(label)}</span>
+      <span className="view-tab__label">{displayText(item.label)}</span>
     </Link>
   );
 }
@@ -128,7 +107,6 @@ export function AdminSectionSidebar({
                 <DomainCategoryNavLink
                   key={item.key}
                   item={item}
-                  label={shell[DOMAIN_CATEGORY_SHELL_KEY[item.key]] ?? item.label}
                   pathname={pathname}
                   search={search}
                 />
