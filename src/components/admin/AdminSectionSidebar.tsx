@@ -1,5 +1,4 @@
 import { Link, useSearchParams } from "react-router-dom";
-import { useEffect, useState } from "react";
 import type { AdminSectionNav } from "../../lib/adminSectionNav";
 import { isAdminSubtabActive } from "../../lib/adminSectionNav";
 import {
@@ -18,46 +17,28 @@ import {
   type DomainSettingsCategoryNavItem,
 } from "../../lib/adminSettingsNav";
 import { useUi } from "../../context/UiContext";
-import { displayText } from "../../lib/i18n";
+import { displayText, type DisplayText } from "../../lib/i18n";
 import { tabHref } from "../../lib/tabHref";
 import { saveLastTab } from "../../lib/vaultNav";
-import { api } from "../../api/client";
-import type { DisplayText, DomainSettingsPageChrome, NavTab } from "../../api/types";
+import type { NavTab } from "../../api/types";
 
-/** Backend-resolved domain settings labels, keyed by sidebar category. */
-const DOMAIN_CATEGORY_CHROME_KEY: Record<DomainSettingsCategoryKey, keyof DomainSettingsPageChrome> = {
-  general: "general_label",
-  features: "features_label",
-  "security-policies": "security_policies_label",
-  "network-access": "network_access_label",
-  "saml-profiles": "saml_profiles_label",
-  "oauth-profiles": "oauth_profiles_label",
+type DomainCategoryShellKey =
+  | "admin_domain_settings_general_label"
+  | "admin_domain_settings_features_label"
+  | "admin_domain_settings_security_policies_label"
+  | "admin_domain_settings_network_access_label"
+  | "admin_domain_settings_saml_profiles_label"
+  | "admin_domain_settings_oauth_profiles_label";
+
+/** Shell-resolved domain settings labels, keyed by sidebar category. */
+const DOMAIN_CATEGORY_SHELL_KEY: Record<DomainSettingsCategoryKey, DomainCategoryShellKey> = {
+  general: "admin_domain_settings_general_label",
+  features: "admin_domain_settings_features_label",
+  "security-policies": "admin_domain_settings_security_policies_label",
+  "network-access": "admin_domain_settings_network_access_label",
+  "saml-profiles": "admin_domain_settings_saml_profiles_label",
+  "oauth-profiles": "admin_domain_settings_oauth_profiles_label",
 };
-
-/** Loads the domain settings page chrome once so static sidebar labels resolve per vault language. */
-function useDomainSettingsChrome(vaultId: string, enabled: boolean): DomainSettingsPageChrome | null {
-  const [chrome, setChrome] = useState<DomainSettingsPageChrome | null>(null);
-  useEffect(() => {
-    if (!enabled || !vaultId) {
-      return;
-    }
-    let cancelled = false;
-    api
-      .domainSettings(vaultId)
-      .then((model) => {
-        if (!cancelled) {
-          setChrome(model.chrome);
-        }
-      })
-      .catch(() => {
-        // Keep static fallback labels when the page chrome is unavailable.
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [vaultId, enabled]);
-  return chrome;
-}
 
 function SectionNavLink({
   vaultId,
@@ -126,10 +107,6 @@ export function AdminSectionSidebar({
         { domainSettingsVisible: section.domainSettingsVisible },
       )
     : null;
-  const domainChrome = useDomainSettingsChrome(
-    vaultId,
-    Boolean(settingsGroups?.some((group) => (group.domainCategories?.length ?? 0) > 0)),
-  );
   const operationsGroups = isAdminOperationsSection(section.parent)
     ? buildOperationsSidebarGroups(section.subtabs)
     : null;
@@ -151,11 +128,7 @@ export function AdminSectionSidebar({
                 <DomainCategoryNavLink
                   key={item.key}
                   item={item}
-                  label={
-                    domainChrome && domainChrome[DOMAIN_CATEGORY_CHROME_KEY[item.key]]
-                      ? domainChrome[DOMAIN_CATEGORY_CHROME_KEY[item.key]]
-                      : item.label
-                  }
+                  label={shell[DOMAIN_CATEGORY_SHELL_KEY[item.key]] ?? item.label}
                   pathname={pathname}
                   search={search}
                 />

@@ -435,6 +435,12 @@ export type ShellChrome = {
   admin_domain_settings: DisplayText;
   admin_vault_settings_group: DisplayText;
   admin_domain_settings_group: DisplayText;
+  admin_domain_settings_general_label: DisplayText;
+  admin_domain_settings_features_label: DisplayText;
+  admin_domain_settings_security_policies_label: DisplayText;
+  admin_domain_settings_network_access_label: DisplayText;
+  admin_domain_settings_saml_profiles_label: DisplayText;
+  admin_domain_settings_oauth_profiles_label: DisplayText;
   admin_layout_profile: DisplayText;
   layout_preview_subtitle: DisplayText;
   object_label: DisplayText;
@@ -2692,8 +2698,8 @@ export const defaultShellChrome: ShellChrome = {
   help_placeholder: t("Help content", "ui.help_placeholder"),
   back: t("Back", "ui.back"),
   sign_out: t("Sign out", "ui.sign_out"),
-  all_vaults_label: t("All Vaults", "ui.all_vaults"),
   switch_vault: t("Switch Vault", "ui.switch_vault"),
+  all_vaults_label: t("All Vaults", "ui.all_vaults"),
   loading_nav: t("Loading navigation…", "ui.loading_nav"),
   stale_confirm: t(
     "This page is stale (configuration or record changed). Reload now?",
@@ -3852,6 +3858,24 @@ export const defaultShellChrome: ShellChrome = {
   admin_domain_settings_group: t(
     "Domain Settings",
     "admin.settings.domain_group",
+  ),
+  admin_domain_settings_general_label: t("General", "domain_settings.general_label"),
+  admin_domain_settings_features_label: t("Features", "domain_settings.features_label"),
+  admin_domain_settings_security_policies_label: t(
+    "Security Policies",
+    "domain_settings.security_policies_label",
+  ),
+  admin_domain_settings_network_access_label: t(
+    "Network Access Rules",
+    "domain_settings.network_access_label",
+  ),
+  admin_domain_settings_saml_profiles_label: t(
+    "SAML Profiles",
+    "domain_settings.saml_profiles_label",
+  ),
+  admin_domain_settings_oauth_profiles_label: t(
+    "OAuth 2.0 / OIDC Profiles",
+    "domain_settings.oauth_profiles_label",
   ),
   admin_layout_profile: t("Layout Profile", "admin.layout_profile"),
   layout_preview_subtitle: t(
