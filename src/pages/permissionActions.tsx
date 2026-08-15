@@ -4,12 +4,23 @@ import type { ShellChrome } from "../lib/i18n";
 import { OBJECT_CRUD_ACTIONS } from "./permissionSetView";
 
 export function permissionActionLabel(shell: ShellChrome, action: string): string {
-  const labels: Record<string, ReturnType<typeof displayText>> = {
+  const labels: Record<string, string> = {
     create: displayText(shell.metadata_permission_action_create),
     read: displayText(shell.metadata_permission_action_read),
     edit: displayText(shell.metadata_permission_action_edit),
     delete: displayText(shell.metadata_permission_action_delete),
     view: displayText(shell.metadata_permission_action_view),
+    switch_type: displayText(shell.metadata_permission_action_switch_type),
+    execute: displayText(shell.metadata_permission_action_execute),
+    assign: displayText(shell.metadata_permission_action_assign),
+    assign_group: displayText(shell.metadata_permission_action_assign_group),
+    export: displayText(shell.metadata_permission_action_export),
+    manage_delegation: displayText(shell.metadata_permission_action_manage_delegation),
+    grant_support_login: displayText(shell.metadata_permission_action_grant_support_login),
+    all_audit: displayText(shell.metadata_permission_action_all_audit),
+    interact: displayText(shell.metadata_permission_action_interact),
+    manage_sdk_job_metadata: displayText(shell.metadata_permission_action_manage_sdk_job_metadata),
+    assign_users: displayText(shell.metadata_permission_action_assign_users),
   };
   return labels[action] ?? action;
 }

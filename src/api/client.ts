@@ -3963,6 +3963,7 @@ export const api = {
     body: { message?: string; agent_name?: string; action_name?: string },
     handlers: {
       onDelta?: (content: string) => void;
+      onProgress?: (stage: string) => void;
       onSelectAction?: (payload: {
         prompt?: string;
         actions?: Array<{
@@ -4090,6 +4091,8 @@ export const api = {
             const data = JSON.parse(raw) as Record<string, unknown>;
             if (eventName === "delta" && typeof data.content === "string") {
               handlers.onDelta?.(data.content);
+            } else if (eventName === "progress" && typeof data.stage === "string") {
+              handlers.onProgress?.(data.stage);
             } else if (eventName === "select_action") {
               handlers.onSelectAction?.(data as Parameters<NonNullable<typeof handlers.onSelectAction>>[0]);
             } else if (eventName === "ask_user") {
@@ -4265,6 +4268,7 @@ export const api = {
     body: { message?: string; agent_name?: string; action_name?: string },
     handlers: {
       onDelta?: (content: string) => void;
+      onProgress?: (stage: string) => void;
       onSelectAction?: (payload: {
         prompt?: string;
         actions?: Array<{
@@ -4337,6 +4341,8 @@ export const api = {
         }
         if (eventName === "delta" && typeof payload.content === "string") {
           handlers.onDelta?.(payload.content);
+        } else if (eventName === "progress" && typeof payload.stage === "string") {
+          handlers.onProgress?.(payload.stage);
         } else if (eventName === "select_action") {
           handlers.onSelectAction?.(payload as never);
         } else if (eventName === "done") {

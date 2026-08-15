@@ -44,6 +44,7 @@ import {
   resizeFloatRect,
   saveVaultAIChatViewPrefs,
 } from "../lib/vaultAIChatView";
+import { VaultAIThinkingIndicator, vaultAIThinkingLabel } from "./VaultAIThinkingIndicator";
 import "../styles/components/vault-ai-chat.css";
 
 type ActionItem = {
@@ -133,6 +134,8 @@ export function VaultAIChatPanel({
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [draft, setDraft] = useState("");
   const [streamingContent, setStreamingContent] = useState("");
+  const [thinking, setThinking] = useState(false);
+  const [thinkingStage, setThinkingStage] = useState("thinking");
   const [traceStatus, setTraceStatus] = useState("");
   const [traceActionCount, setTraceActionCount] = useState(0);
   const [autoSwitchConversation, setAutoSwitchConversation] = useState(true);
@@ -195,6 +198,7 @@ export function VaultAIChatPanel({
         })),
       );
       setStreamingContent("");
+      setThinking(false);
     },
     [vaultId],
   );
@@ -209,6 +213,7 @@ export function VaultAIChatPanel({
       setConversationId(null);
       setMessages([]);
       setStreamingContent("");
+      setThinking(false);
       setDraft("");
       setTraceStatus("");
       setTraceActionCount(0);
@@ -239,6 +244,7 @@ export function VaultAIChatPanel({
       setMessages([]);
       setConversationId(null);
       setStreamingContent("");
+      setThinking(false);
       setDraft("");
       const items = await refreshConversations(autoSwitch);
       if (pendingId) {
@@ -295,7 +301,7 @@ export function VaultAIChatPanel({
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages, streamingContent, scrollToBottom]);
+  }, [messages, streamingContent, thinking, scrollToBottom]);
 
   useEffect(() => {
     if (!open || view !== "float") return;
@@ -334,6 +340,7 @@ export function VaultAIChatPanel({
       setConversationId(created.id);
       setMessages([]);
       setStreamingContent("");
+      setThinking(false);
       setDraft("");
       setPromptedActions(null);
       setTraceStatus("");
@@ -383,6 +390,8 @@ export function VaultAIChatPanel({
     abortRef.current = false;
     setDraft("");
     setStreamingContent("");
+    setThinking(true);
+    setThinkingStage("thinking");
     setPromptedActions(null);
 
     // Optimistic user bubble when there is text
@@ -409,9 +418,15 @@ export function VaultAIChatPanel({
         {
           onDelta: (chunk) => {
             if (abortRef.current) return;
+            setThinking(false);
             setStreamingContent((prev) => prev + chunk);
           },
+          onProgress: (stage) => {
+            if (abortRef.current) return;
+            setThinkingStage(stage);
+          },
           onSelectAction: (payload) => {
+            setThinking(false);
             const suggested = (payload.actions ?? []).map((a) => ({
               agent_name: a.agent_name,
               agent_label: a.agent_label,
@@ -445,6 +460,7 @@ export function VaultAIChatPanel({
                 ];
               });
             }
+            setThinking(false);
             setStreamingContent("");
           },
           onAskUser: (payload) => {
@@ -475,6 +491,7 @@ export function VaultAIChatPanel({
                 ];
               });
             }
+            setThinking(false);
             setStreamingContent("");
           },
           onDone: (payload) => {
@@ -530,6 +547,7 @@ export function VaultAIChatPanel({
                 },
               ];
             });
+            setThinking(false);
             setStreamingContent("");
             void refreshConversations(autoSwitchConversation);
             void api.vaultAIChatGetConversation(vaultId, conversationId).then((res) => {
@@ -561,10 +579,12 @@ export function VaultAIChatPanel({
                 return next;
               });
             }
+            setThinking(false);
             setStreamingContent("");
           },
           onError: (msg) => {
             setError(msg);
+            setThinking(false);
             setStreamingContent("");
             setMessages((prev) => prev.filter((m) => m.id !== tempUserId));
           },
@@ -574,8 +594,10 @@ export function VaultAIChatPanel({
       setError(e instanceof HttpError ? e.message : e instanceof Error ? e.message : "Send failed");
       setMessages((prev) => prev.filter((m) => m.id !== tempUserId));
       setStreamingContent("");
+      setThinking(false);
     } finally {
       setSending(false);
+      setThinking(false);
     }
   }
 
@@ -729,7 +751,7 @@ export function VaultAIChatPanel({
   }
 
   const isEmptyChat =
-    !loading && messages.length === 0 && !streamingContent && !showHistory;
+    !loading && messages.length === 0 && !streamingContent && !thinking && !showHistory;
 
   const messagesBlock = (
     <div ref={listRef} className="vault-ai-chat__messages">
@@ -824,11 +846,13 @@ export function VaultAIChatPanel({
               onNavigateToPage={onNavigateToPage}
             />
           ))}
-          {streamingContent ? (
+          {thinking || streamingContent ? (
             <MessageBubble
               role="assistant"
               content={streamingContent}
-              streaming
+              thinking={thinking && !streamingContent}
+              thinkingLabel={vaultAIThinkingLabel(chrome, thinkingStage)}
+              streaming={Boolean(streamingContent)}
               chrome={chrome}
               onNavigateToPage={onNavigateToPage}
             />
@@ -1263,6 +1287,8 @@ function MessageBubble({
   content,
   status,
   streaming,
+  thinking,
+  thinkingLabel,
   askUser,
   askUserDisabled,
   onSubmitAskUser,
@@ -1273,6 +1299,8 @@ function MessageBubble({
   content: string;
   status?: string;
   streaming?: boolean;
+  thinking?: boolean;
+  thinkingLabel?: string;
   askUser?: AskUserPrompt;
   askUserDisabled?: boolean;
   onSubmitAskUser?: (answer: string) => void;
@@ -1285,6 +1313,7 @@ function MessageBubble({
     isUser ? "vault-ai-chat__bubble--user" : "",
     status === "cancelled" ? "vault-ai-chat__bubble--cancelled" : "",
     streaming ? "vault-ai-chat__bubble--streaming" : "",
+    thinking ? "vault-ai-chat__bubble--thinking" : "",
   ]
     .filter(Boolean)
     .join(" ");
@@ -1312,43 +1341,51 @@ function MessageBubble({
             </svg>
           </span>
           <div className="vault-ai-chat__md">
-            <Markdown
-              components={{
-                a: ({ href, children }) => {
-                  const target = parseVaultAIPageHref(href);
-                  if (target && onNavigateToPage) {
-                    return (
-                      <button
-                        type="button"
-                        className="vault-ai-chat__page-link"
-                        onClick={() => onNavigateToPage(target.page, target.query)}
-                      >
-                        {children}
-                      </button>
-                    );
-                  }
-                  if (target) {
-                    return <span className="vault-ai-chat__page-ref">{children}</span>;
-                  }
-                  return (
-                    <a href={href} target="_blank" rel="noreferrer">
-                      {children}
-                    </a>
-                  );
-                },
-              }}
-            >
-              {markdown}
-            </Markdown>
-            {streaming ? <span className="vault-ai-chat__cursor">▍</span> : null}
-            {askUser && onSubmitAskUser ? (
-              <AskUserForm
-                prompt={askUser}
-                disabled={askUserDisabled}
-                chrome={chrome}
-                onSubmit={onSubmitAskUser}
+            {thinking ? (
+              <VaultAIThinkingIndicator
+                label={thinkingLabel || displayText(chrome.thinking)}
               />
-            ) : null}
+            ) : (
+              <>
+                <Markdown
+                  components={{
+                    a: ({ href, children }) => {
+                      const target = parseVaultAIPageHref(href);
+                      if (target && onNavigateToPage) {
+                        return (
+                          <button
+                            type="button"
+                            className="vault-ai-chat__page-link"
+                            onClick={() => onNavigateToPage(target.page, target.query)}
+                          >
+                            {children}
+                          </button>
+                        );
+                      }
+                      if (target) {
+                        return <span className="vault-ai-chat__page-ref">{children}</span>;
+                      }
+                      return (
+                        <a href={href} target="_blank" rel="noreferrer">
+                          {children}
+                        </a>
+                      );
+                    },
+                  }}
+                >
+                  {markdown}
+                </Markdown>
+                {streaming ? <span className="vault-ai-chat__cursor">▍</span> : null}
+                {askUser && onSubmitAskUser ? (
+                  <AskUserForm
+                    prompt={askUser}
+                    disabled={askUserDisabled}
+                    chrome={chrome}
+                    onSubmit={onSubmitAskUser}
+                  />
+                ) : null}
+              </>
+            )}
           </div>
         </div>
       )}

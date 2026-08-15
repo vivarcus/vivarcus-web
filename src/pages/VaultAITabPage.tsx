@@ -29,6 +29,7 @@ import Markdown from "react-markdown";
 import { Link, useNavigate } from "react-router-dom";
 import { api, HttpError } from "../api/client";
 import { useAuth } from "../auth/AuthProvider";
+import { VaultAIThinkingIndicator, vaultAIThinkingLabel } from "../components/VaultAIThinkingIndicator";
 import { useUi } from "../context/UiContext";
 import { useVaultAI } from "../context/VaultAIContext";
 import { useHeaderUserIdentity } from "../hooks/useHeaderUserIdentity";
@@ -283,16 +284,19 @@ function TabMessageBubble({
   content,
   status,
   stoppedLabel,
+  thinkingLabel,
   card,
 }: {
   role: string;
   content: string;
   status?: string;
   stoppedLabel: string;
+  thinkingLabel: string;
   card?: ReactNode;
 }) {
   const isUser = role === "user";
   const streaming = status === "streaming";
+  const thinking = streaming && !content.trim();
   const markdown = useMemo(
     () => (isUser ? content : prepareVaultAIAssistantMarkdown(content)),
     [content, isUser],
@@ -301,6 +305,7 @@ function TabMessageBubble({
     "vault-ai-tab__bubble",
     isUser ? "vault-ai-tab__bubble--user" : "vault-ai-tab__bubble--assistant",
     streaming ? "vault-ai-tab__bubble--streaming" : "",
+    thinking ? "vault-ai-tab__bubble--thinking" : "",
     status === "cancelled" ? "vault-ai-tab__bubble--cancelled" : "",
   ]
     .filter(Boolean)
@@ -314,10 +319,12 @@ function TabMessageBubble({
         <div className="vault-ai-tab__assistant">
           <VaultAITitleIcon className="vault-ai-tab__assistant-icon" />
           <div className="vault-ai-tab__md">
-            {content || streaming ? (
+            {thinking ? (
+              <VaultAIThinkingIndicator label={thinkingLabel} />
+            ) : content || streaming ? (
               <Markdown>{markdown || (streaming ? "" : content)}</Markdown>
             ) : null}
-            {streaming ? <span className="vault-ai-tab__cursor">▍</span> : null}
+            {streaming && !thinking ? <span className="vault-ai-tab__cursor">▍</span> : null}
           </div>
         </div>
       )}
@@ -355,6 +362,7 @@ export function VaultAITabPage() {
   const [canvases, setCanvases] = useState<Canvas[]>([]);
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
+  const [thinkingStage, setThinkingStage] = useState("thinking");
   const [selectPrompt, setSelectPrompt] = useState<string | null>(null);
   const [selectActions, setSelectActions] = useState<ActionItem[]>([]);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -540,6 +548,7 @@ export function VaultAITabPage() {
     setSelectPrompt(null);
     setSelectActions([]);
     setSuggestedOpen(false);
+    setThinkingStage("thinking");
     try {
       const cid = await ensureConversation();
       if (!cid) return;
@@ -577,6 +586,9 @@ export function VaultAITabPage() {
               }
               return next;
             });
+          },
+          onProgress: (stage) => {
+            setThinkingStage(stage);
           },
           onSelectAction: (payload) => {
             setSelectPrompt(
@@ -1222,6 +1234,7 @@ export function VaultAITabPage() {
                       content={m.content}
                       status={m.status}
                       stoppedLabel={displayText(chrome.stopped)}
+                      thinkingLabel={vaultAIThinkingLabel(chrome, thinkingStage)}
                       card={
                         showCard && cardCanvas ? (
                           <div className="vault-ai-tab__result-card">

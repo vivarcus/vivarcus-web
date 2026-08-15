@@ -589,7 +589,6 @@ function RuleSection({
       key: "target_state",
       dataIndex: "target_state",
       title: displayText(shell.metadata_lifecycle_target_state),
-      className: "mono",
       render: (v?: string) => v || "",
     },
   ];

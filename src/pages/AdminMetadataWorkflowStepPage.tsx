@@ -15,12 +15,37 @@ import type {
 import { workflowStepTypeDisplay } from "../components/metadata/WorkflowStepFlowchart";
 import { useVaultId } from "../hooks/useVaultId";
 import { useUi } from "../context/UiContext";
-import { displayText } from "../lib/i18n";
+import { displayText, displayTextTemplate } from "../lib/i18n";
 import { defaultPageActionLabels, type ShellChrome } from "../lib/i18n/chromeTypes";
 import { AdminCompactTable } from "../components/admin/AdminCompactTable";
 import { AdminPageShell } from "../components/admin/AdminPageShell";
 
 type Shell = ShellChrome;
+
+function participantStrategyDisplay(
+  strategy: string | undefined,
+  shell: Shell,
+  fallback?: string,
+): string {
+  switch ((strategy || "").toLowerCase()) {
+    case "workflow_owner":
+      return displayText(shell.metadata_workflow_participant_strategy_owner);
+    case "workflow_initiator":
+      return displayText(shell.metadata_workflow_participant_strategy_initiator);
+    case "task_owner":
+      return displayText(shell.metadata_workflow_participant_strategy_task_owner);
+    case "roles":
+      return displayText(shell.metadata_workflow_participant_strategy_roles);
+    case "custom_action":
+      return displayText(shell.metadata_workflow_participant_strategy_custom_action);
+    case "user_reference_field":
+      return displayText(shell.metadata_workflow_participant_strategy_user_field);
+    case "vault_user_groups":
+      return displayText(shell.metadata_workflow_participant_strategy_groups);
+    default:
+      return fallback || strategy || "—";
+  }
+}
 
 /** Veeva-style Workflow step detail: Details + type-specific options (view-only). */
 export function AdminMetadataWorkflowStepPage() {
@@ -248,7 +273,7 @@ function StepDetailBody({
             <dl className="lifecycle-detail__fields">
               <Field
                 label={displayText(shell.metadata_workflow_next_state)}
-                value={<span className="mono">{model.state_change.next_state}</span>}
+                value={model.state_change.next_state || "—"}
               />
             </dl>
           </section>
@@ -389,7 +414,11 @@ function StartControls({
                 />
                 <Field
                   label={displayText(shell.metadata_workflow_participant_strategy)}
-                  value={ctrl.participant_strategy_label || ctrl.participant_strategy || "—"}
+                  value={participantStrategyDisplay(
+                    ctrl.participant_strategy,
+                    shell,
+                    ctrl.participant_strategy_label,
+                  )}
                 />
                 <Field
                   label={displayText(shell.metadata_workflow_roles_allowed)}
@@ -406,7 +435,10 @@ function StartControls({
                   />
                 )}
                 {!!ctrl.vault_user_groups?.length && (
-                  <Field label="Groups" value={ctrl.vault_user_groups.join(", ")} />
+                  <Field
+                    label={displayText(shell.metadata_workflow_groups)}
+                    value={ctrl.vault_user_groups.join(", ")}
+                  />
                 )}
               </>
             )}
@@ -417,7 +449,7 @@ function StartControls({
                   value={ctrl.label || ctrl.name || "—"}
                 />
                 <Field
-                  label="Set workflow due date"
+                  label={displayText(shell.metadata_workflow_set_due_date)}
                   value={<Checkbox checked={!!ctrl.set_workflow_due_date} disabled />}
                 />
               </>
@@ -428,7 +460,9 @@ function StartControls({
                 value={
                   <span>
                     <span className="mono">{ctrl.field_api_name || "—"}</span>
-                    {ctrl.required ? " (required)" : ""}
+                    {ctrl.required
+                      ? ` ${displayText(shell.metadata_workflow_comment_required)}`
+                      : ""}
                   </span>
                 }
               />
@@ -440,18 +474,21 @@ function StartControls({
   );
 }
 
-function controlHeading(ctrl: MetadataWorkflowStartControlView, _shell: Shell, index: number): string {
+function controlHeading(ctrl: MetadataWorkflowStartControlView, shell: Shell, index: number): string {
   const typeLabel =
     ctrl.type === "participant"
-      ? "Participant"
+      ? displayText(shell.metadata_workflow_control_type_participant)
       : ctrl.type === "instructions"
-        ? "Instructions"
+        ? displayText(shell.metadata_workflow_control_type_instructions)
         : ctrl.type === "date"
-          ? "Date"
+          ? displayText(shell.metadata_workflow_control_type_date)
           : ctrl.type === "field"
-            ? "Field"
-            : ctrl.type;
-  return `Control ${index}: ${typeLabel}`;
+            ? displayText(shell.metadata_workflow_control_type_field)
+            : ctrl.type || displayText(shell.metadata_workflow_control_type);
+  return displayTextTemplate(shell.metadata_workflow_control_heading, {
+    index,
+    type: typeLabel,
+  });
 }
 
 function StartRules({ rules, shell }: { rules: MetadataWorkflowStartRuleView[]; shell: Shell }) {
@@ -488,10 +525,10 @@ function TaskOptions({ model, shell }: { model: MetadataWorkflowStepDetailModel;
   const task = model.task!;
   const assignmentLabel =
     task.assignment_mode === "available"
-      ? "Make available to users in participant group"
+      ? displayText(shell.metadata_workflow_task_assignment_available)
       : task.assignment_mode === "runtimeChoice"
-        ? "Allow workflow initiator to select assign to all or make available"
-        : "Assign to all users in participant group";
+        ? displayText(shell.metadata_workflow_task_assignment_runtime)
+        : displayText(shell.metadata_workflow_task_assignment_all);
 
   return (
     <div className="lifecycle-detail__rules">
@@ -511,7 +548,13 @@ function TaskOptions({ model, shell }: { model: MetadataWorkflowStepDetailModel;
         />
         <Field
           label={displayText(shell.metadata_workflow_task_requirement)}
-          value={task.task_requirement || "—"}
+          value={
+            task.task_requirement === "optional"
+              ? displayText(shell.metadata_optional)
+              : task.task_requirement === "required"
+                ? displayText(shell.metadata_required)
+                : task.task_requirement || "—"
+          }
         />
         <Field
           label={displayText(shell.description)}
@@ -531,7 +574,7 @@ function TaskOptions({ model, shell }: { model: MetadataWorkflowStepDetailModel;
         />
         {task.due_date && (
           <Field
-            label="Due Date"
+            label={displayText(shell.metadata_workflow_due_date)}
             value={
               <span className="mono">
                 {[task.due_date.date_field_type, task.due_date.date_field_value]
@@ -543,30 +586,44 @@ function TaskOptions({ model, shell }: { model: MetadataWorkflowStepDetailModel;
         )}
         {!!task.comments?.length && (
           <Field
-            label="Comment Prompt"
+            label={displayText(shell.metadata_workflow_comment_prompt)}
             value={task.comments
-              .map((c) => `${c.label || c.name || "Comments"}${c.required ? " (required)" : ""}`)
+              .map(
+                (c) =>
+                  `${c.label || c.name || displayText(shell.metadata_workflow_verdict_comment)}${
+                    c.required
+                      ? ` ${displayText(shell.metadata_workflow_comment_required)}`
+                      : ""
+                  }`,
+              )
               .join(", ")}
           />
         )}
         {!!task.fields?.length && (
           <Field
-            label="Field Prompt"
+            label={displayText(shell.metadata_workflow_field_prompt)}
             value={task.fields
-              .map((f) => `${f.field_api_name}${f.required ? " (required)" : ""}`)
+              .map(
+                (f) =>
+                  `${f.field_api_name}${
+                    f.required
+                      ? ` ${displayText(shell.metadata_workflow_comment_required)}`
+                      : ""
+                  }`,
+              )
               .join(", ")}
           />
         )}
         {!!task.prompt_participants?.length && (
           <Field
-            label="Prompt for Participants"
+            label={displayText(shell.metadata_workflow_prompt_participants)}
             value={task.prompt_participants.join(", ")}
           />
         )}
         {!!task.previous_tasks_to_display?.length && (
           <Field
             label={displayText(shell.metadata_workflow_previous_tasks_to_display)}
-            value={<span className="mono">{task.previous_tasks_to_display.join(", ")}</span>}
+            value={task.previous_tasks_to_display.join(", ")}
           />
         )}
         {!!task.notification_templates?.length && (
@@ -578,7 +635,7 @@ function TaskOptions({ model, shell }: { model: MetadataWorkflowStepDetailModel;
         {!!task.notification_previous_tasks?.length && (
           <Field
             label={displayText(shell.metadata_workflow_notification_previous_tasks)}
-            value={<span className="mono">{task.notification_previous_tasks.join(", ")}</span>}
+            value={task.notification_previous_tasks.join(", ")}
           />
         )}
         {!!task.custom_action_references?.length && (
@@ -631,14 +688,19 @@ function VerdictsTable({
     {
       key: "esig",
       title: displayText(shell.metadata_workflow_esig_required),
-      render: (_v, row) => (row.signature_required ? "Yes" : "—"),
+      render: (_v, row) =>
+        row.signature_required ? displayText(shell.metadata_yes) : "—",
     },
     {
       key: "comment",
-      title: "Comment",
+      title: displayText(shell.metadata_workflow_verdict_comment),
       render: (_v, row) =>
         row.comment_label
-          ? `${row.comment_label}${row.comment_required ? " (required)" : ""}`
+          ? `${row.comment_label}${
+              row.comment_required
+                ? ` ${displayText(shell.metadata_workflow_comment_required)}`
+                : ""
+            }`
           : "—",
     },
   ];
@@ -666,7 +728,7 @@ function RemindersTable({
     },
     {
       key: "when",
-      title: "Send On",
+      title: displayText(shell.metadata_workflow_reminder_send_on),
       render: (_v, row) => `${row.send_on} ${row.operator} ${row.days}d`,
     },
     {

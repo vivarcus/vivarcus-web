@@ -3637,6 +3637,7 @@ export type MetadataWorkflowStepDetailModel = {
   vault_id: string;
   workflow_api_name: string;
   workflow_label: string;
+  lifecycle_api_name?: string;
   api_name: string;
   label: string;
   type: string;

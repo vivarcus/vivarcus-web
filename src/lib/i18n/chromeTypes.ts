@@ -169,10 +169,31 @@ export type ShellChrome = {
   metadata_workflow_state_change_options: DisplayText;
   metadata_workflow_step_tags: DisplayText;
   metadata_workflow_control_type: DisplayText;
+  metadata_workflow_control_heading: DisplayText;
+  metadata_workflow_control_type_participant: DisplayText;
+  metadata_workflow_control_type_instructions: DisplayText;
+  metadata_workflow_control_type_date: DisplayText;
+  metadata_workflow_control_type_field: DisplayText;
   metadata_workflow_participant_strategy: DisplayText;
+  metadata_workflow_participant_strategy_owner: DisplayText;
+  metadata_workflow_participant_strategy_initiator: DisplayText;
+  metadata_workflow_participant_strategy_task_owner: DisplayText;
+  metadata_workflow_participant_strategy_roles: DisplayText;
+  metadata_workflow_participant_strategy_custom_action: DisplayText;
+  metadata_workflow_participant_strategy_user_field: DisplayText;
+  metadata_workflow_participant_strategy_groups: DisplayText;
+  metadata_workflow_groups: DisplayText;
+  metadata_workflow_set_due_date: DisplayText;
+  metadata_workflow_due_date: DisplayText;
+  metadata_workflow_comment_prompt: DisplayText;
+  metadata_workflow_field_prompt: DisplayText;
+  metadata_workflow_prompt_participants: DisplayText;
   metadata_workflow_roles_allowed: DisplayText;
   metadata_workflow_roles_not_allowed: DisplayText;
   metadata_workflow_task_assignment: DisplayText;
+  metadata_workflow_task_assignment_available: DisplayText;
+  metadata_workflow_task_assignment_all: DisplayText;
+  metadata_workflow_task_assignment_runtime: DisplayText;
   metadata_workflow_task_requirement: DisplayText;
   metadata_workflow_exclude_owner: DisplayText;
   metadata_workflow_hide_home_page_link: DisplayText;
@@ -181,7 +202,10 @@ export type ShellChrome = {
   metadata_workflow_notification_previous_tasks: DisplayText;
   metadata_workflow_custom_actions: DisplayText;
   metadata_workflow_verdicts: DisplayText;
+  metadata_workflow_verdict_comment: DisplayText;
+  metadata_workflow_comment_required: DisplayText;
   metadata_workflow_reminders: DisplayText;
+  metadata_workflow_reminder_send_on: DisplayText;
   metadata_workflow_next_state: DisplayText;
   metadata_workflow_message_template: DisplayText;
   metadata_workflow_recipients: DisplayText;
@@ -230,6 +254,7 @@ export type ShellChrome = {
   metadata_allow_types: DisplayText;
   metadata_active: DisplayText;
   metadata_required: DisplayText;
+  metadata_optional: DisplayText;
   metadata_unique: DisplayText;
   metadata_type: DisplayText;
   metadata_attributes: DisplayText;
@@ -320,6 +345,17 @@ export type ShellChrome = {
   metadata_permission_action_edit: DisplayText;
   metadata_permission_action_delete: DisplayText;
   metadata_permission_action_view: DisplayText;
+  metadata_permission_action_switch_type: DisplayText;
+  metadata_permission_action_execute: DisplayText;
+  metadata_permission_action_assign: DisplayText;
+  metadata_permission_action_assign_group: DisplayText;
+  metadata_permission_action_assign_users: DisplayText;
+  metadata_permission_action_export: DisplayText;
+  metadata_permission_action_manage_delegation: DisplayText;
+  metadata_permission_action_grant_support_login: DisplayText;
+  metadata_permission_action_all_audit: DisplayText;
+  metadata_permission_action_interact: DisplayText;
+  metadata_permission_action_manage_sdk_job_metadata: DisplayText;
   metadata_source_standard: DisplayText;
   metadata_source_system: DisplayText;
   metadata_source_custom: DisplayText;
@@ -561,6 +597,9 @@ export type VaultAIChrome = {
   time_hours: DisplayText;
   time_days: DisplayText;
   stopped: DisplayText;
+  thinking: DisplayText;
+  thinking_searching: DisplayText;
+  thinking_generating: DisplayText;
   new_chat: DisplayText;
   recent_chats: DisplayText;
   untitled_chat: DisplayText;
@@ -1906,6 +1945,9 @@ export const defaultVaultAIChrome: VaultAIChrome = {
   time_hours: t("{count}h", "vault_ai.time_hours"),
   time_days: t("{count}d", "vault_ai.time_days"),
   stopped: t("Stopped", "vault_ai.stopped"),
+  thinking: t("Thinking", "vault_ai.thinking"),
+  thinking_searching: t("Searching", "vault_ai.thinking_searching"),
+  thinking_generating: t("Generating", "vault_ai.thinking_generating"),
   new_chat: t("New Chat", "vault_ai.new_chat"),
   recent_chats: t("Recent Chats", "vault_ai.recent_chats"),
   untitled_chat: t("Untitled chat", "vault_ai.untitled_chat"),
@@ -3437,9 +3479,75 @@ export const defaultShellChrome: ShellChrome = {
     "Control Type",
     "metadata.workflow_control_type",
   ),
+  metadata_workflow_control_heading: t(
+    "Control {index}: {type}",
+    "metadata.workflow_control_heading",
+  ),
+  metadata_workflow_control_type_participant: t(
+    "Participant",
+    "metadata.workflow_control_type_participant",
+  ),
+  metadata_workflow_control_type_instructions: t(
+    "Instructions",
+    "metadata.workflow_control_type_instructions",
+  ),
+  metadata_workflow_control_type_date: t(
+    "Date",
+    "metadata.workflow_control_type_date",
+  ),
+  metadata_workflow_control_type_field: t(
+    "Field",
+    "metadata.workflow_control_type_field",
+  ),
   metadata_workflow_participant_strategy: t(
     "Add Participants",
     "metadata.workflow_participant_strategy",
+  ),
+  metadata_workflow_participant_strategy_owner: t(
+    "Allow workflow owner to select participants",
+    "metadata.workflow_participant_strategy_owner",
+  ),
+  metadata_workflow_participant_strategy_initiator: t(
+    "Allow workflow initiator to select participants",
+    "metadata.workflow_participant_strategy_initiator",
+  ),
+  metadata_workflow_participant_strategy_task_owner: t(
+    "Allow workflow task owners to select participants",
+    "metadata.workflow_participant_strategy_task_owner",
+  ),
+  metadata_workflow_participant_strategy_roles: t(
+    "Use roles as participants",
+    "metadata.workflow_participant_strategy_roles",
+  ),
+  metadata_workflow_participant_strategy_custom_action: t(
+    "Use custom action to define participants",
+    "metadata.workflow_participant_strategy_custom_action",
+  ),
+  metadata_workflow_participant_strategy_user_field: t(
+    "Use user reference field as participant",
+    "metadata.workflow_participant_strategy_user_field",
+  ),
+  metadata_workflow_participant_strategy_groups: t(
+    "Use Vault user groups as participants",
+    "metadata.workflow_participant_strategy_groups",
+  ),
+  metadata_workflow_groups: t("Groups", "metadata.workflow_groups"),
+  metadata_workflow_set_due_date: t(
+    "Set workflow due date",
+    "metadata.workflow_set_due_date",
+  ),
+  metadata_workflow_due_date: t("Due Date", "metadata.workflow_due_date"),
+  metadata_workflow_comment_prompt: t(
+    "Comment Prompt",
+    "metadata.workflow_comment_prompt",
+  ),
+  metadata_workflow_field_prompt: t(
+    "Field Prompt",
+    "metadata.workflow_field_prompt",
+  ),
+  metadata_workflow_prompt_participants: t(
+    "Prompt for Participants",
+    "metadata.workflow_prompt_participants",
   ),
   metadata_workflow_roles_allowed: t(
     "Roles allowed to participate",
@@ -3452,6 +3560,18 @@ export const defaultShellChrome: ShellChrome = {
   metadata_workflow_task_assignment: t(
     "Assign Task To",
     "metadata.workflow_task_assignment",
+  ),
+  metadata_workflow_task_assignment_available: t(
+    "Make available to users in participant group",
+    "metadata.workflow_task_assignment_available",
+  ),
+  metadata_workflow_task_assignment_all: t(
+    "Assign to all users in participant group",
+    "metadata.workflow_task_assignment_all",
+  ),
+  metadata_workflow_task_assignment_runtime: t(
+    "Allow workflow initiator to select assign to all or make available",
+    "metadata.workflow_task_assignment_runtime",
   ),
   metadata_workflow_task_requirement: t(
     "Task Requirement",
@@ -3485,9 +3605,21 @@ export const defaultShellChrome: ShellChrome = {
     "Verdict Options",
     "metadata.workflow_verdicts",
   ),
+  metadata_workflow_verdict_comment: t(
+    "Comment",
+    "metadata.workflow_verdict_comment",
+  ),
+  metadata_workflow_comment_required: t(
+    "(required)",
+    "metadata.workflow_comment_required",
+  ),
   metadata_workflow_reminders: t(
     "Task Reminders",
     "metadata.workflow_reminders",
+  ),
+  metadata_workflow_reminder_send_on: t(
+    "Send On",
+    "metadata.workflow_reminder_send_on",
   ),
   metadata_workflow_next_state: t("Next State", "metadata.workflow_next_state"),
   metadata_workflow_message_template: t(
@@ -3612,6 +3744,7 @@ export const defaultShellChrome: ShellChrome = {
   metadata_allow_types: t("Object Types", "metadata.allow_types"),
   metadata_active: t("Active", "metadata.active"),
   metadata_required: t("Required", "metadata.required"),
+  metadata_optional: t("Optional", "metadata.optional"),
   metadata_unique: t("Unique", "metadata.unique"),
   metadata_type: t("Type", "metadata.type"),
   metadata_attributes: t("Attributes", "metadata.attributes"),
@@ -3819,6 +3952,50 @@ export const defaultShellChrome: ShellChrome = {
   metadata_permission_action_edit: t("Edit", "action.edit"),
   metadata_permission_action_delete: t("Delete", "action.delete"),
   metadata_permission_action_view: t("View", "action.view"),
+  metadata_permission_action_switch_type: t(
+    "Switch Type",
+    "metadata.permission_action_switch_type",
+  ),
+  metadata_permission_action_execute: t(
+    "Execute",
+    "metadata.permission_action_execute",
+  ),
+  metadata_permission_action_assign: t(
+    "Assign",
+    "metadata.permission_action_assign",
+  ),
+  metadata_permission_action_assign_group: t(
+    "Assign Group",
+    "metadata.permission_action_assign_group",
+  ),
+  metadata_permission_action_assign_users: t(
+    "Assign Users",
+    "metadata.permission_action_assign_users",
+  ),
+  metadata_permission_action_export: t(
+    "Export",
+    "metadata.permission_action_export",
+  ),
+  metadata_permission_action_manage_delegation: t(
+    "Manage Delegation",
+    "metadata.permission_action_manage_delegation",
+  ),
+  metadata_permission_action_grant_support_login: t(
+    "Grant Support Login",
+    "metadata.permission_action_grant_support_login",
+  ),
+  metadata_permission_action_all_audit: t(
+    "All Audit",
+    "metadata.permission_action_all_audit",
+  ),
+  metadata_permission_action_interact: t(
+    "Interact",
+    "metadata.permission_action_interact",
+  ),
+  metadata_permission_action_manage_sdk_job_metadata: t(
+    "Manage SDK Job Metadata",
+    "metadata.permission_action_manage_sdk_job_metadata",
+  ),
   metadata_source_standard: t("Standard", "metadata.source_standard"),
   metadata_source_system: t("System", "metadata.source_system"),
   metadata_source_custom: t("Custom", "metadata.source_custom"),
