@@ -14,7 +14,7 @@ import type { ShellChrome } from "../lib/i18n";
 import { humanizeApiName, OBJECT_CRUD_ACTIONS, rowVisibleForObjectType } from "./permissionSetView";
 import { AdminCompactTable } from "../components/admin/AdminCompactTable";
 import { AdminPageShell } from "../components/admin/AdminPageShell";
-import { ObjectCrudCheckbox } from "./permissionActions";
+import { ObjectCrudCheckbox, permissionActionLabel } from "./permissionActions";
 
 type Shell = ShellChrome;
 
@@ -205,11 +205,10 @@ function PermissionSection({
         {typeFilter && (
           <Select
             size="small"
-            className="perm-object-section__type"
+            className="perm-object-section__type filter-bar__min-180"
             value={selectedType}
             options={typeFilter.options}
             onChange={typeFilter.onChange}
-            className="filter-bar__min-180"
           />
         )}
       </div>
@@ -233,7 +232,7 @@ function objectPermissionColumns(
   const crudColumns: TableColumnsType<MetadataPermissionSetObjectPermissionRow> = actionColumns.map(
     (action) => ({
       key: action,
-      title: action.charAt(0).toUpperCase() + action.slice(1),
+      title: permissionActionLabel(shell, action),
       width: 88,
       align: "center" as const,
       render: (_v, row) => (
@@ -241,6 +240,7 @@ function objectPermissionColumns(
           action={action}
           actions={row.actions}
           inheritedActions={row.inherited_actions}
+          label={permissionActionLabel(shell, action)}
         />
       ),
     }),

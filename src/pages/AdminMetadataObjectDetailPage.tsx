@@ -680,7 +680,7 @@ function ObjectDetailsFields({
     },
     {
       label: displayText(shell.metadata_source),
-      value: sourceLabel(classifySourceFromApiName(model.api_name)),
+      value: sourceLabel(classifySourceFromApiName(model.api_name), shell),
     },
     {
       label: displayText(shell.metadata_object_class),

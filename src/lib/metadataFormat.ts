@@ -1,4 +1,6 @@
 // Formatting helpers for the admin metadata viewer.
+import { displayText } from "./i18n";
+import type { ShellChrome } from "./i18n";
 
 /** Render an arbitrary metadata attribute value as a compact string. */
 export function formatMetadataValue(value: unknown): string {
@@ -18,14 +20,13 @@ export function formatMetadataValue(value: unknown): string {
   }
 }
 
-/** Classify an object source api-name suffix into a localized label. */
-const SOURCE_LABELS: Record<string, string> = {
-  standard: "Standard",
-  system: "System",
-  custom: "Custom",
-  application: "Application",
-};
-
-export function sourceLabel(source: string): string {
-  return SOURCE_LABELS[source] ?? source;
+/** Classify a metadata source into its shell-localized label. */
+export function sourceLabel(source: string, shell: ShellChrome): string {
+  const labels: Record<string, string> = {
+    standard: displayText(shell.metadata_source_standard),
+    system: displayText(shell.metadata_source_system),
+    custom: displayText(shell.metadata_source_custom),
+    application: displayText(shell.metadata_source_application),
+  };
+  return labels[source] ?? source;
 }

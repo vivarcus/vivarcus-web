@@ -315,6 +315,15 @@ export type ShellChrome = {
   metadata_security_profile_users_search_placeholder: DisplayText;
   metadata_permission_entry: DisplayText;
   metadata_permission_actions: DisplayText;
+  metadata_permission_action_create: DisplayText;
+  metadata_permission_action_read: DisplayText;
+  metadata_permission_action_edit: DisplayText;
+  metadata_permission_action_delete: DisplayText;
+  metadata_permission_action_view: DisplayText;
+  metadata_source_standard: DisplayText;
+  metadata_source_system: DisplayText;
+  metadata_source_custom: DisplayText;
+  metadata_source_application: DisplayText;
   metadata_permission_description: DisplayText;
   metadata_permission_sets_search_placeholder: DisplayText;
   metadata_permission_objects_search_placeholder: DisplayText;
@@ -3805,6 +3814,15 @@ export const defaultShellChrome: ShellChrome = {
   ),
   metadata_permission_entry: t("Permission", "metadata.permission_entry"),
   metadata_permission_actions: t("Actions", "metadata.permission_actions"),
+  metadata_permission_action_create: t("Create", "action.create"),
+  metadata_permission_action_read: t("Read", "action.read"),
+  metadata_permission_action_edit: t("Edit", "action.edit"),
+  metadata_permission_action_delete: t("Delete", "action.delete"),
+  metadata_permission_action_view: t("View", "action.view"),
+  metadata_source_standard: t("Standard", "metadata.source_standard"),
+  metadata_source_system: t("System", "metadata.source_system"),
+  metadata_source_custom: t("Custom", "metadata.source_custom"),
+  metadata_source_application: t("Application", "metadata.source_application"),
   metadata_permission_description: t(
     "Description",
     "metadata.permission_description",
@@ -4132,7 +4150,7 @@ export const defaultShellChrome: ShellChrome = {
   return_to_record: t("Back to record", "ui.return_to_record"),
   vault_home: t("Vault home", "ui.vault_home"),
   admin_logs: t("Admin Logs", "admin.logs"),
-  admin_users_groups: t("Users & Groups", "admin.users_groups"),
+  admin_users_groups: t("Users & Groups", "navigation.admin.users_groups"),
   admin_language_region_settings: t(
     "Language & Region Settings",
     "language_region_settings.page_title",

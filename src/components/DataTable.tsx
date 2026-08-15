@@ -123,6 +123,17 @@ type Props = {
   recordNav?: ListRecordNavContext;
 };
 
+function parseBooleanCellValue(value: unknown): boolean | null {
+  if (typeof value === "boolean") return value;
+  if (value === 1 || value === "1") return true;
+  if (value === 0 || value === "0") return false;
+  if (typeof value !== "string") return null;
+  const normalized = value.trim().toLowerCase();
+  if (normalized === "true") return true;
+  if (normalized === "false") return false;
+  return null;
+}
+
 function CellValue({
   vaultId,
   tabApiName,
@@ -147,6 +158,7 @@ function CellValue({
   const { shell } = useUi();
   const raw = row.fields[column.field_api_name];
   const refCell = row.reference_cells?.[column.field_api_name];
+  const fieldType = column.field_type ?? column.field_render?.field_type;
   const isRecordLink =
     Boolean(recordLinkField) &&
     column.field_api_name === recordLinkField &&
@@ -154,6 +166,29 @@ function CellValue({
   const emptyLinkText = displayText(linkToRecordLabel, "[Link to Record]");
   const recordLinkState =
     isRecordLink && recordNav ? buildRecordNavState(recordNav, row.record_id) : undefined;
+
+  if (!isRecordLink && fieldType === "Boolean") {
+    const booleanValue = parseBooleanCellValue(raw);
+    if (booleanValue !== null) {
+      return (
+        <span>
+          {displayText(booleanValue ? shell.metadata_yes : shell.metadata_no)}
+        </span>
+      );
+    }
+  }
+
+  if (!isRecordLink && column.field_render?.base_field_role === "lifecycle_state") {
+    const localizedState = formatFieldDisplayValue(
+      raw,
+      "Picklist",
+      displayContext,
+      column.field_render.picklist_options,
+    );
+    if (localizedState) {
+      return <span>{localizedState}</span>;
+    }
+  }
 
   if (!isRecordLink) {
     const fieldRender = listCellFieldRender(column, raw) ?? column.field_render;

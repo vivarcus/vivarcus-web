@@ -103,7 +103,7 @@ export function AdminMetadataPermissionSetsPage() {
       dataIndex: "source",
       title: displayText(shell.metadata_source),
       sorter: (a, b) => a.source.localeCompare(b.source),
-      render: (s: string) => sourceLabel(s),
+      render: (s: string) => sourceLabel(s, shell),
     },
     {
       key: "reference_count",
@@ -154,7 +154,7 @@ export function AdminMetadataPermissionSetsPage() {
           className="filter-bar__min-150"
           options={[
             { value: "", label: displayText(shell.metadata_filter_all_sources) },
-            ...sourceOptions.map((s) => ({ value: s, label: sourceLabel(s) })),
+            ...sourceOptions.map((s) => ({ value: s, label: sourceLabel(s, shell) })),
           ]}
         />
         <Select

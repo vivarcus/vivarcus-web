@@ -36,7 +36,11 @@ import {
   type ObjectsTableRow,
   type TabsTableRow,
 } from "./permissionSetView";
-import { ObjectCrudCheckbox, renderActions } from "./permissionActions";
+import {
+  ObjectCrudCheckbox,
+  permissionActionLabel,
+  renderActions,
+} from "./permissionActions";
 import {
   capabilityKeyLabel,
   capabilitySectionEntryLabel,
@@ -165,7 +169,7 @@ function PermissionSetSummary({ model, shell }: { model: MetadataPermissionSetDe
     },
     {
       label: displayText(shell.metadata_source),
-      value: sourceLabel(model.source),
+      value: sourceLabel(model.source, shell),
     },
   ];
 
@@ -494,7 +498,8 @@ function capabilityEntryColumns(
       key: "actions",
       dataIndex: "actions",
       title: displayText(shell.metadata_permission_actions),
-      render: (_actions: string[], entry: MetadataPermissionSetEntry) => renderActions(entry),
+      render: (_actions: string[], entry: MetadataPermissionSetEntry) =>
+        renderActions(entry, shell),
     },
   ];
 }
@@ -552,13 +557,14 @@ function tabsSummaryColumns(shell: Shell): TableColumnsType<TabsTableRow> {
     },
     {
       key: TAB_VIEW_ACTION,
-      title: "View",
+      title: permissionActionLabel(shell, TAB_VIEW_ACTION),
       width: 88,
       align: "center" as const,
       render: (_v, row) => (
         <ObjectCrudCheckbox
           action={TAB_VIEW_ACTION}
           actions={row.kind === "tab" ? row.tab.actions : row.subtab.actions}
+          label={permissionActionLabel(shell, TAB_VIEW_ACTION)}
         />
       ),
     },
@@ -632,13 +638,14 @@ function objectSummaryColumns(
 ): TableColumnsType<ObjectsTableRow> {
   const crudColumns: TableColumnsType<ObjectsTableRow> = OBJECT_CRUD_ACTIONS.map((action) => ({
     key: action,
-    title: action.charAt(0).toUpperCase() + action.slice(1),
+    title: permissionActionLabel(shell, action),
     width: 88,
     align: "center" as const,
     render: (_v, row) => (
       <ObjectCrudCheckbox
         action={action}
         actions={row.kind === "object" ? row.object.actions : row.type.actions}
+        label={permissionActionLabel(shell, action)}
       />
     ),
   }));
@@ -687,7 +694,8 @@ function flatEntryColumns(
       key: "actions",
       dataIndex: "actions",
       title: displayText(shell.metadata_permission_actions),
-      render: (_actions: string[], entry: MetadataPermissionSetEntry) => renderActions(entry),
+      render: (_actions: string[], entry: MetadataPermissionSetEntry) =>
+        renderActions(entry, shell),
     },
   ];
 }

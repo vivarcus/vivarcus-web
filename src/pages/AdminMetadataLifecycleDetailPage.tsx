@@ -217,7 +217,7 @@ function DetailsFields({
     },
     {
       label: displayText(shell.metadata_source),
-      value: sourceLabel(model.source),
+      value: sourceLabel(model.source, shell),
     },
     {
       label: displayText(shell.description),

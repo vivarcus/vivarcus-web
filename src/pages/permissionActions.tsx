@@ -1,5 +1,18 @@
 import { Checkbox, Tag, Tooltip } from "antd";
+import { displayText } from "../lib/i18n";
+import type { ShellChrome } from "../lib/i18n";
 import { OBJECT_CRUD_ACTIONS } from "./permissionSetView";
+
+export function permissionActionLabel(shell: ShellChrome, action: string): string {
+  const labels: Record<string, ReturnType<typeof displayText>> = {
+    create: displayText(shell.metadata_permission_action_create),
+    read: displayText(shell.metadata_permission_action_read),
+    edit: displayText(shell.metadata_permission_action_edit),
+    delete: displayText(shell.metadata_permission_action_delete),
+    view: displayText(shell.metadata_permission_action_view),
+  };
+  return labels[action] ?? action;
+}
 
 // renderActions renders a permission entry's actions as a checkbox matrix, mirroring Veeva's
 // permission set detail page. When the entry carries an available_actions candidate set, each
@@ -9,7 +22,10 @@ import { OBJECT_CRUD_ACTIONS } from "./permissionSetView";
 // (exotic/custom) are appended in a visually separated "other" group as Tags so nothing is
 // silently dropped. Entries without a candidate set fall back to showing each granted action as
 // a checked checkbox.
-export function renderActions(entry: { actions: string[]; available_actions: string[] }) {
+export function renderActions(
+  entry: { actions: string[]; available_actions: string[] },
+  shell: ShellChrome,
+) {
   const granted = entry.actions ?? [];
   const candidates = entry.available_actions ?? [];
   if (granted.length === 0 && candidates.length === 0) return "";
@@ -19,7 +35,7 @@ export function renderActions(entry: { actions: string[]; available_actions: str
       <span className="perm-actions">
         {granted.map((a) => (
           <Checkbox key={a} checked disabled className="perm-actions__check">
-            {a}
+            {permissionActionLabel(shell, a)}
           </Checkbox>
         ))}
       </span>
@@ -39,7 +55,7 @@ export function renderActions(entry: { actions: string[]; available_actions: str
             disabled
             className={`perm-actions__check${isGranted ? "" : " perm-actions__check--off"}`}
           >
-            {a}
+            {permissionActionLabel(shell, a)}
           </Checkbox>
         );
       })}
@@ -85,20 +101,23 @@ export function ObjectCrudCheckbox({
   action,
   actions,
   inheritedActions,
+  label,
 }: {
   action: string;
   actions: string[];
   inheritedActions?: string[];
+  label?: string;
 }) {
   const granted = (actions ?? []).includes(action);
   const inherited = granted && (inheritedActions ?? []).includes(action);
+  const ariaLabel = label ?? action;
   return (
     <span className="perm-crud-cell">
       <Checkbox
         checked={granted}
         disabled
         className={`perm-actions__check${granted ? "" : " perm-actions__check--off"}`}
-        aria-label={inherited ? `${action} (inherited)` : action}
+        aria-label={inherited ? `${ariaLabel} (*)` : ariaLabel}
       />
       {inherited && (
         <span className="perm-crud-cell__star" aria-hidden="true">

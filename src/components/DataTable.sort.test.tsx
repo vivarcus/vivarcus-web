@@ -6,6 +6,7 @@ import { MemoryRouter } from "react-router-dom";
 import { describe, expect, it, vi } from "vitest";
 import type { ListColumn, ListRecordRow } from "../api/types";
 import { UiProvider } from "../context/UiContext";
+import { defaultShellChrome } from "../lib/i18n";
 import { toggleListColumnSort } from "../lib/objectListPage";
 import { DataTable } from "./DataTable";
 
@@ -94,6 +95,63 @@ describe("DataTable sort", () => {
       renderRowActions: () => <button type="button">Row action</button>,
     });
     expect(screen.getAllByRole("button", { name: "Row action" })).toHaveLength(2);
+  });
+
+  it("renders Boolean values from localized shell labels", () => {
+    render(
+      <MemoryRouter>
+        <UiProvider
+          shell={{
+            ...defaultShellChrome,
+            metadata_yes: { text: "是" },
+            metadata_no: { text: "否" },
+          }}
+        >
+          <DataTable
+            columns={[{ field_api_name: "enabled__v", label: "启用", field_type: "Boolean" }]}
+            records={[
+              { record_id: "1", fields: { enabled__v: true } },
+              { record_id: "2", fields: { enabled__v: false } },
+            ]}
+          />
+        </UiProvider>
+      </MemoryRouter>,
+    );
+
+    expect(screen.getByText("是")).toBeTruthy();
+    expect(screen.getByText("否")).toBeTruthy();
+  });
+
+  it("prefers localized lifecycle-state options over reference display text", () => {
+    renderTable({
+      columns: [
+        {
+          field_api_name: "state__v",
+          label: "生命周期状态",
+          field_type: "Component",
+          field_render: {
+            field_type: "Component",
+            renderer_kind: "display_text",
+            base_field_role: "lifecycle_state",
+            picklist_options: [{ name: "active_state__sys", label: "活动" }],
+          },
+        },
+      ],
+      records: [
+        {
+          record_id: "1",
+          fields: { state__v: "active_state__sys" },
+          reference_cells: {
+            state__v: { display_value: "Active" },
+          },
+        },
+      ],
+      sortBy: undefined,
+      onSort: undefined,
+    });
+
+    expect(screen.getByText("活动")).toBeTruthy();
+    expect(screen.queryByText("Active")).toBeNull();
   });
 
   it("cycles asc, desc, and cleared sort on repeated clicks", async () => {
