@@ -74,6 +74,11 @@ export type ShellChrome = {
   metadata_lifecycle_record_inactive: DisplayText;
   metadata_lifecycle_cancel_state: DisplayText;
   metadata_lifecycle_application_role: DisplayText;
+  metadata_lifecycle_role_owner: DisplayText;
+  metadata_lifecycle_role_editor: DisplayText;
+  metadata_lifecycle_role_viewer: DisplayText;
+  metadata_lifecycle_role_assigned_to: DisplayText;
+  metadata_lifecycle_role_contributor: DisplayText;
   metadata_lifecycle_permission: DisplayText;
   metadata_lifecycle_object: DisplayText;
   metadata_lifecycle_state_label: DisplayText;
@@ -81,6 +86,7 @@ export type ShellChrome = {
   metadata_lifecycle_view_objects: DisplayText;
   metadata_lifecycle_event_actions: DisplayText;
   metadata_lifecycle_event: DisplayText;
+  metadata_lifecycle_event_create_record: DisplayText;
   metadata_lifecycles_search_placeholder: DisplayText;
   metadata_empty_lifecycles: DisplayText;
   metadata_empty_lifecycle_states: DisplayText;
@@ -174,6 +180,7 @@ export type ShellChrome = {
   metadata_empty_workflow_cancellation_actions: DisplayText;
   metadata_workflow_start_options: DisplayText;
   metadata_workflow_start_step_rules: DisplayText;
+  metadata_workflow_start_rule_hidden: DisplayText;
   metadata_workflow_task_options: DisplayText;
   metadata_workflow_decision_rules: DisplayText;
   metadata_workflow_notification_options: DisplayText;
@@ -193,7 +200,11 @@ export type ShellChrome = {
   metadata_workflow_participant_strategy_custom_action: DisplayText;
   metadata_workflow_participant_strategy_user_field: DisplayText;
   metadata_workflow_participant_strategy_groups: DisplayText;
+  metadata_workflow_participant_initiator: DisplayText;
+  metadata_workflow_participant_owner: DisplayText;
+  metadata_workflow_participant_task_owner: DisplayText;
   metadata_workflow_groups: DisplayText;
+  metadata_workflow_user_reference_fields: DisplayText;
   metadata_workflow_set_due_date: DisplayText;
   metadata_workflow_due_date: DisplayText;
   metadata_workflow_comment_prompt: DisplayText;
@@ -217,6 +228,9 @@ export type ShellChrome = {
   metadata_workflow_comment_required: DisplayText;
   metadata_workflow_reminders: DisplayText;
   metadata_workflow_reminder_send_on: DisplayText;
+  metadata_workflow_reminder_before_due: DisplayText;
+  metadata_workflow_reminder_on_due: DisplayText;
+  metadata_workflow_reminder_after_due: DisplayText;
   metadata_workflow_next_state: DisplayText;
   metadata_workflow_message_template: DisplayText;
   metadata_workflow_recipients: DisplayText;
@@ -241,7 +255,14 @@ export type ShellChrome = {
   metadata_namespace: DisplayText;
   metadata_in_menu: DisplayText;
   metadata_object_class: DisplayText;
+  metadata_object_class_base: DisplayText;
+  metadata_object_class_user_task: DisplayText;
+  metadata_object_class_esignature: DisplayText;
+  metadata_object_class_user_role_setup: DisplayText;
+  metadata_object_class_document: DisplayText;
   metadata_data_store: DisplayText;
+  metadata_data_store_standard: DisplayText;
+  metadata_data_store_high_volume: DisplayText;
   metadata_object_configuration: DisplayText;
   metadata_object_options: DisplayText;
   metadata_object_type_independent: DisplayText;
@@ -287,12 +308,23 @@ export type ShellChrome = {
   metadata_layout_label: DisplayText;
   metadata_layout_name: DisplayText;
   metadata_layout_kind: DisplayText;
+  metadata_layout_element_detailform: DisplayText;
+  metadata_layout_element_field: DisplayText;
+  metadata_layout_element_control: DisplayText;
+  metadata_layout_element_spacer: DisplayText;
+  metadata_layout_element_text: DisplayText;
+  metadata_layout_element_wftimeline: DisplayText;
+  metadata_layout_element_domain_user: DisplayText;
+  metadata_layout_element_help_section: DisplayText;
+  metadata_detailform_one_column: DisplayText;
+  metadata_detailform_two_columns: DisplayText;
   metadata_empty_sections: DisplayText;
   metadata_layout_reference: DisplayText;
   metadata_sections_tab: DisplayText;
   metadata_default: DisplayText;
   metadata_default_type: DisplayText;
   metadata_typefield_required_legend: DisplayText;
+  metadata_required_override: DisplayText;
   metadata_attr_group_display: DisplayText;
   metadata_attr_group_data: DisplayText;
   metadata_attr_group_features: DisplayText;
@@ -322,6 +354,11 @@ export type ShellChrome = {
   metadata_empty_relationships: DisplayText;
   metadata_related_object: DisplayText;
   metadata_relationship_type: DisplayText;
+  metadata_relationship_type_reference: DisplayText;
+  metadata_relationship_type_parent: DisplayText;
+  metadata_relationship_deletion_block: DisplayText;
+  metadata_relationship_deletion_setnull: DisplayText;
+  metadata_relationship_deletion_cascade: DisplayText;
   metadata_outbound_relationships: DisplayText;
   metadata_inbound_relationships: DisplayText;
   metadata_empty_outbound: DisplayText;
@@ -331,6 +368,16 @@ export type ShellChrome = {
   metadata_inbound_name: DisplayText;
   metadata_secured: DisplayText;
   metadata_field_type: DisplayText;
+  metadata_field_type_string: DisplayText;
+  metadata_field_type_long_text: DisplayText;
+  metadata_field_type_rich_text: DisplayText;
+  metadata_field_type_number: DisplayText;
+  metadata_field_type_boolean: DisplayText;
+  metadata_field_type_date: DisplayText;
+  metadata_field_type_date_time: DisplayText;
+  metadata_field_type_picklist: DisplayText;
+  metadata_field_type_object: DisplayText;
+  metadata_field_type_formula: DisplayText;
   metadata_sharing_rules_tab: DisplayText;
   metadata_empty_sharing_rules: DisplayText;
   metadata_sharing_rule_criteria: DisplayText;
@@ -3183,6 +3230,17 @@ export const defaultShellChrome: ShellChrome = {
     "Application role",
     "metadata.lifecycle_application_role",
   ),
+  metadata_lifecycle_role_owner: t("Owner", "metadata.lifecycle_role_owner"),
+  metadata_lifecycle_role_editor: t("Editor", "metadata.lifecycle_role_editor"),
+  metadata_lifecycle_role_viewer: t("Viewer", "metadata.lifecycle_role_viewer"),
+  metadata_lifecycle_role_assigned_to: t(
+    "Assigned To",
+    "metadata.lifecycle_role_assigned_to",
+  ),
+  metadata_lifecycle_role_contributor: t(
+    "Contributor",
+    "metadata.lifecycle_role_contributor",
+  ),
   metadata_lifecycle_permission: t(
     "Permission",
     "metadata.lifecycle_permission",
@@ -3205,6 +3263,10 @@ export const defaultShellChrome: ShellChrome = {
     "metadata.lifecycle_event_actions",
   ),
   metadata_lifecycle_event: t("Event", "metadata.lifecycle_event"),
+  metadata_lifecycle_event_create_record: t(
+    "Create Record",
+    "metadata.lifecycle_event_create_record",
+  ),
   metadata_lifecycles_search_placeholder: t(
     "Search object lifecycles",
     "metadata.lifecycles_search_placeholder",
@@ -3518,6 +3580,10 @@ export const defaultShellChrome: ShellChrome = {
     "Start Step Rules",
     "metadata.workflow_start_step_rules",
   ),
+  metadata_workflow_start_rule_hidden: t(
+    "Hidden",
+    "metadata.workflow_start_rule_hidden",
+  ),
   metadata_workflow_task_options: t(
     "Task Options",
     "metadata.workflow_task_options",
@@ -3591,7 +3657,23 @@ export const defaultShellChrome: ShellChrome = {
     "Use Vault user groups as participants",
     "metadata.workflow_participant_strategy_groups",
   ),
+  metadata_workflow_participant_initiator: t(
+    "Workflow Initiator",
+    "metadata.workflow_participant_initiator",
+  ),
+  metadata_workflow_participant_owner: t(
+    "Workflow Owner",
+    "metadata.workflow_participant_owner",
+  ),
+  metadata_workflow_participant_task_owner: t(
+    "Task Owner",
+    "metadata.workflow_participant_task_owner",
+  ),
   metadata_workflow_groups: t("Groups", "metadata.workflow_groups"),
+  metadata_workflow_user_reference_fields: t(
+    "User Reference Fields",
+    "metadata.workflow_user_reference_fields",
+  ),
   metadata_workflow_set_due_date: t(
     "Set workflow due date",
     "metadata.workflow_set_due_date",
@@ -3681,6 +3763,18 @@ export const defaultShellChrome: ShellChrome = {
     "Send On",
     "metadata.workflow_reminder_send_on",
   ),
+  metadata_workflow_reminder_before_due: t(
+    "{days} days before task due date",
+    "metadata.workflow_reminder_before_due",
+  ),
+  metadata_workflow_reminder_on_due: t(
+    "On task due date",
+    "metadata.workflow_reminder_on_due",
+  ),
+  metadata_workflow_reminder_after_due: t(
+    "{days} days after task due date",
+    "metadata.workflow_reminder_after_due",
+  ),
   metadata_workflow_next_state: t("Next State", "metadata.workflow_next_state"),
   metadata_workflow_message_template: t(
     "Message Template",
@@ -3735,7 +3829,17 @@ export const defaultShellChrome: ShellChrome = {
   metadata_namespace: t("Namespace", "metadata.namespace"),
   metadata_in_menu: t("In menu", "metadata.in_menu"),
   metadata_object_class: t("Object Class", "metadata.object_class"),
+  metadata_object_class_base: t("Base", "metadata.object_class_base"),
+  metadata_object_class_user_task: t("User Task", "metadata.object_class_user_task"),
+  metadata_object_class_esignature: t("Signature", "metadata.object_class_esignature"),
+  metadata_object_class_user_role_setup: t(
+    "User Role Setup",
+    "metadata.object_class_user_role_setup",
+  ),
+  metadata_object_class_document: t("Document", "metadata.object_class_document"),
   metadata_data_store: t("Data Store", "metadata.data_store"),
+  metadata_data_store_standard: t("Standard", "metadata.data_store_standard"),
+  metadata_data_store_high_volume: t("High Volume", "metadata.data_store_high_volume"),
   metadata_object_configuration: t(
     "Configuration",
     "metadata.object_configuration",
@@ -3844,6 +3948,34 @@ export const defaultShellChrome: ShellChrome = {
   metadata_layout_label: t("Label", "metadata.layout_label"),
   metadata_layout_name: t("Name", "metadata.layout_name"),
   metadata_layout_kind: t("Kind", "metadata.layout_kind"),
+  metadata_layout_element_detailform: t(
+    "Detail Form",
+    "metadata.layout_element_detailform",
+  ),
+  metadata_layout_element_field: t("Field", "metadata.layout_element_field"),
+  metadata_layout_element_control: t("Control", "metadata.layout_element_control"),
+  metadata_layout_element_spacer: t("Spacer", "metadata.layout_element_spacer"),
+  metadata_layout_element_text: t("Text", "metadata.layout_element_text"),
+  metadata_layout_element_wftimeline: t(
+    "Workflow Timeline",
+    "metadata.layout_element_wftimeline",
+  ),
+  metadata_layout_element_domain_user: t(
+    "Domain User",
+    "metadata.layout_element_domain_user",
+  ),
+  metadata_layout_element_help_section: t(
+    "Help Section",
+    "metadata.layout_element_help_section",
+  ),
+  metadata_detailform_one_column: t(
+    "Detail Form - One Column",
+    "metadata.detailform_one_column",
+  ),
+  metadata_detailform_two_columns: t(
+    "Detail Form - Two Columns",
+    "metadata.detailform_two_columns",
+  ),
   metadata_empty_sections: t(
     "No sections in this layout.",
     "metadata.empty_sections",
@@ -3856,6 +3988,7 @@ export const defaultShellChrome: ShellChrome = {
     "✓ = field on type · ✓* = required override on type",
     "metadata.typefield_required_legend",
   ),
+  metadata_required_override: t("Required Override", "metadata.required_override"),
   metadata_attr_group_display: t("Display", "metadata.attr_group_display"),
   metadata_attr_group_data: t("Data model", "metadata.attr_group_data"),
   metadata_attr_group_features: t("Features", "metadata.attr_group_features"),
@@ -3912,6 +4045,23 @@ export const defaultShellChrome: ShellChrome = {
   ),
   metadata_related_object: t("Related Object", "metadata.related_object"),
   metadata_relationship_type: t("Type", "metadata.relationship_type"),
+  metadata_relationship_type_reference: t(
+    "Reference",
+    "metadata.relationship_type_reference",
+  ),
+  metadata_relationship_type_parent: t("Parent", "metadata.relationship_type_parent"),
+  metadata_relationship_deletion_block: t(
+    "Prevent deletion of the related object record",
+    "metadata.relationship_deletion_block",
+  ),
+  metadata_relationship_deletion_setnull: t(
+    "Set field to blank when related record is deleted",
+    "metadata.relationship_deletion_setnull",
+  ),
+  metadata_relationship_deletion_cascade: t(
+    "Cascade delete children records",
+    "metadata.relationship_deletion_cascade",
+  ),
   metadata_outbound_relationships: t(
     "Outbound Relationships",
     "metadata.outbound_relationships",
@@ -3942,6 +4092,16 @@ export const defaultShellChrome: ShellChrome = {
   ),
   metadata_secured: t("Secured", "metadata.secured"),
   metadata_field_type: t("Field Type", "metadata.field_type"),
+  metadata_field_type_string: t("Text", "metadata.field_type_string"),
+  metadata_field_type_long_text: t("Long Text", "metadata.field_type_long_text"),
+  metadata_field_type_rich_text: t("Rich Text", "metadata.field_type_rich_text"),
+  metadata_field_type_number: t("Number", "metadata.field_type_number"),
+  metadata_field_type_boolean: t("Yes/No", "metadata.field_type_boolean"),
+  metadata_field_type_date: t("Date", "metadata.field_type_date"),
+  metadata_field_type_date_time: t("Date/Time", "metadata.field_type_date_time"),
+  metadata_field_type_picklist: t("Picklist", "metadata.field_type_picklist"),
+  metadata_field_type_object: t("Object Reference", "metadata.field_type_object"),
+  metadata_field_type_formula: t("Formula", "metadata.field_type_formula"),
   metadata_sharing_rules_tab: t("Sharing Rules", "metadata.sharing_rules_tab"),
   metadata_empty_sharing_rules: t(
     "No sharing rules found.",

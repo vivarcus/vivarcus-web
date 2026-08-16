@@ -7,6 +7,7 @@ import type { MetadataObjectSummary } from "../api/types";
 import { useVaultId } from "../hooks/useVaultId";
 import { useUi } from "../context/UiContext";
 import { displayText, displayTextTemplate } from "../lib/i18n";
+import { objectClassLabel } from "../lib/metadataFormat";
 import { filterAndRankByQuery } from "../lib/metadataSearchRank";
 import { AdminCompactTable, adminTableEmptyText } from "../components/admin/AdminCompactTable";
 import { AdminPageShell } from "../components/admin/AdminPageShell";
@@ -48,8 +49,8 @@ export function AdminMetadataObjectsPage() {
     }
     return Array.from(seen)
       .sort()
-      .map((value) => ({ value, label: value }));
-  }, [objects]);
+      .map((value) => ({ value, label: objectClassLabel(value, shell) }));
+  }, [objects, shell]);
 
   const filtered = useMemo(() => {
     const scoped = objects.filter((o) => {
@@ -101,8 +102,7 @@ export function AdminMetadataObjectsPage() {
       key: "object_class",
       dataIndex: "object_class",
       title: displayText(shell.metadata_object_class),
-      className: "mono",
-      render: (v?: string) => v || "—",
+      render: (v?: string) => (v ? objectClassLabel(v, shell) : "—"),
     },
     {
       key: "in_menu",

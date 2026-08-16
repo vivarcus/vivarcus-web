@@ -14,6 +14,7 @@ import { Breadcrumb } from "../components/Breadcrumb";
 import { useVaultId } from "../hooks/useVaultId";
 import { useUi } from "../context/UiContext";
 import { displayText } from "../lib/i18n";
+import { fieldTypeLabel } from "../lib/metadataFormat";
 import { AdminPageShell } from "../components/admin/AdminPageShell";
 
 function attrString(attributes: MetadataNameValuePair[], name: string): string | undefined {
@@ -196,7 +197,7 @@ export function AdminMetadataFieldDetailPage() {
               {
                 key: "type",
                 label: displayText(shell.metadata_type),
-                children: <span className="mono">{model.type}</span>,
+                children: fieldTypeLabel(model.type, shell),
               },
               { key: "required", label: displayText(shell.metadata_required), children: yesNo(model.required) },
               { key: "unique", label: displayText(shell.metadata_unique), children: yesNo(model.unique) },

@@ -19,7 +19,7 @@ import { displayText } from "../lib/i18n";
 import { AdminCompactTable } from "../components/admin/AdminCompactTable";
 import { AdminPageShell } from "../components/admin/AdminPageShell";
 import type { ShellChrome } from "../lib/i18n";
-import { sourceLabel } from "../lib/metadataFormat";
+import { lifecycleRoleLabel, sourceLabel } from "../lib/metadataFormat";
 
 type Shell = ShellChrome;
 
@@ -443,7 +443,7 @@ function RolesSection({
     }
     const out: RoleRow[] = roles.map((r) => ({
       key: r.api_name,
-      name: r.api_name,
+      name: lifecycleRoleLabel(r.api_name, shell),
       application_role: r.application_role,
       active: r.active,
       permissions: (permByRole.get(r.api_name) ?? []).join(", "),
@@ -452,14 +452,14 @@ function RolesSection({
       if (roles.some((r) => r.api_name === role)) continue;
       out.push({
         key: `perm-${role}`,
-        name: role,
+        name: lifecycleRoleLabel(role, shell),
         application_role: "",
         active: true,
         permissions: perms.join(", "),
       });
     }
     return out;
-  }, [roles, permissions]);
+  }, [roles, permissions, shell]);
 
   if (rows.length === 0) {
     return <span className="data-table__empty">{displayText(shell.metadata_empty_lifecycle_roles)}</span>;
@@ -470,13 +470,11 @@ function RolesSection({
       key: "name",
       dataIndex: "name",
       title: displayText(shell.metadata_lifecycle_name),
-      className: "mono",
     },
     {
       key: "application_role",
       dataIndex: "application_role",
       title: displayText(shell.metadata_lifecycle_application_role),
-      className: "mono",
       render: (v: string) => v || "—",
     },
     {

@@ -22,7 +22,13 @@ import { useVaultId } from "../hooks/useVaultId";
 import { useUi } from "../context/UiContext";
 import { displayText, displayTextTemplate } from "../lib/i18n";
 import type { ShellChrome } from "../lib/i18n";
-import { sourceLabel } from "../lib/metadataFormat";
+import {
+  dataStoreLabel,
+  fieldTypeLabel,
+  objectClassLabel,
+  relationshipTypeLabel,
+  sourceLabel,
+} from "../lib/metadataFormat";
 import { AdminCompactTable } from "../components/admin/AdminCompactTable";
 import { AdminPageShell } from "../components/admin/AdminPageShell";
 
@@ -147,7 +153,12 @@ export function AdminMetadataObjectDetailPage() {
       className: "mono",
       render: (name: string) => <span className="mono metadata-secondary-name">{name}</span>,
     },
-    { key: "type", dataIndex: "type", title: displayText(shell.metadata_type), className: "mono" },
+    {
+      key: "type",
+      dataIndex: "type",
+      title: displayText(shell.metadata_type),
+      render: (type: string) => fieldTypeLabel(type, shell),
+    },
     {
       key: "required",
       dataIndex: "required",
@@ -192,7 +203,12 @@ export function AdminMetadataObjectDetailPage() {
       className: "mono",
       render: (name: string) => <span className="mono metadata-secondary-name">{name}</span>,
     },
-    { key: "type", dataIndex: "type", title: displayText(shell.metadata_type), className: "mono" },
+    {
+      key: "type",
+      dataIndex: "type",
+      title: displayText(shell.metadata_type),
+      render: (type: string) => fieldTypeLabel(type, shell),
+    },
   ];
 
   return (
@@ -534,11 +550,6 @@ function attrString(attrs: Map<string, unknown>, name: string): string {
   return typeof v === "string" ? v.trim() : v == null ? "" : String(v).trim();
 }
 
-function titleCaseWord(value: string): string {
-  if (!value) return value;
-  return value.charAt(0).toUpperCase() + value.slice(1);
-}
-
 function classifySourceFromApiName(apiName: string): string {
   const name = apiName.trim().toLowerCase();
   if (name.endsWith("__sys")) return "system";
@@ -684,11 +695,11 @@ function ObjectDetailsFields({
     },
     {
       label: displayText(shell.metadata_object_class),
-      value: objectClass ? titleCaseWord(objectClass) : "—",
+      value: objectClass ? objectClassLabel(objectClass, shell) : "—",
     },
     {
       label: displayText(shell.metadata_data_store),
-      value: dataStore ? titleCaseWord(dataStore) : "—",
+      value: dataStore ? dataStoreLabel(dataStore, shell) : "—",
     },
     {
       label: displayText(shell.description),
@@ -859,6 +870,7 @@ function outboundRelationshipColumns(
       key: "field_api_type",
       dataIndex: "field_api_type",
       title: displayText(shell.metadata_field_type),
+      render: (type: string) => fieldTypeLabel(type, shell),
     },
   ];
 }
@@ -898,6 +910,7 @@ function inboundRelationshipColumns(
       key: "relationship_type",
       dataIndex: "relationship_type",
       title: displayText(shell.metadata_relationship_type),
+      render: (type: string) => relationshipTypeLabel(type, shell),
     },
   ];
 }

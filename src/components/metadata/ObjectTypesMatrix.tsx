@@ -122,7 +122,7 @@ export function ObjectTypesMatrix({
         const cell = row.cells[t.api_name];
         if (!cell?.included) return null;
         return (
-          <span className="perm-crud-cell" title={cell.required ? "required override" : undefined}>
+          <span className="perm-crud-cell" title={cell.required ? displayText(shell.metadata_required_override) : undefined}>
             <span className="perm-crud perm-crud--on" aria-label={t.api_name}>
               ✓
             </span>

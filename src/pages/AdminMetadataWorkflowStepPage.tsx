@@ -430,7 +430,7 @@ function StartControls({
                 />
                 {!!ctrl.user_reference_fields?.length && (
                   <Field
-                    label={displayText(shell.metadata_workflow_participant_strategy)}
+                    label={displayText(shell.metadata_workflow_user_reference_fields)}
                     value={ctrl.user_reference_fields.join(", ")}
                   />
                 )}
@@ -579,7 +579,7 @@ function TaskOptions({ model, shell }: { model: MetadataWorkflowStepDetailModel;
               <span className="mono">
                 {[task.due_date.date_field_type, task.due_date.date_field_value]
                   .filter(Boolean)
-                  .join(" / ") || "date"}
+                  .join(" / ") || displayText(shell.metadata_workflow_control_type_date)}
               </span>
             }
           />
@@ -629,7 +629,7 @@ function TaskOptions({ model, shell }: { model: MetadataWorkflowStepDetailModel;
         {!!task.notification_templates?.length && (
           <Field
             label={displayText(shell.metadata_workflow_message_template)}
-            value={<span className="mono">{task.notification_templates.join(", ")}</span>}
+            value={task.notification_templates.join(", ")}
           />
         )}
         {!!task.notification_previous_tasks?.length && (
@@ -720,6 +720,24 @@ function RemindersTable({
   reminders: MetadataWorkflowTaskReminderView[];
   shell: Shell;
 }) {
+  const reminderTiming = (row: MetadataWorkflowTaskReminderView): string => {
+    if (row.send_on === "taskDueDate") {
+      if (row.days === 0) {
+        return displayText(shell.metadata_workflow_reminder_on_due);
+      }
+      if (row.operator === "minus") {
+        return displayTextTemplate(shell.metadata_workflow_reminder_before_due, {
+          days: row.days,
+        });
+      }
+      if (row.operator === "plus") {
+        return displayTextTemplate(shell.metadata_workflow_reminder_after_due, {
+          days: row.days,
+        });
+      }
+    }
+    return `${row.send_on} ${row.operator} ${row.days}d`;
+  };
   const columns: TableColumnsType<MetadataWorkflowTaskReminderView> = [
     {
       key: "template",
@@ -729,7 +747,7 @@ function RemindersTable({
     {
       key: "when",
       title: displayText(shell.metadata_workflow_reminder_send_on),
-      render: (_v, row) => `${row.send_on} ${row.operator} ${row.days}d`,
+      render: (_v, row) => reminderTiming(row),
     },
     {
       key: "recipients",

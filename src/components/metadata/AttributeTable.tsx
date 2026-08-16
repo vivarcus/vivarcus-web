@@ -6,7 +6,15 @@ import type { MetadataNameValuePair } from "../../api/types";
 import { AdminCompactTable, adminTableEmptyText } from "../admin/AdminCompactTable";
 import { useUi } from "../../context/UiContext";
 import { displayText, displayTextTemplate } from "../../lib/i18n";
-import { formatMetadataValue } from "../../lib/metadataFormat";
+import {
+  dataStoreLabel,
+  fieldTypeLabel,
+  formatMetadataValue,
+  objectClassLabel,
+  relationshipDeletionLabel,
+  relationshipTypeLabel,
+} from "../../lib/metadataFormat";
+import type { ShellChrome } from "../../lib/i18n";
 
 function normalizeLifecycleRef(raw: string): string {
   return raw.trim().replace(/^Objectlifecycle\./i, "");
@@ -77,7 +85,28 @@ function picklistHref(apiName: string): string {
   return `/admin/configuration/picklists/${encodeURIComponent(apiName)}`;
 }
 
-function renderAttributeValue(name: string, value: unknown): ReactNode {
+function renderAttributeValue(name: string, value: unknown, shell: ShellChrome): ReactNode {
+  if (typeof value === "boolean") {
+    return value ? displayText(shell.metadata_yes) : displayText(shell.metadata_no);
+  }
+  if (typeof value === "string" && value.trim()) {
+    if (name === "object_class") {
+      return objectClassLabel(value, shell);
+    }
+    if (name === "data_store") {
+      return dataStoreLabel(value, shell);
+    }
+    if (name === "type") {
+      return fieldTypeLabel(value, shell);
+    }
+    if (name === "relationship_type") {
+      return relationshipTypeLabel(value, shell);
+    }
+    if (name === "relationship_deletion") {
+      return relationshipDeletionLabel(value, shell);
+    }
+  }
+
   const refs = stringValues(value);
 
   if (name === "available_lifecycles" || name === "lifecycle") {
@@ -153,7 +182,7 @@ export function AttributeTable({
       key: "value",
       title: displayText(shell.metadata_value),
       className: "metadata-attr__value",
-      render: (_v, row) => renderAttributeValue(row.name, row.value),
+      render: (_v, row) => renderAttributeValue(row.name, row.value, shell),
     },
   ];
 

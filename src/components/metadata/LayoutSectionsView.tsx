@@ -3,6 +3,8 @@ import { Link } from "react-router-dom";
 import type { MetadataLayoutElement, MetadataLayoutSection } from "../../api/types";
 import { useUi } from "../../context/UiContext";
 import { displayText } from "../../lib/i18n";
+import type { ShellChrome } from "../../lib/i18n";
+import { detailformTypeLabel, layoutElementKindLabel } from "../../lib/metadataFormat";
 
 function elementReference(el: MetadataLayoutElement): string {
   if (el.field_api_name) return el.field_api_name;
@@ -12,17 +14,17 @@ function elementReference(el: MetadataLayoutElement): string {
   return "";
 }
 
-function elementDisplayLabel(el: MetadataLayoutElement): string {
-  return el.label || el.name || elementReference(el) || el.kind;
+function elementDisplayLabel(el: MetadataLayoutElement, shell: ShellChrome): string {
+  return el.label || el.name || elementReference(el) || layoutElementKindLabel(el.kind, shell);
 }
 
 /** Field chips: Label is primary; API name is always secondary (never promoted to title). */
-function fieldChipPrimaryLabel(el: MetadataLayoutElement): string {
+function fieldChipPrimaryLabel(el: MetadataLayoutElement, shell: ShellChrome): string {
   const label = (el.label || "").trim();
   if (label) return label;
   // Spacers / controls without a catalog label keep a readable fallback.
   if (!el.field_api_name) {
-    return elementDisplayLabel(el);
+    return elementDisplayLabel(el, shell);
   }
   return "—";
 }
@@ -41,11 +43,13 @@ function splitTwoColumns<T>(items: T[]): [T[], T[]] {
 function FieldChip({
   el,
   objectApiName,
+  shell,
 }: {
   el: MetadataLayoutElement;
   objectApiName?: string;
+  shell: ShellChrome;
 }) {
-  const primary = fieldChipPrimaryLabel(el);
+  const primary = fieldChipPrimaryLabel(el, shell);
   const apiName = (el.field_api_name || el.name || "").trim();
   const showApi = !!apiName && apiName !== primary;
   const body = (
@@ -74,16 +78,20 @@ function FieldChip({
 function DetailformPreview({
   el,
   objectApiName,
+  shell,
 }: {
   el: MetadataLayoutElement;
   objectApiName?: string;
+  shell: ShellChrome;
 }) {
   const children = el.elements ?? [];
   if (children.length === 0) {
     return (
       <div className="layout-form-preview layout-form-preview--empty">
-        <Tag>{el.kind}</Tag>
-        <span className="mono">{el.detailform_type || "—"}</span>
+        <Tag>{layoutElementKindLabel(el.kind, shell)}</Tag>
+        <span>
+          {el.detailform_type ? detailformTypeLabel(el.detailform_type, shell) : "—"}
+        </span>
       </div>
     );
   }
@@ -95,12 +103,22 @@ function DetailformPreview({
       <div className="layout-form-preview layout-form-preview--two">
         <div className="layout-form-preview__col">
           {left.map((child, i) => (
-            <FieldChip key={`${child.kind}-${child.order_index}-${i}`} el={child} objectApiName={objectApiName} />
+            <FieldChip
+              key={`${child.kind}-${child.order_index}-${i}`}
+              el={child}
+              objectApiName={objectApiName}
+              shell={shell}
+            />
           ))}
         </div>
         <div className="layout-form-preview__col">
           {right.map((child, i) => (
-            <FieldChip key={`${child.kind}-${child.order_index}-${i}`} el={child} objectApiName={objectApiName} />
+            <FieldChip
+              key={`${child.kind}-${child.order_index}-${i}`}
+              el={child}
+              objectApiName={objectApiName}
+              shell={shell}
+            />
           ))}
         </div>
       </div>
@@ -110,20 +128,31 @@ function DetailformPreview({
   return (
     <div className="layout-form-preview layout-form-preview--one">
       {children.map((child, i) => (
-        <FieldChip key={`${child.kind}-${child.order_index}-${i}`} el={child} objectApiName={objectApiName} />
+        <FieldChip
+          key={`${child.kind}-${child.order_index}-${i}`}
+          el={child}
+          objectApiName={objectApiName}
+          shell={shell}
+        />
       ))}
     </div>
   );
 }
 
-function CompactElementRow({ el }: { el: MetadataLayoutElement }) {
+function CompactElementRow({
+  el,
+  shell,
+}: {
+  el: MetadataLayoutElement;
+  shell: ShellChrome;
+}) {
   const ref = elementReference(el);
   const label = (el.label || "").trim();
-  const primary = label || (el.field_api_name ? "—" : elementDisplayLabel(el));
+  const primary = label || (el.field_api_name ? "—" : elementDisplayLabel(el, shell));
   const showRef = !!ref && ref !== primary;
   return (
     <li className="layout-section-items__row">
-      <Tag>{el.kind}</Tag>
+      <Tag>{layoutElementKindLabel(el.kind, shell)}</Tag>
       <span
         className={`layout-section-items__label${primary === "—" ? " layout-section-items__label--missing" : ""}`}
       >
@@ -165,17 +194,21 @@ export function LayoutSectionsView({
               <div key={`df-${di}`} className="layout-sections__detailform">
                 {df.detailform_type ? (
                   <p className="layout-sections__detailform-meta">
-                    <Tag>{df.kind}</Tag>
-                    <span className="mono">{df.detailform_type}</span>
+                    <Tag>{layoutElementKindLabel(df.kind, shell)}</Tag>
+                    <span>{detailformTypeLabel(df.detailform_type, shell)}</span>
                   </p>
                 ) : null}
-                <DetailformPreview el={df} objectApiName={objectApiName} />
+                <DetailformPreview el={df} objectApiName={objectApiName} shell={shell} />
               </div>
             ))}
             {other.length > 0 ? (
               <ul className="layout-section-items">
                 {other.map((el, ei) => (
-                  <CompactElementRow key={`${el.kind}-${el.order_index}-${ei}`} el={el} />
+                  <CompactElementRow
+                    key={`${el.kind}-${el.order_index}-${ei}`}
+                    el={el}
+                    shell={shell}
+                  />
                 ))}
               </ul>
             ) : null}
