@@ -140,6 +140,7 @@ export type TaskDashboardTaskItem = {
   can_complete?: boolean;
   can_continue?: boolean;
   record_detail_href?: string;
+  completion?: WorkflowTaskAction;
 };
 
 export type TaskDashboardFilterOption = {

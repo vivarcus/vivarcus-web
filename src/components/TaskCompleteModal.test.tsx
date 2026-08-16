@@ -62,12 +62,12 @@ describe("TaskCompleteModal", () => {
     const onSubmit = vi.fn().mockResolvedValue(undefined);
     renderModal(craConfirmTask(), onSubmit);
 
-    await user.click(screen.getByRole("button", { name: /^Complete$/i }));
+    await user.click(screen.getByRole("button", { name: /^Complete Task$/i }));
     expect(onSubmit).not.toHaveBeenCalled();
     expect(screen.getByText("Verdict is required")).toBeInTheDocument();
 
     await user.click(screen.getByRole("radio", { name: "Confirm" }));
-    await user.click(screen.getByRole("button", { name: /^Complete$/i }));
+    await user.click(screen.getByRole("button", { name: /^Complete Task$/i }));
     expect(onSubmit).toHaveBeenCalledWith("Confirm", "", {});
   });
 

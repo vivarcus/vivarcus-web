@@ -1,4 +1,4 @@
-import type { WorkflowTaskAction, WorkflowVerdictOption } from "../api/types";
+import type { TaskDashboardTaskItem, WorkflowTaskAction, WorkflowVerdictOption } from "../api/types";
 
 export type TaskCompletionField = {
   field_api_name: string;
@@ -87,4 +87,17 @@ export function collectTaskFieldKeys(task: WorkflowTaskAction): string[] {
     }
   }
   return [...keys];
+}
+
+export function workflowTaskActionFromDashboard(
+  task: TaskDashboardTaskItem,
+): WorkflowTaskAction | null {
+  if (!task.can_complete || !task.workflow_task_id || !task.completion) {
+    return null;
+  }
+  return {
+    ...task.completion,
+    workflow_task_id: task.workflow_task_id,
+    can_complete: true,
+  };
 }

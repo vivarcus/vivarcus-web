@@ -32,7 +32,7 @@ import { useHeaderUserIdentity } from "../hooks/useHeaderUserIdentity";
 import { useVaultId } from "../hooks/useVaultId";
 import { displayText, displayTextTemplate, defaultTaskDashboardChrome, defaultWorkflowChrome } from "../lib/i18n";
 import type { TaskDashboardChrome } from "../lib/i18n/chromeTypes";
-import { taskHasSignatureRequirement } from "../lib/workflowTask";
+import { taskHasSignatureRequirement, workflowTaskActionFromDashboard } from "../lib/workflowTask";
 import { UserAvatar } from "../components/UserAvatar";
 import { SignatureModal } from "../components/SignatureModal";
 import { TaskCompleteModal } from "../components/TaskCompleteModal";
@@ -509,7 +509,7 @@ export function TaskDashboardPage() {
   const [acceptingId, setAcceptingId] = useState<string | null>(null);
   const completingRef = useRef<string | null>(null);
   const [workflowComplete, setWorkflowComplete] = useState<{
-    page: RecordPageModel;
+    page: RecordPageModel | null;
     task: WorkflowTaskAction;
   } | null>(null);
   const [workflowSignature, setWorkflowSignature] = useState<{
@@ -584,13 +584,15 @@ export function TaskDashboardPage() {
 
   const openWorkflowComplete = useCallback(
     async (task: TaskDashboardTaskItem) => {
-      if (
-        !vaultId ||
-        !task.object_api_name ||
-        !task.record_id ||
-        !task.workflow_task_id ||
-        !task.can_complete
-      ) {
+      if (!vaultId || !task.workflow_task_id || !task.can_complete) {
+        return;
+      }
+      const fromDashboard = workflowTaskActionFromDashboard(task);
+      if (fromDashboard && !taskHasSignatureRequirement(fromDashboard)) {
+        setWorkflowComplete({ page: null, task: fromDashboard });
+        return;
+      }
+      if (!task.object_api_name || !task.record_id) {
         return;
       }
       setCompletingId(task.task_id);
@@ -664,18 +666,26 @@ export function TaskDashboardPage() {
       if (!vaultId || !workflowComplete) return;
       const { page, task } = workflowComplete;
       if (!task.workflow_task_id) return;
-      await api.workflowComplete(vaultId, page.object_api_name, page.record_id, {
-        workflow_task_id: task.workflow_task_id,
-        verdict_label: verdictLabel,
-        comment,
-        fields,
-        action_guard: {
-          schema_fingerprint: page.schema_fingerprint,
-          ui_fingerprint: page.ui_fingerprint,
-          record_version: page.record_version,
-        },
-        layout: page.selected_layout.api_name,
-      });
+      if (!page) {
+        await api.completeHomeWorkflowTask(vaultId, task.workflow_task_id, {
+          verdict_label: verdictLabel,
+          comment,
+          fields,
+        });
+      } else {
+        await api.workflowComplete(vaultId, page.object_api_name, page.record_id, {
+          workflow_task_id: task.workflow_task_id,
+          verdict_label: verdictLabel,
+          comment,
+          fields,
+          action_guard: {
+            schema_fingerprint: page.schema_fingerprint,
+            ui_fingerprint: page.ui_fingerprint,
+            record_version: page.record_version,
+          },
+          layout: page.selected_layout.api_name,
+        });
+      }
       setWorkflowComplete(null);
       await load();
     },
@@ -714,7 +724,7 @@ export function TaskDashboardPage() {
       : displayTextTemplate(chrome.range_empty, { total });
   const workflowChrome = {
     ...defaultWorkflowChrome,
-    ...(workflowComplete?.page.workflow ?? workflowSignature?.page.workflow ?? {}),
+    ...(workflowComplete?.page?.workflow ?? workflowSignature?.page.workflow ?? {}),
   };
 
   if (!vaultId) {

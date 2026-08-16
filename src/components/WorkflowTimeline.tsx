@@ -630,6 +630,11 @@ export function WorkflowTimeline({
                                     vaultId={vaultId}
                                     fallback={displayText(workflow.timeline_unassigned)}
                                   >
+                                    {task.verdict_label ? (
+                                      <div className="workflow-timeline-task-meta">
+                                        {displayText(workflow.verdict_label)}: {task.verdict_label}
+                                      </div>
+                                    ) : null}
                                     {task.completion_comment ? (
                                       <div className="workflow-timeline-task-meta">
                                         {displayText(workflow.verdict_comment)}: {task.completion_comment}

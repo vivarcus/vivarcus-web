@@ -5027,7 +5027,7 @@ export const defaultWorkflowChrome: WorkflowChrome = {
     "Loading participants…",
     "workflow.participants_loading",
   ),
-  complete_task: t("Complete", "workflow.complete_task"),
+  complete_task: t("Complete Task", "workflow.complete_task"),
   claim_task: t("Accept", "workflow.claim_task"),
   show_more: t("Show more", "workflow.show_more"),
   show_less: t("Show less", "workflow.show_less"),
@@ -5042,7 +5042,7 @@ export const defaultWorkflowChrome: WorkflowChrome = {
   comment_label: t("Comment", "workflow.comment_label"),
   comment_required: t("Comment is required", "workflow.comment_required"),
   complete_failed: t("Failed to complete task", "workflow.complete_failed"),
-  complete_task_fallback: t("Complete", "workflow.complete_task_fallback"),
+  complete_task_fallback: t("Complete Task", "workflow.complete_task_fallback"),
   select_users: t("Select users", "workflow.select_users"),
   assignment_available: t(
     "Available to any user",

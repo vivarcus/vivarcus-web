@@ -304,6 +304,27 @@ export const api = {
     });
   },
 
+  completeHomeWorkflowTask(
+    vaultId: string,
+    workflowTaskId: string,
+    body: {
+      verdict_label?: string;
+      comment?: string;
+      fields?: Record<string, string>;
+    } = {},
+  ) {
+    return vaultFetch<{ status: string }>(vaultId, `/ui/task-dashboard/workflow-complete`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        workflow_task_id: workflowTaskId,
+        verdict_label: body.verdict_label,
+        comment: body.comment,
+        fields: body.fields,
+      }),
+    });
+  },
+
   tmfHome(
     vaultId: string,
     params: {
