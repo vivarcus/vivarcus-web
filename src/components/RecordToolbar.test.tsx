@@ -160,6 +160,49 @@ describe("RecordToolbar placement", () => {
     );
   });
 
+  it("puts document toolbar actions in All Actions on the object record page", async () => {
+    const user = userEvent.setup();
+    renderToolbar({
+      objectName: "document__v",
+      isDocumentObject: true,
+      isDocumentSplit: false,
+      pageApiName: "object_record_page__v",
+      page: makePage({
+        object_api_name: "document__v",
+        object_label: { text: "Document" },
+        sdk_actions: [{ name: "checkout__v", label: { text: "Check Out" }, placement: "overflow" }],
+      }),
+    });
+
+    await user.click(screen.getByRole("button", { name: displayText(defaultPageActionLabels.all_actions) }));
+    expect(screen.getByRole("menuitem", { name: "Check Out" })).toBeInTheDocument();
+  });
+
+  it("keeps document toolbar actions off All Actions on the viewer shell", async () => {
+    const user = userEvent.setup();
+    renderToolbar({
+      objectName: "document__v",
+      isDocumentObject: true,
+      isDocumentSplit: true,
+      page: makePage({
+        object_api_name: "document__v",
+        object_label: { text: "Document" },
+        sdk_actions: [{ name: "checkout__v", label: { text: "Check Out" }, placement: "overflow" }],
+        audit: { visible: true },
+        actions: {
+          edit_allowed: true,
+          delete_allowed: false,
+          copy_allowed: false,
+          labels: defaultPageActionLabels,
+        },
+      }),
+      onAuditOpen: vi.fn(),
+    });
+
+    await user.click(screen.getByRole("button", { name: displayText(defaultPageActionLabels.all_actions) }));
+    expect(screen.queryByRole("menuitem", { name: "Check Out" })).toBeNull();
+  });
+
   it("shows View Document as a toolbar shortcut on the object record shell", () => {
     renderToolbar({
       objectName: "document__v",

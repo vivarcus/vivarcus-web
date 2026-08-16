@@ -75,10 +75,11 @@ export function ObjectRecordPageShell({
     );
   }
 
+  // Document objects still host upload/check-in/create-draft dialogs from All Actions.
   if (isDocumentObject) {
     return (
       <>
-        <DocumentViewerPanel {...documentPanelProps} toolbarOnly />
+        <DocumentViewerPanel {...documentPanelProps} modalHostOnly />
         {children}
       </>
     );

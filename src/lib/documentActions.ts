@@ -9,7 +9,7 @@ export const DOCUMENT_UPLOAD_ACTIONS = new Set(["checkin__v", "upload_new_versio
 /** Document actions that open the create draft dialog before server execute. */
 export const DOCUMENT_CREATE_DRAFT_ACTIONS = new Set(["create_draft__v"]);
 
-/** Actions rendered in the document toolbar (viewer or object-record bar). */
+/** Actions rendered in the document viewer toolbar (`document_page__v`). */
 export const DOCUMENT_TOOLBAR_ACTION_NAMES = [
   "download_source__v",
   "download_rendition__v",

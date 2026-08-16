@@ -210,7 +210,7 @@ export function RecordToolbar({
     });
   }
   for (const action of page.sdk_actions ?? []) {
-    if (isDocumentObject && isDocumentToolbarAction(action.name)) {
+    if (isDocumentSplit && isDocumentToolbarAction(action.name)) {
       continue;
     }
     manageItems.push({
