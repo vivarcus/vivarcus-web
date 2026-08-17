@@ -16,13 +16,18 @@ function buildPicklistFieldDom({
   selected,
   options,
   dropdownOpen = false,
+  searchable = true,
 }: {
   fieldApiName: string;
   label: string;
   selected?: string;
   options: string[];
   dropdownOpen?: boolean;
+  searchable?: boolean;
 }) {
+  const searchInput = searchable
+    ? `<input class="ant-select-selection-search-input" />`
+    : `<input class="ant-select-selection-search-input" readonly style="display:none" />`;
   document.body.innerHTML = `
     <div class="field-grid__item field-grid__item--edit" data-field-api-name="${fieldApiName}">
       <dt>${label}</dt>
@@ -30,7 +35,7 @@ function buildPicklistFieldDom({
         <div class="ant-select">
           <div role="combobox" tabindex="0" aria-expanded="${dropdownOpen}">
             ${selected ? `<span class="ant-select-selection-item">${selected}</span>` : ""}
-            <input class="ant-select-selection-search-input" />
+            ${searchInput}
           </div>
         </div>
       </dd>
@@ -44,6 +49,47 @@ function buildPicklistFieldDom({
         .join("")}
     </div>
   `;
+}
+
+function wireOptionSelection(fieldApiName: string) {
+  document.body.addEventListener("click", (event) => {
+    const option = (event.target as HTMLElement | null)?.closest(".ant-select-item-option");
+    if (!option) {
+      return;
+    }
+    const label = option.textContent?.trim() ?? "";
+    const combobox = findFieldByApiName(fieldApiName)?.querySelector('[role="combobox"]');
+    if (!combobox || !label) {
+      return;
+    }
+    combobox.innerHTML = `<span class="ant-select-selection-item">${label}</span>`;
+  });
+}
+
+/** Ant Design cold open: portal options appear after the last open gesture, not a fixed 300ms. */
+function wireColdDropdown(openDelayMs: number) {
+  const dropdown = document.querySelector(".ant-select-dropdown");
+  const combobox = document.querySelector<HTMLElement>('[role="combobox"]');
+  if (!dropdown || !combobox) {
+    throw new Error("cold dropdown fixture missing");
+  }
+  let openTimer: number | undefined;
+  const scheduleOpen = () => {
+    window.clearTimeout(openTimer);
+    dropdown.classList.add("ant-select-dropdown-hidden");
+    openTimer = window.setTimeout(() => {
+      dropdown.classList.remove("ant-select-dropdown-hidden");
+    }, openDelayMs);
+  };
+  combobox.addEventListener("mousedown", scheduleOpen);
+  combobox.addEventListener("click", scheduleOpen);
+  document.addEventListener("keydown", (event) => {
+    if (event.key !== "Escape") {
+      return;
+    }
+    window.clearTimeout(openTimer);
+    dropdown.classList.add("ant-select-dropdown-hidden");
+  });
 }
 
 describe("fieldLabelPattern", () => {
@@ -116,22 +162,27 @@ describe("selectPicklistField", () => {
       options: ["Phase I", "Phase III"],
       dropdownOpen: true,
     });
-    document.body.addEventListener("click", (event) => {
-      const option = (event.target as HTMLElement | null)?.closest(".ant-select-item-option");
-      if (!option) {
-        return;
-      }
-      const label = option.textContent?.trim() ?? "";
-      const combobox = findFieldByApiName("study_phase__v")?.querySelector('[role="combobox"]');
-      if (!combobox || !label) {
-        return;
-      }
-      combobox.innerHTML = `<span class="ant-select-selection-item">${label}</span><input class="ant-select-selection-search-input" />`;
-    });
+    wireOptionSelection("study_phase__v");
     const item = findFieldByApiName("study_phase__v")!;
     const result = await selectPicklistField(item, "Phase III");
     expect(result.ok).toBe(true);
     expect(getPicklistSelection(item)).toBe("Phase III");
+  });
+
+  it("selects option after a cold dropdown slower than 300ms", async () => {
+    buildPicklistFieldDom({
+      fieldApiName: "status__c",
+      label: "Status",
+      options: ["Draft", "Active"],
+      dropdownOpen: false,
+      searchable: false,
+    });
+    wireColdDropdown(600);
+    wireOptionSelection("status__c");
+    const item = findFieldByApiName("status__c")!;
+    const result = await selectPicklistField(item, "Draft");
+    expect(result).toEqual({ ok: true });
+    expect(getPicklistSelection(item)).toBe("Draft");
   });
 });
 

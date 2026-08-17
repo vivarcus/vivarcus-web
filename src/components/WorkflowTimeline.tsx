@@ -77,14 +77,27 @@ function workflowTaskSummary(inst: WorkflowTimelineInstance) {
 const SYSTEM_PRINCIPAL_USER_ID = "00000000-0000-4000-a000-000000000001";
 
 function activeWorkflowDueDate(inst: WorkflowTimelineInstance) {
-  if (!inst.due_date?.trim()) {
+  if (inst.due_date?.trim()) {
+    return {
+      due_date: inst.due_date,
+      due_date_status:
+        computeDueDateStatus(inst.due_date, inst.status === "active" ? "active" : inst.status) ||
+        undefined,
+    };
+  }
+  const activeTask = inst.tasks?.find(
+    (task) =>
+      (task.status === "available" ||
+        task.status === "active" ||
+        task.status === "signature_pending") &&
+      task.due_date?.trim(),
+  );
+  if (!activeTask?.due_date) {
     return null;
   }
   return {
-    due_date: inst.due_date,
-    due_date_status:
-      computeDueDateStatus(inst.due_date, inst.status === "active" ? "active" : inst.status) ||
-      undefined,
+    due_date: activeTask.due_date,
+    due_date_status: activeTask.due_date_status || computeDueDateStatus(activeTask.due_date, activeTask.status),
   };
 }
 

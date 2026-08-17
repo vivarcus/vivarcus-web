@@ -1,5 +1,6 @@
 const MAX_ATTEMPTS = 5;
-const DROPDOWN_WAIT_MS = 300;
+const DROPDOWN_WAIT_MS = 3_000;
+const POLL_INTERVAL_MS = 20;
 const RETRY_GAP_MS = 300;
 
 export type SelectPicklistFieldResult = {
@@ -15,9 +16,25 @@ function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+async function waitUntil(predicate: () => boolean, timeoutMs: number): Promise<boolean> {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    if (predicate()) {
+      return true;
+    }
+    await sleep(POLL_INTERVAL_MS);
+  }
+  return predicate();
+}
+
 function isVisible(el: Element): boolean {
   const style = window.getComputedStyle(el);
   return style.display !== "none" && style.visibility !== "hidden";
+}
+
+function openSelectCombobox(combobox: HTMLElement): void {
+  combobox.dispatchEvent(new MouseEvent("mousedown", { bubbles: true, cancelable: true }));
+  combobox.click();
 }
 
 export function fieldLabelPattern(label: string): RegExp {
@@ -148,22 +165,17 @@ export async function selectPicklistField(
   }
 
   for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
-    combobox.click();
-    await sleep(DROPDOWN_WAIT_MS);
-
-    if (clickSelectOption(optionLabel)) {
-      await sleep(100);
-      if (isOptionSelected(item, optionLabel)) {
+    // Cold Ant Design Select portals can take >300ms to mount options; poll instead of a fixed sleep.
+    openSelectCombobox(combobox);
+    if (await waitUntil(() => clickSelectOption(optionLabel), DROPDOWN_WAIT_MS)) {
+      if (await waitUntil(() => isOptionSelected(item, optionLabel), 500)) {
         return { ok: true };
       }
     }
 
     await typeIntoSelectSearch(item, combobox, optionLabel);
-    await sleep(200);
-
-    if (clickSelectOption(optionLabel)) {
-      await sleep(100);
-      if (isOptionSelected(item, optionLabel)) {
+    if (await waitUntil(() => clickSelectOption(optionLabel), 500)) {
+      if (await waitUntil(() => isOptionSelected(item, optionLabel), 500)) {
         return { ok: true };
       }
     }

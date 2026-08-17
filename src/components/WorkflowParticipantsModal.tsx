@@ -17,10 +17,6 @@ type Props = {
   onClose: () => void;
 };
 
-type RelatedTaskRow = NonNullable<
-  WorkflowParticipantsModel["groups"][number]["related_tasks"]
->[number];
-
 type ParticipantTableRow = {
   key: string;
   group_name: string;
@@ -29,45 +25,12 @@ type ParticipantTableRow = {
   user_id?: string;
   display_name?: string;
   added_at?: string;
-  related_tasks: RelatedTaskRow[];
-  related_summary?: WorkflowParticipantsModel["groups"][number]["related_summary"];
+  related_tasks: NonNullable<WorkflowParticipantsModel["groups"][number]["related_tasks"]>;
   groupRowSpan: number;
   isGroupStart: boolean;
   isGroupEnd: boolean;
   groupIndex: number;
 };
-
-function relatedTaskStatusLabel(status: string | undefined, workflow: WorkflowChrome): string {
-  switch ((status ?? "").trim()) {
-    case "completed":
-      return displayText(workflow.participants_task_status_completed);
-    case "potential":
-      return displayText(workflow.participants_task_status_potential);
-    case "active":
-    default:
-      return displayText(workflow.participants_task_status_active);
-  }
-}
-
-function relatedSummaryText(
-  summary: ParticipantTableRow["related_summary"] | undefined,
-  workflow: WorkflowChrome,
-): string | null {
-  if (!summary) {
-    return null;
-  }
-  const parts: string[] = [];
-  if (summary.completed > 0) {
-    parts.push(`${displayText(workflow.participants_task_status_completed)} ${summary.completed}`);
-  }
-  if (summary.active > 0) {
-    parts.push(`${displayText(workflow.participants_task_status_active)} ${summary.active}`);
-  }
-  if (summary.potential > 0) {
-    parts.push(`${displayText(workflow.participants_task_status_potential)} ${summary.potential}`);
-  }
-  return parts.length > 0 ? parts.join(" · ") : null;
-}
 
 function groupTitle(group: Pick<ParticipantTableRow, "group_label" | "group_name">) {
   return group.group_label?.trim() || group.group_name;
@@ -87,7 +50,6 @@ function buildParticipantRows(participants: WorkflowParticipantsModel | null): P
         ? group.members
         : [{ user_id: "", display_name: undefined, added_at: undefined }];
     const relatedTasks = group.related_tasks ?? [];
-    const relatedSummary = group.related_summary;
 
     members.forEach((member, index) => {
       rows.push({
@@ -99,7 +61,6 @@ function buildParticipantRows(participants: WorkflowParticipantsModel | null): P
         display_name: member.display_name,
         added_at: member.added_at,
         related_tasks: relatedTasks,
-        related_summary: relatedSummary,
         groupRowSpan: index === 0 ? members.length : 0,
         isGroupStart: index === 0,
         isGroupEnd: index === members.length - 1,
@@ -230,21 +191,15 @@ export function WorkflowParticipantsModal({
             return <EmptyCell>{emptyValue}</EmptyCell>;
           }
           const expanded = expandedRowKeys.includes(row.key);
-          const summary = relatedSummaryText(row.related_summary, workflow);
           return (
-            <div className="wf-participants-modal__related-tasks-cell">
-              <button
-                type="button"
-                className="field-value field-value--link wf-participants-modal__view-tasks"
-                aria-expanded={expanded}
-                onClick={() => toggleTasks(row.key)}
-              >
-                {displayText(workflow.participants_view_tasks)}
-              </button>
-              {summary ? (
-                <div className="wf-participants-modal__related-summary">{summary}</div>
-              ) : null}
-            </div>
+            <button
+              type="button"
+              className="field-value field-value--link wf-participants-modal__view-tasks"
+              aria-expanded={expanded}
+              onClick={() => toggleTasks(row.key)}
+            >
+              {displayText(workflow.participants_view_tasks)}
+            </button>
           );
         },
       },
@@ -252,18 +207,12 @@ export function WorkflowParticipantsModal({
     [displayContext, emptyValue, expandedRowKeys, workflow],
   );
 
-  const relatedTaskColumns = useMemo<ColumnsType<RelatedTaskRow>>(
+  const relatedTaskColumns = useMemo<ColumnsType<ParticipantTableRow["related_tasks"][number]>>(
     () => [
       {
         title: <ColumnHeader label={displayText(workflow.participants_related_tasks)} />,
         key: "task",
         render: (_, task) => <span>{task.task_label || task.task_api_name}</span>,
-      },
-      {
-        title: <ColumnHeader label={displayText(workflow.participants_task_status_column)} />,
-        key: "status",
-        width: 120,
-        render: (_, task) => <span>{relatedTaskStatusLabel(task.status, workflow)}</span>,
       },
     ],
     [workflow],

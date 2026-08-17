@@ -4,7 +4,7 @@ import { resolveActionErrorMessage } from "./lifecycleActionError";
 import { displayText } from "./i18n/displayText";
 import { defaultShellChrome, type ShellChrome } from "./i18n/chromeTypes";
 
-export function isStaleError(err: unknown): boolean {
+function isStaleError(err: unknown): boolean {
   if (!(err instanceof HttpError)) {
     return false;
   }
