@@ -97,4 +97,30 @@ describe("TaskCompleteModal", () => {
     await user.click(screen.getByRole("radio", { name: "Resolved" }));
     expect(screen.getByText("Verdict Reason")).toBeInTheDocument();
   });
+
+  it("does not prompt for signature on a verdict without the eSignature flag", async () => {
+    const user = userEvent.setup();
+    const task: WorkflowTaskAction = {
+      workflow_instance_id: "wf-1",
+      workflow_task_id: "task-1",
+      workflow_label: "Review",
+      task_label: "Review Task",
+      status: "active",
+      can_complete: true,
+      signature_required: true,
+      verdict_options: [
+        {
+          name: "verdict_approve__c",
+          label: "Approve",
+          signature_required: true,
+        },
+        { name: "verdict_reject__c", label: "Reject" },
+      ],
+    };
+    renderModal(task);
+
+    await user.click(screen.getByRole("radio", { name: "Reject" }));
+    expect(screen.getByRole("button", { name: /^Complete Task$/i })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /signature/i })).not.toBeInTheDocument();
+  });
 });

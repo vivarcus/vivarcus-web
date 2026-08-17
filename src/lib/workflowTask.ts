@@ -28,7 +28,13 @@ export function verdictNeedsSignature(
   verdictLabel: string,
 ): boolean {
   const selected = selectedVerdictOption(task, verdictLabel);
-  return selected?.signature_required ?? task.signature_required ?? false;
+  // Verdict-level eSignature applies only to verdicts that carry the flag;
+  // a matching verdict without it must not inherit the task-level requirement
+  // (task-level eSig is stored as a flag on every verdict by the backend).
+  if (selected) {
+    return selected.signature_required === true;
+  }
+  return task.signature_required === true;
 }
 
 export function taskCompletionFields(

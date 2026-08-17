@@ -8,6 +8,7 @@ import {
   missingRequiredTaskField,
   selectedVerdictOption,
   taskCompletionFields,
+  verdictNeedsSignature,
 } from "../lib/workflowTask";
 
 type Props = {
@@ -56,7 +57,7 @@ export function TaskCompleteModal({ task, workflow = defaultWorkflowChrome, onCl
 
   const selected = selectedVerdictOption(task, verdictLabel);
   const activeFields = taskCompletionFields(task, verdictLabel);
-  const needsSignature = selected?.signature_required ?? task.signature_required;
+  const needsSignature = verdictNeedsSignature(task, verdictLabel);
   const taskCommentPrompt = task.task_comments?.[0];
   const verdictCommentPrompt =
     selected && verdictHasComment(selected)

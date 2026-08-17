@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { TaskDashboardTaskItem, WorkflowTaskAction } from "../api/types";
-import { taskCompletionFields, workflowTaskActionFromDashboard } from "./workflowTask";
+import { taskCompletionFields, verdictNeedsSignature, workflowTaskActionFromDashboard } from "./workflowTask";
 
 describe("taskCompletionFields", () => {
   it("includes verdict-embedded field after selecting a verdict", () => {
@@ -79,5 +79,39 @@ describe("workflowTaskActionFromDashboard", () => {
       can_complete: true,
     };
     expect(workflowTaskActionFromDashboard(task)).toBeNull();
+  });
+});
+
+describe("verdictNeedsSignature", () => {
+  const base: WorkflowTaskAction = {
+    workflow_task_id: "wf-task-1",
+    signature_required: false,
+    verdict_options: [
+      {
+        name: "verdict_approve__c",
+        label: "Approve",
+        signature_required: true,
+      },
+      { name: "verdict_reject__c", label: "Reject" },
+    ],
+  };
+
+  it("returns true for a verdict flagged with eSignature", () => {
+    expect(verdictNeedsSignature(base, "Approve")).toBe(true);
+  });
+
+  it("returns false for a verdict without the eSignature flag even when the task is flagged", () => {
+    expect(
+      verdictNeedsSignature(
+        { ...base, signature_required: true },
+        "Reject",
+      ),
+    ).toBe(false);
+  });
+
+  it("falls back to the task-level requirement when no verdict matches", () => {
+    expect(
+      verdictNeedsSignature({ ...base, signature_required: true }, "Complete"),
+    ).toBe(true);
   });
 });
