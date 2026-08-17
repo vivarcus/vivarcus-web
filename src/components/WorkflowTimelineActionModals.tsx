@@ -14,7 +14,8 @@ import {
   displayText,
   type WorkflowChrome,
 } from "../lib/i18n";
-import { handleStaleError } from "../lib/staleGuard";
+import { resolveActionErrorMessage } from "../lib/lifecycleActionError";
+import { handleStaleError, isStaleError } from "../lib/staleGuard";
 import { DateFieldInput } from "../renderers/DateFieldInput";
 import { WorkflowParticipantControl } from "./WorkflowParticipantControl";
 import { WorkflowUserSelect } from "./WorkflowUserSelect";
@@ -211,14 +212,12 @@ export function WorkflowTimelineActionModals({
       onPageUpdate(res.page);
       onClose();
     } catch (err) {
-      if (onReloadPage) {
+      if (onReloadPage && isStaleError(err)) {
         await handleStaleError(err, onReloadPage, onError, fallback, shell);
         onClose();
-      } else {
-        const message = err instanceof Error ? err.message : fallback;
-        setError(message);
-        onError(message);
+        return;
       }
+      setError(resolveActionErrorMessage(err, fallback, shell));
     } finally {
       setSubmitting(false);
     }
