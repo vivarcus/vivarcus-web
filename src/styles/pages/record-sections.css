@@ -691,6 +691,19 @@
   text-align: left;
 }
 
+.wf-participants-modal__related-tasks-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  align-items: flex-start;
+}
+
+.wf-participants-modal__related-summary {
+  color: var(--muted);
+  font-size: 0.8125rem;
+  line-height: 1.3;
+}
+
 .wf-participants__loading {
   display: flex;
   align-items: center;
