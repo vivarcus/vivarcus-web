@@ -531,13 +531,13 @@ describe("LoginPage", () => {
     const vaults = [
       {
         vault_id: "00000000-0000-4000-8000-000000000001",
-        domain_id: "platform.accept.vivarcus.test",
+        domain_id: "platform.accept.vivarcus.com",
         name: "Acceptance Vault",
         state: "Active",
       },
       {
         vault_id: "00000000-0000-4000-8000-000000000002",
-        domain_id: "platform.accept.vivarcus.test",
+        domain_id: "platform.accept.vivarcus.com",
         name: "Acceptance QA Vault",
         state: "Active",
       },
@@ -549,13 +549,13 @@ describe("LoginPage", () => {
         "/ui/auth/login": {
           session_token: "test-session-token",
           user_id: "user-1",
-          home_domain_id: "platform.accept.vivarcus.test",
+          home_domain_id: "platform.accept.vivarcus.com",
           vaults,
           default_vault_id: vaults[0].vault_id,
         },
         "/ui/me/vaults": {
           user_id: "user-1",
-          home_domain_id: "platform.accept.vivarcus.test",
+          home_domain_id: "platform.accept.vivarcus.com",
           vaults,
           default_vault_id: vaults[0].vault_id,
         },
@@ -571,7 +571,7 @@ describe("LoginPage", () => {
 
     await continueThenLogin(
       user,
-      "acceptuser@platform.accept.vivarcus.test",
+      "acceptuser@platform.accept.vivarcus.com",
       "Accept-Vivarcus!",
     );
 

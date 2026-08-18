@@ -80,7 +80,7 @@ describe("buildExportQuery", () => {
 
   it("includes domain_id for login export", () => {
     expect(
-      buildExportQuery("login", { domainId: "platform.accept.vivarcus.test" }),
-    ).toEqual({ domain_id: "platform.accept.vivarcus.test" });
+      buildExportQuery("login", { domainId: "platform.accept.vivarcus.com" }),
+    ).toEqual({ domain_id: "platform.accept.vivarcus.com" });
   });
 });
