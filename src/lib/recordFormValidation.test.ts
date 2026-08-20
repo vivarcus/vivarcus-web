@@ -96,6 +96,24 @@ describe("recordFormValidation", () => {
       name__v: "Name is required",
     });
     expect(mapServerErrorToFieldErrors(sections, "Unknown failure")).toBeNull();
+    expect(
+      mapServerErrorToFieldErrors(
+        [
+          {
+            label: { text: "Details" },
+            elements: [
+              {
+                kind: "field",
+                field_api_name: "assigned_to__v",
+                label: { text: "Assigned To" },
+                field_type: "Object",
+              },
+            ],
+          },
+        ],
+        'lcw: invalid input: participant group "assigned_to__v" has no assignees',
+      ),
+    ).toEqual({ assigned_to__v: "Assigned To is required" });
   });
 
   it("validates email format mask fields before submit", () => {

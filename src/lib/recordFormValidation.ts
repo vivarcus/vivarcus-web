@@ -197,6 +197,28 @@ const SERVER_FIELD_MESSAGE_PATTERNS: RegExp[] = [
   / is managed by the system and cannot be changed$/,
 ];
 
+function findFieldByApiName(sections: FormSection[], apiName: string): string | undefined {
+  for (const section of sections) {
+    for (const element of section.elements) {
+      if (element.kind === "field" && element.field_api_name === apiName) {
+        return element.field_api_name;
+      }
+    }
+  }
+  return undefined;
+}
+
+function fieldLabelForApiName(sections: FormSection[], apiName: string): string {
+  for (const section of sections) {
+    for (const element of section.elements) {
+      if (element.kind === "field" && element.field_api_name === apiName) {
+        return fieldLabelText(element) || apiName;
+      }
+    }
+  }
+  return apiName;
+}
+
 function findFieldByLabel(sections: FormSection[], label: string): string | undefined {
   for (const section of sections) {
     for (const element of section.elements) {
@@ -217,6 +239,14 @@ export function mapServerErrorToFieldErrors(
   message: string,
 ): Record<string, string> | null {
   const trimmed = message.trim();
+  const match = trimmed.match(/participant group "([^"]+)" has no assignees/i);
+  if (match) {
+    const apiName = match[1];
+    const byApi = findFieldByApiName(sections, apiName);
+    if (byApi) {
+      return { [byApi]: `${fieldLabelForApiName(sections, byApi)} is required` };
+    }
+  }
   const emailFieldMatch = trimmed.match(/field "([^"]+)" must be a valid email address/);
   if (emailFieldMatch) {
     return { [emailFieldMatch[1]]: "Please enter a valid email" };
