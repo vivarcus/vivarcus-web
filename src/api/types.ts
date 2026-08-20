@@ -1145,14 +1145,12 @@ export type HoverCardDocumentTotals = {
 export type HoverCardModel = {
   milestone_name?: string;
   milestone_record_id?: string;
-  percent_complete?: string;
+  percent_complete: string;
   percent_value?: number;
   dependencies?: HoverCardDependency[];
   document_totals?: HoverCardDocumentTotals;
   documents?: HoverCardDocument[];
   task_stats?: HoverCardTaskStats;
-  /** When true, fetch hover details on icon hover instead of using a precomputed payload. */
-  lazy?: boolean;
 };
 
 /** @deprecated Legacy section shape; no longer emitted by the API. */
