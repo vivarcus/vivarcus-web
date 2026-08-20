@@ -601,6 +601,13 @@
   color: var(--text);
 }
 
+.milestone-completeness-hovercard--loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 6rem;
+}
+
 .milestone-completeness-hovercard__header {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto auto;
