@@ -1,5 +1,6 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { useState } from "react";
 import { describe, expect, it, vi } from "vitest";
 import { DateFieldInput } from "./DateFieldInput";
 
@@ -192,6 +193,89 @@ describe("DateFieldInput", () => {
     expect(screen.getByRole("button", { name: calendarAria })).toHaveAttribute(
       "aria-expanded",
       "true",
+    );
+  });
+
+  it("closes the calendar after picking a day", async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    render(
+      <DateFieldInput
+        value="2026-03-15"
+        displayContext={zhCtx}
+        onChange={onChange}
+      />,
+    );
+
+    const calendar = screen.getByRole("button", { name: calendarAria });
+    await user.click(calendar);
+    const day = document.querySelector(
+      '.ant-picker-cell:not(.ant-picker-cell-disabled)[title="2026-03-10"] .ant-picker-cell-inner',
+    );
+    expect(day).toBeTruthy();
+    await user.click(day!);
+
+    expect(onChange).toHaveBeenCalledWith("2026-03-10");
+    expect(calendar).toHaveAttribute("aria-expanded", "false");
+  });
+
+  it("commits the same calendar day independently on two adjacent fields", async () => {
+    const user = userEvent.setup();
+    const enUS = {
+      locale: "en-US",
+      timezone: "America/Los_Angeles",
+      language: "en",
+    };
+
+    function TwoVisitDates() {
+      const [start, setStart] = useState<string | null>("2026-03-15");
+      const [end, setEnd] = useState<string | null>("2026-03-15");
+      return (
+        <div>
+          <DateFieldInput
+            value={start}
+            displayContext={enUS}
+            calendarAriaLabel="Open start calendar"
+            onChange={setStart}
+          />
+          <DateFieldInput
+            value={end}
+            displayContext={enUS}
+            calendarAriaLabel="Open end calendar"
+            onChange={setEnd}
+          />
+          <span data-testid="start-value">{start ?? ""}</span>
+          <span data-testid="end-value">{end ?? ""}</span>
+        </div>
+      );
+    }
+
+    render(<TwoVisitDates />);
+
+    await user.click(screen.getByRole("button", { name: "Open start calendar" }));
+    const startDay = document.querySelector(
+      '.ant-picker-cell:not(.ant-picker-cell-disabled)[title="2026-03-10"] .ant-picker-cell-inner',
+    );
+    expect(startDay).toBeTruthy();
+    await user.click(startDay!);
+    expect(screen.getByTestId("start-value")).toHaveTextContent("2026-03-10");
+
+    await user.click(screen.getByRole("button", { name: "Open end calendar" }));
+    const openPopups = [
+      ...document.querySelectorAll(".ant-picker-dropdown"),
+    ].filter((el) => !el.classList.contains("ant-picker-dropdown-hidden"));
+    expect(openPopups).toHaveLength(1);
+    const endDay = openPopups[0]?.querySelector(
+      '.ant-picker-cell:not(.ant-picker-cell-disabled)[title="2026-03-10"] .ant-picker-cell-inner',
+    );
+    expect(endDay).toBeTruthy();
+    await user.click(endDay!);
+
+    expect(screen.getByTestId("start-value")).toHaveTextContent("2026-03-10");
+    expect(screen.getByTestId("end-value")).toHaveTextContent("2026-03-10");
+    expect(screen.getByRole("button", { name: "Open start calendar" })).toHaveAttribute(
+      "aria-expanded",
+      "false",
     );
   });
 });

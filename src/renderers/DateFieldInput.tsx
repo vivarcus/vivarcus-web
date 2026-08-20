@@ -39,11 +39,15 @@ function formatStoredForEdit(
   return parsed.format(datePickerFormat(displayContext, false));
 }
 
-function isInsideDatePopup(node: Node | null): boolean {
-  if (!node || !(node instanceof Element)) {
+function cssSafeId(id: string): string {
+  return id.replace(/[^a-zA-Z0-9_-]/g, "");
+}
+
+function isInsideOwnDatePopup(node: Node | null, popupClass: string): boolean {
+  if (!node || !(node instanceof Element) || !popupClass) {
     return false;
   }
-  return Boolean(node.closest(".ant-picker-dropdown"));
+  return Boolean(node.closest(`.${popupClass}`));
 }
 
 function openCalendarAriaLabel(displayContext?: DisplayContext): string {
@@ -88,8 +92,10 @@ export function DateFieldInput({
   "aria-label": ariaLabel,
 }: DateFieldInputProps) {
   const pickerId = useId();
+  const popupClass = `date-field-input__popup-${cssSafeId(pickerId)}`;
   const rootRef = useRef<HTMLSpanElement>(null);
   const inputRef = useRef<InputRef>(null);
+  const suppressOpenOnFocusRef = useRef(false);
   const [text, setText] = useState(() =>
     formatStoredForEdit(value, displayContext),
   );
@@ -142,6 +148,15 @@ export function DateFieldInput({
     onChange(parsed.format("YYYY-MM-DD"));
   };
 
+  const restoreTextFocusWithoutOpening = () => {
+    const inputEl = inputRef.current?.input;
+    if (inputEl && document.activeElement === inputEl) {
+      return;
+    }
+    suppressOpenOnFocusRef.current = true;
+    focusTextInput();
+  };
+
   const onCalendarChange = (next: Dayjs | null) => {
     if (!next) {
       setInvalid(false);
@@ -154,7 +169,7 @@ export function DateFieldInput({
     setText(next.format(datePickerFormat(displayContext, false)));
     onChange(next.format("YYYY-MM-DD"));
     setOpen(false);
-    focusTextInput();
+    restoreTextFocusWithoutOpening();
   };
 
   const calendarContext = useMemo(
@@ -198,17 +213,22 @@ export function DateFieldInput({
           }}
           onFocus={() => {
             setFocused(true);
+            if (suppressOpenOnFocusRef.current) {
+              suppressOpenOnFocusRef.current = false;
+              return;
+            }
             openCalendar();
           }}
           onBlur={(event) => {
             const related = event.relatedTarget as Node | null;
-            // DatePicker steals focus onto its hidden input when the panel opens —
-            // restore typing focus and do not treat this as leaving the field.
+            // This field's hidden DatePicker stole focus — restore typing focus.
+            // Do not match another date field's picker via a shared class.
             if (
               related instanceof Element &&
-              related.closest(".date-field-input__picker")
+              (rootRef.current?.contains(related) ||
+                isInsideOwnDatePopup(related, popupClass))
             ) {
-              focusTextInput();
+              restoreTextFocusWithoutOpening();
               return;
             }
             // Defer close so a calendar-day mousedown can commit via onCalendarChange.
@@ -216,7 +236,7 @@ export function DateFieldInput({
               const active = document.activeElement;
               if (
                 active === inputRef.current?.input ||
-                isInsideDatePopup(active)
+                isInsideOwnDatePopup(active, popupClass)
               ) {
                 return;
               }
@@ -260,8 +280,19 @@ export function DateFieldInput({
           tabIndex={-1}
           open={open}
           placement="bottomLeft"
+          classNames={{ popup: { root: popupClass } }}
           // Small gap so flipped top placement does not sit flush on the field border.
           styles={{ popup: { root: { marginTop: 4, marginBottom: 4 } } }}
+          panelRender={(panel) => (
+            <div
+              onMouseDown={(event) => {
+                // Keep the text input focused while picking a day.
+                event.preventDefault();
+              }}
+            >
+              {panel}
+            </div>
+          )}
           onOpenChange={(next) => {
             if (next) {
               openCalendar();
