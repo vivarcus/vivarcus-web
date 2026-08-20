@@ -1126,6 +1126,13 @@ export const api = {
     );
   },
 
+  completenessHover(vaultId: string, recordId: string) {
+    return vaultFetch<import("./types").HoverCardModel>(
+      vaultId,
+      `/ui/objects/milestone__v/records/${encodeURIComponent(recordId)}/completeness-hover`,
+    );
+  },
+
   createForm(vaultId: string, objectName: string, params: { objectType?: string; layout?: string; copyFrom?: string; page?: string } = {}) {
     const q = new URLSearchParams();
     if (params.objectType) q.set("object_type", params.objectType);
