@@ -17,4 +17,8 @@ describe("pickDefaultObjectType", () => {
   it("falls back to first option when preferred default is missing", () => {
     expect(pickDefaultObjectType(types, "missing__v")).toBe("observation__v");
   });
+
+  it("matches a preferred object type by label", () => {
+    expect(pickDefaultObjectType(types, "Protocol Deviation")).toBe("protocol_deviation__ctms");
+  });
 });
