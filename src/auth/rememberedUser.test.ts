@@ -42,9 +42,9 @@ describe("rememberedUser", () => {
   });
 
   it("persists login language preference", () => {
-    expect(loadLoginLang()).toBe("en");
-    saveLoginLang("zh");
     expect(loadLoginLang()).toBe("zh");
-    expect(document.documentElement.lang).toBe("zh-CN");
+    saveLoginLang("en");
+    expect(loadLoginLang()).toBe("en");
+    expect(document.documentElement.lang).toBe("en");
   });
 });

@@ -60,20 +60,20 @@ describe("useTabLabel", () => {
     expect(result.current).toBe("Studies");
   });
 
-  it("falls back to the tab API name when the tab is not in nav", () => {
+  it("falls back to a readable label when the tab is not in nav", () => {
     const { result } = renderHook(() => useTabLabel("unknown__c", undefined), {
       wrapper,
     });
-    expect(result.current).toBe("unknown__c");
+    expect(result.current).toBe("Unknown");
   });
 
-  it("falls back to the tab API name while nav has not loaded", () => {
+  it("falls back to a readable label while nav has not loaded", () => {
     navState.nav = null;
     try {
       const { result } = renderHook(() => useTabLabel("studies__c", undefined), {
         wrapper,
       });
-      expect(result.current).toBe("studies__c");
+      expect(result.current).toBe("Studies");
     } finally {
       navState.nav = sampleNav;
     }
