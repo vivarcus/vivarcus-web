@@ -41,12 +41,12 @@ export function parseReferenceCriteriaClauses(criteria: string): CriteriaClause[
   }
   const clauses: CriteriaClause[] = [];
   for (const part of parts) {
-    const literalMatch = part.match(/^([\w.]+)\s*=\s*'([^']*)'$/);
+    const literalMatch = part.match(/^([\w]+)\s*=\s*'([^']*)'$/);
     if (literalMatch) {
       clauses.push({ field: literalMatch[1], literal: literalMatch[2] });
       continue;
     }
-    const sourceMatch = part.match(/^([\w.]+)\s*=\s*\{\{this\.([\w]+)\}\}$/);
+    const sourceMatch = part.match(/^([\w]+)\s*=\s*\{\{this\.([\w]+)\}\}$/);
     if (sourceMatch) {
       clauses.push({ field: sourceMatch[1], sourceField: sourceMatch[2] });
       continue;
@@ -54,57 +54,6 @@ export function parseReferenceCriteriaClauses(criteria: string): CriteriaClause[
     return null;
   }
   return clauses;
-}
-
-function isObjectTypeCriteriaField(field: string): boolean {
-  const name = field.trim().toLowerCase();
-  return name === "object_type__v" || name.startsWith("object_type__vr.");
-}
-
-function isSimpleVqlField(field: string): boolean {
-  return /^[\w]+$/.test(field);
-}
-
-/** Slug a relationship_criteria object-type label into a likely api_name (`Institution` → `institution__v`). */
-export function objectTypeApiNameFromLabel(label: string): string {
-  const trimmed = label.trim();
-  if (!trimmed) {
-    return "";
-  }
-  if (trimmed.includes("__")) {
-    return trimmed;
-  }
-  const slug = trimmed
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "_")
-    .replace(/^_|_$/g, "");
-  return slug ? `${slug}__v` : "";
-}
-
-/**
- * Object type to use for inline/related create when relationship_criteria pins a type.
- * `object_type__vr.api_name__v` / `object_type__v` keep the literal; `name__v` maps the label.
- */
-export function objectTypeFromRelationshipCriteria(criteria: string): string | undefined {
-  const clauses = parseReferenceCriteriaClauses(criteria);
-  if (!clauses) {
-    return undefined;
-  }
-  for (const clause of clauses) {
-    if (clause.literal === undefined || !isObjectTypeCriteriaField(clause.field)) {
-      continue;
-    }
-    const field = clause.field.toLowerCase();
-    if (field === "object_type__v" || field.endsWith(".api_name__v")) {
-      const apiName = clause.literal.trim();
-      return apiName || undefined;
-    }
-    if (field.endsWith(".name__v") || field.endsWith(".label__v")) {
-      const apiName = objectTypeApiNameFromLabel(clause.literal);
-      return apiName || undefined;
-    }
-  }
-  return undefined;
 }
 
 /**
@@ -125,9 +74,7 @@ export function appendReferenceCriteriaToVql(
   const whereParts: string[] = [];
   const extraFields = new Set<string>();
   for (const clause of clauses) {
-    if (isSimpleVqlField(clause.field)) {
-      extraFields.add(clause.field);
-    }
+    extraFields.add(clause.field);
     if (clause.literal !== undefined) {
       whereParts.push(`${clause.field} = '${escapeVqlString(clause.literal)}'`);
       continue;
@@ -213,9 +160,6 @@ export function fixedFieldsFromRelationshipCriteria(
   }
   const out: InlineCriteriaFixedField[] = [];
   for (const clause of clauses) {
-    if (isObjectTypeCriteriaField(clause.field)) {
-      continue;
-    }
     if (clause.literal !== undefined) {
       out.push({ field: clause.field, value: clause.literal });
       continue;

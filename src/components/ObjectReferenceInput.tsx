@@ -6,7 +6,6 @@ import { formatReferenceLabel } from "../lib/fields";
 import { displayText, displayTextTemplate } from "../lib/i18n";
 import {
   appendReferenceCriteriaToVql,
-  objectTypeFromRelationshipCriteria,
   pickSourceValuesForCriteria,
   relationshipCriteriaSourceFields,
 } from "../lib/referenceCriteria";
@@ -379,15 +378,12 @@ export function ObjectReferenceInput({
     <span className="field__hint field__hint--error">{error}</span>
   ) : null;
 
-  const criteriaObjectType = objectTypeFromRelationshipCriteria(criteria);
-  const effectiveCreateObjectType = createObjectType?.trim() || criteriaObjectType;
-
   const createModal = allowInlineCreate ? (
     <InlineReferenceCreateModal
       open={createOpen}
       vaultId={vaultId}
       targetObject={targetObject}
-      objectType={effectiveCreateObjectType}
+      objectType={createObjectType}
       relationshipCriteria={criteria}
       sourceFieldValues={sourceValues}
       sourceFieldDisplays={displays}
