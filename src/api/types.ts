@@ -228,6 +228,8 @@ export type TMFHomeQualityTypeCount = {
   type_name: string;
   type_label: string;
   count: number;
+  open_count?: number;
+  closed_count?: number;
 };
 
 export type TMFHomeModel = {

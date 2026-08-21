@@ -37,6 +37,23 @@ function qualityTypeColor(typeName: string, index: number) {
   return QUALITY_TYPE_COLORS[typeName] ?? QUALITY_TYPE_FALLBACK_COLORS[index % QUALITY_TYPE_FALLBACK_COLORS.length];
 }
 
+function displayedQualityByType(
+  byType: TMFHomeQualityTypeCount[],
+  filter: string,
+): TMFHomeQualityTypeCount[] {
+  return byType.map((entry) => {
+    const hasSplit = entry.open_count != null || entry.closed_count != null;
+    if (!hasSplit) {
+      return entry;
+    }
+    const openCount = entry.open_count ?? 0;
+    const closedCount = entry.closed_count ?? 0;
+    const count =
+      filter === "closed" ? closedCount : filter === "all" ? openCount + closedCount : openCount;
+    return { ...entry, count };
+  });
+}
+
 function formatDate(value?: string | null) {
   if (!value) return "—";
   const parsed = dayjs(value);
@@ -169,6 +186,8 @@ export function TMFHomePage() {
     [storageKey],
   );
 
+  // Status Open/Closed/All is applied client-side from open_count/closed_count so
+  // filter changes do not rebuild Completeness/EDL and unmount the widget.
   const load = useCallback(async () => {
     if (!vaultId) return;
     setLoading(true);
@@ -184,7 +203,6 @@ export function TMFHomePage() {
         milestonesPageSize: 5,
         myTasksPageSize: 10,
         attentionCategory,
-        qualityFilter,
         qualityAssignee,
       });
       setModel(next);
@@ -210,7 +228,6 @@ export function TMFHomePage() {
     milestoneFilterId,
     milestonesPage,
     attentionCategory,
-    qualityFilter,
     qualityAssignee,
   ]);
 
@@ -250,6 +267,7 @@ export function TMFHomePage() {
   const attention = widgets?.tasks_requiring_attention;
   const completeness = widgets?.completeness;
   const timeliness = widgets?.timeliness;
+  const qualityByType = displayedQualityByType(widgets?.quality_issues.by_type ?? [], qualityFilter);
 
   return (
     <div className="page tmf-home-page">
@@ -631,11 +649,11 @@ export function TMFHomePage() {
               </header>
               <div className="tmf-quality">
                 <QualityIssuesPie
-                  byType={widgets.quality_issues.by_type ?? []}
+                  byType={qualityByType}
                   ariaLabel={displayText(chrome.quality_issues)}
                 />
                 <ul className="tmf-quality__legend">
-                  {(widgets.quality_issues.by_type ?? []).map((entry, index) => (
+                  {qualityByType.map((entry, index) => (
                     <li key={entry.type_name}>
                       <span
                         className="tmf-dot"
