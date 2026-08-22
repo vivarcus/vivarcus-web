@@ -16,7 +16,6 @@ import { RecordPageHeader } from "../components/record/RecordPageHeader";
 import { RecordPageBody, RecordPageShell } from "../components/record/RecordPageShell";
 import { ObjectRecordPageShell } from "../components/record/ObjectRecordPageShell";
 import { RecordToolbar } from "../components/RecordToolbar";
-import { VaultUserAdminActions } from "../components/record/VaultUserAdminActions";
 import { RecordListNav } from "../components/RecordListNav";
 import { RecordAuditModal } from "../components/RecordAuditModal";
 import { RecordFormSections } from "../components/record/RecordFormSections";
@@ -803,21 +802,6 @@ export function RecordDetailPage() {
       />
     ) : null;
 
-  // Domain User administration actions live only on the user__sys record detail
-  // page (view mode) and stay out of the generic object record flow.
-  const vaultUserAdminBar =
-    page && !editing && objectName === "user__sys" ? (
-      <VaultUserAdminActions vaultId={vaultId} recordId={recordId} onReloaded={load} />
-    ) : null;
-
-  const bannerContent =
-    workflowTaskBanner || vaultUserAdminBar ? (
-      <>
-        {workflowTaskBanner}
-        {vaultUserAdminBar}
-      </>
-    ) : null;
-
   const changeTypeSaveLabel =
     form?.mode === "change_type" && page?.actions.change_type?.labels.confirm
       ? displayText(page.actions.change_type.labels.confirm)
@@ -1056,7 +1040,7 @@ export function RecordDetailPage() {
           )}
         </>
       }
-      banner={bannerContent}
+      banner={workflowTaskBanner}
       body={recordBody}
     />
     {page?.audit.visible && (
