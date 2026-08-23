@@ -3,12 +3,33 @@ export const EXCLUDED_LIFECYCLE_STATE = "excluded_state__v";
 const STUDY_SCOPE_OBJECTS = new Set(["study__v", "study_country__v", "site__v"]);
 const USER_SYS_OBJECT = "user__sys";
 
+/** Cap in-memory reference label cache growth during long MCP / acceptance sessions. */
+export const REFERENCE_PLAIN_LABEL_CACHE_MAX = 8192;
+
 const plainLabelByRecordId = new Map<string, string>();
+
+export type FormReferenceDisplayContext = {
+  formFieldDisplays: Record<string, string>;
+  formFieldLabels: Record<string, string>;
+  controllingParents: Record<string, string>;
+};
 
 type ScopeRecord = {
   record_id?: string;
   fields?: Record<string, unknown>;
 };
+
+function touchReferencePlainLabel(id: string, value: string): void {
+  if (plainLabelByRecordId.has(id)) {
+    plainLabelByRecordId.delete(id);
+  } else if (plainLabelByRecordId.size >= REFERENCE_PLAIN_LABEL_CACHE_MAX) {
+    const oldest = plainLabelByRecordId.keys().next().value;
+    if (oldest !== undefined) {
+      plainLabelByRecordId.delete(oldest);
+    }
+  }
+  plainLabelByRecordId.set(id, value);
+}
 
 /** Remembers a plain (leaf) reference label for controlling-field path prefixes. */
 export function rememberReferencePlainLabel(recordId: string, label: string): void {
@@ -17,11 +38,17 @@ export function rememberReferencePlainLabel(recordId: string, label: string): vo
   if (!id || !plain) {
     return;
   }
-  plainLabelByRecordId.set(id, plain);
+  touchReferencePlainLabel(id, plain);
 }
 
 export function lookupReferencePlainLabel(recordId: string): string {
-  return plainLabelByRecordId.get(recordId.trim()) ?? "";
+  const id = recordId.trim();
+  const label = plainLabelByRecordId.get(id);
+  if (label === undefined) {
+    return "";
+  }
+  touchReferencePlainLabel(id, label);
+  return label;
 }
 
 /** Test helper — clears the in-memory plain-label cache. */
@@ -203,11 +230,7 @@ export function collectFormReferenceDisplayContext(
       };
     }>;
   }>,
-): {
-  formFieldDisplays: Record<string, string>;
-  formFieldLabels: Record<string, string>;
-  controllingParents: Record<string, string>;
-} {
+): FormReferenceDisplayContext {
   const formFieldDisplays: Record<string, string> = {};
   const formFieldLabels: Record<string, string> = {};
   const controllingParents: Record<string, string> = {};

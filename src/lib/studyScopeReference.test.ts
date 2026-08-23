@@ -1,12 +1,14 @@
 import { describe, expect, it, beforeEach } from "vitest";
 import {
   EXCLUDED_LIFECYCLE_STATE,
+  REFERENCE_PLAIN_LABEL_CACHE_MAX,
   clearReferencePlainLabelCache,
   collectFormReferenceDisplayContext,
   dependsOnControllingFieldHint,
   filterStudyScopeReferenceRecords,
   formatControllingFieldReferenceLabel,
   leafDisplaySegment,
+  lookupReferencePlainLabel,
   rememberReferencePlainLabel,
   referenceRecordByIdQuery,
   resolveEffectiveReferenceCriteria,
@@ -41,6 +43,52 @@ describe("studyScopeReferenceQuery", () => {
     expect(query).toContain("system_owned_user__sys = false");
     expect(query).toContain("system_owned_user__sys = null");
     expect(query).not.toContain("domain_user_id__sys");
+  });
+});
+
+describe("rememberReferencePlainLabel", () => {
+  beforeEach(() => {
+    clearReferencePlainLabelCache();
+  });
+
+  it("evicts the oldest entry when the cache exceeds its cap", () => {
+    const last = REFERENCE_PLAIN_LABEL_CACHE_MAX;
+    for (let i = 0; i <= last; i++) {
+      rememberReferencePlainLabel(`R${i}`, `Label ${i}`);
+    }
+    expect(lookupReferencePlainLabel("R0")).toBe("");
+    expect(lookupReferencePlainLabel("R1")).toBe("Label 1");
+    expect(lookupReferencePlainLabel(`R${last}`)).toBe(`Label ${last}`);
+  });
+
+  it("refreshes an existing entry without evicting others", () => {
+    rememberReferencePlainLabel("R1", "First");
+    rememberReferencePlainLabel("R2", "Second");
+    rememberReferencePlainLabel("R1", "Updated");
+    expect(lookupReferencePlainLabel("R1")).toBe("Updated");
+    expect(lookupReferencePlainLabel("R2")).toBe("Second");
+  });
+
+  it("treats a rewritten entry as newest so it survives later eviction", () => {
+    rememberReferencePlainLabel("keep", "Keep");
+    for (let i = 0; i < REFERENCE_PLAIN_LABEL_CACHE_MAX - 1; i++) {
+      rememberReferencePlainLabel(`R${i}`, `Label ${i}`);
+    }
+    rememberReferencePlainLabel("keep", "Keep");
+    rememberReferencePlainLabel("new", "New");
+    expect(lookupReferencePlainLabel("keep")).toBe("Keep");
+    expect(lookupReferencePlainLabel("R0")).toBe("");
+  });
+
+  it("treats a looked-up entry as newest so it survives later eviction", () => {
+    rememberReferencePlainLabel("keep", "Keep");
+    for (let i = 0; i < REFERENCE_PLAIN_LABEL_CACHE_MAX - 1; i++) {
+      rememberReferencePlainLabel(`R${i}`, `Label ${i}`);
+    }
+    expect(lookupReferencePlainLabel("keep")).toBe("Keep");
+    rememberReferencePlainLabel("new", "New");
+    expect(lookupReferencePlainLabel("keep")).toBe("Keep");
+    expect(lookupReferencePlainLabel("R0")).toBe("");
   });
 });
 

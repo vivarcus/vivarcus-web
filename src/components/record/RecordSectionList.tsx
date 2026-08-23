@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { useMemo } from "react";
 import type {
   DisplayContext,
   DisplayText,
@@ -11,6 +12,10 @@ import type {
   WorkflowTaskAction,
 } from "../../api/types";
 import { defaultPageMessages, displayText, type PageMessages } from "../../lib/i18n";
+import {
+  collectFormReferenceDisplayContext,
+  type FormReferenceDisplayContext,
+} from "../../lib/studyScopeReference";
 import { fieldGridClassName, partitionDetailformColumns } from "./RecordFieldGrid";
 import { RecordSectionBlock } from "./RecordSectionBlock";
 import { RecordSectionElement, recordSectionElementKey } from "./RecordSectionElement";
@@ -160,11 +165,19 @@ function renderViewGridElement(
   );
 }
 
+function editReferenceDisplay(
+  props: EditProps,
+  referenceDisplay?: FormReferenceDisplayContext,
+): FormReferenceDisplayContext {
+  return referenceDisplay ?? collectFormReferenceDisplayContext(props.sections);
+}
+
 function renderEditGridElement(
   props: EditProps,
   el: FormElement,
   sectionKeyValue: string,
   idx: number,
+  referenceDisplay: FormReferenceDisplayContext,
 ): ReactNode {
   if (el.kind === "spacer") {
     return (
@@ -191,6 +204,7 @@ function renderEditGridElement(
           displayContext={props.displayContext}
           formSections={props.sections}
           localeReferencesByLanguage={props.localeReferencesByLanguage}
+          referenceDisplay={referenceDisplay}
         />
       </div>
     );
@@ -209,6 +223,7 @@ function renderEditGridElement(
       displayContext={props.displayContext}
       formSections={props.sections}
       localeReferencesByLanguage={props.localeReferencesByLanguage}
+      referenceDisplay={referenceDisplay}
     />
   );
 }
@@ -217,6 +232,7 @@ function renderTwoColumnGrid(
   props: RecordSectionListProps,
   sectionElements: PageElement[] | FormElement[],
   sectionKeyValue: string,
+  referenceDisplay?: FormReferenceDisplayContext,
 ): ReactNode {
   const gridClass = fieldGridClassName(2);
   const { left, right } =
@@ -247,14 +263,23 @@ function renderTwoColumnGrid(
   }
 
   const editProps = props as EditProps;
+  const resolvedReferenceDisplay = editReferenceDisplay(editProps, referenceDisplay);
   return (
     <div className={gridClass}>
       <dl className="field-grid__column">
-        {left.map((el, idx) => renderEditGridElement(editProps, el as FormElement, sectionKeyValue, idx))}
+        {left.map((el, idx) =>
+          renderEditGridElement(editProps, el as FormElement, sectionKeyValue, idx, resolvedReferenceDisplay),
+        )}
       </dl>
       <dl className="field-grid__column">
         {right.map((el, idx) =>
-          renderEditGridElement(editProps, el as FormElement, sectionKeyValue, left.length + idx),
+          renderEditGridElement(
+            editProps,
+            el as FormElement,
+            sectionKeyValue,
+            left.length + idx,
+            resolvedReferenceDisplay,
+          ),
         )}
       </dl>
     </div>
@@ -266,6 +291,7 @@ function renderSingleColumnGrid(
   gridElements: PageElement[] | FormElement[],
   sectionKeyValue: string,
   formColumns: number | undefined,
+  referenceDisplay?: FormReferenceDisplayContext,
 ): ReactNode {
   const gridClass = fieldGridClassName(formColumns);
   if (props.mode === "view") {
@@ -277,9 +303,12 @@ function renderSingleColumnGrid(
     );
   }
   const editProps = props as EditProps;
+  const resolvedReferenceDisplay = editReferenceDisplay(editProps, referenceDisplay);
   return (
     <dl className={gridClass}>
-      {gridElements.map((el, idx) => renderEditGridElement(editProps, el as FormElement, sectionKeyValue, idx))}
+      {gridElements.map((el, idx) =>
+        renderEditGridElement(editProps, el as FormElement, sectionKeyValue, idx, resolvedReferenceDisplay),
+      )}
     </dl>
   );
 }
@@ -289,7 +318,8 @@ function renderSectionBody(
   section: SectionContainer & { elements?: PageElement[] | FormElement[] | null },
   sectionId: string,
   sectionKeyValue: string,
-) {
+  referenceDisplay?: FormReferenceDisplayContext,
+): ReactNode {
   if (props.mode === "view") {
     const elements = section.elements as PageElement[];
     const gridElements = viewGridElements(elements);
@@ -340,13 +370,14 @@ function renderSectionBody(
   const elements = section.elements as FormElement[];
   const gridElements = editGridElements(elements);
   const nonFieldElements = layoutElements(elements, section.form_columns);
+  const resolvedReferenceDisplay = editReferenceDisplay(props, referenceDisplay);
 
   return (
     <>
       {gridElements.length > 0 &&
         (section.form_columns === 2
-          ? renderTwoColumnGrid(props, elements, sectionKeyValue)
-          : renderSingleColumnGrid(props, gridElements, sectionKeyValue, section.form_columns))}
+          ? renderTwoColumnGrid(props, elements, sectionKeyValue, resolvedReferenceDisplay)
+          : renderSingleColumnGrid(props, gridElements, sectionKeyValue, section.form_columns, resolvedReferenceDisplay))}
       {nonFieldElements.map((el, idx) => (
         <RecordSectionElement
           key={recordSectionElementKey("edit", el, `${sectionKeyValue}-${idx}`, idx)}
@@ -359,6 +390,7 @@ function renderSectionBody(
           displayContext={props.displayContext}
           formSections={props.sections}
           localeReferencesByLanguage={props.localeReferencesByLanguage}
+          referenceDisplay={resolvedReferenceDisplay}
         />
       ))}
     </>
@@ -367,6 +399,11 @@ function renderSectionBody(
 
 export function RecordSectionList(props: RecordSectionListProps) {
   const sections = props.sections ?? [];
+  const editSections = props.mode === "edit" ? props.sections : undefined;
+  const referenceDisplay = useMemo(
+    () => (editSections ? collectFormReferenceDisplayContext(editSections) : undefined),
+    [editSections],
+  );
   if (sections.length === 0) {
     return renderEmptyState(props);
   }
@@ -401,7 +438,7 @@ export function RecordSectionList(props: RecordSectionListProps) {
             expanded={isExpanded}
             onToggle={collapsible ? () => props.onToggleSection(sectionId) : undefined}
           >
-            {renderSectionBody(props, section, sectionId, sectionKeyValue)}
+            {renderSectionBody(props, section, sectionId, sectionKeyValue, referenceDisplay)}
           </RecordSectionBlock>
         );
       })}

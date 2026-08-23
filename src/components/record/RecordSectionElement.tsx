@@ -15,7 +15,7 @@ import { BinderContextPanel } from "../binder/BinderContextPanel";
 import { RelatedObjectSection } from "../RelatedObjectSection";
 import { WorkflowTimeline } from "../WorkflowTimeline";
 import { RecordSharingPanel } from "../RecordSharingPanel";
-import { collectFormReferenceDisplayContext } from "../../lib/studyScopeReference";
+import { collectFormReferenceDisplayContext, type FormReferenceDisplayContext } from "../../lib/studyScopeReference";
 import { DomainUserField } from "./DomainUserField";
 import { RecordFieldCell } from "./RecordFieldCell";
 import { RecordLayoutElement, recordLayoutElementKey } from "./RecordLayoutElement";
@@ -50,6 +50,7 @@ type EditElementProps = {
   displayContext?: DisplayContext;
   formSections?: FormSection[];
   localeReferencesByLanguage?: Record<string, PicklistEntryOption[]>;
+  referenceDisplay?: FormReferenceDisplayContext;
 };
 
 export type RecordSectionElementProps = ViewElementProps | EditElementProps;
@@ -99,7 +100,8 @@ export function RecordSectionElement(props: RecordSectionElementProps) {
       if (el.hidden || !el.field_api_name) {
         return null;
       }
-      const referenceDisplay = collectFormReferenceDisplayContext(props.formSections ?? []);
+      const referenceDisplay =
+        props.referenceDisplay ?? collectFormReferenceDisplayContext(props.formSections ?? []);
       return (
         <RecordFieldCell
           mode="edit"
