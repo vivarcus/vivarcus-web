@@ -113,7 +113,10 @@ export function HeaderMenus({ vaultLabel, vaultId, canViewUserProfile = false }:
       key: "about",
       className: "dropdown__user-menu-item dropdown__user-menu-item--about",
       label: displayText(shell.about_this_vault),
-      onClick: () => setUserOpen(false),
+      onClick: () => {
+        setUserOpen(false);
+        navigate("/admin/about/vault-information");
+      },
     },
     {
       key: "help",
