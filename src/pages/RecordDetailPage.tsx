@@ -65,6 +65,11 @@ import { formatDocumentVersionLabel } from "../lib/documentVersion";
 import { recordDisplayName } from "../lib/recordDisplayName";
 import { recordListHref } from "../lib/recordListHref";
 import { recordViewPathname } from "../lib/recordEditHref";
+import {
+  applyLoadedRecordFormValues,
+  isRecordEditFormReady,
+  shouldShowRecordEditLoading,
+} from "../lib/recordEditFormLoad";
 import { isBinderObjectType } from "../lib/recordPageShell";
 
 const RECORD_EDIT_FORM_ID = "record-edit-form";
@@ -92,6 +97,8 @@ export function RecordDetailPage() {
   const hasLoadedOnceRef = useRef(false);
   const sectionStorageKeyRef = useRef("");
   const loadGenerationRef = useRef(0);
+  const editLoadIdRef = useRef(0);
+  const valuesRef = useRef<Record<string, unknown>>({});
   const [deleting, setDeleting] = useState(false);
   const [favorited, setFavorited] = useState(false);
   const [favoritePending, setFavoritePending] = useState(false);
@@ -172,6 +179,17 @@ export function RecordDetailPage() {
   const downloadVpkId = searchParams.get("download_vpk") ?? undefined;
   const isEditRoute = /\/edit\/?$/.test(location.pathname);
   const editRouteHandledRef = useRef(false);
+  const editFormReady = isRecordEditFormReady({
+    editing,
+    formLoading,
+    hasForm: Boolean(form),
+  });
+  const showEditLoading = shouldShowRecordEditLoading({
+    isEditRoute,
+    editing,
+    formLoading,
+    hasForm: Boolean(form),
+  });
 
   useEffect(() => {
     if (!vaultId || !downloadVpkId || objectName !== "outbound_package__v") {
@@ -282,33 +300,33 @@ export function RecordDetailPage() {
       delete next[name];
       return next;
     });
-    setValues((prev) => {
-      let updated = { ...prev, [name]: raw };
-      updated = pruneInvalidPicklistValues(updated, form?.sections ?? [], name);
-      if (name === "language__sys" && hasL10nLocaleCascade(form?.l10n)) {
-        const locale = String(updated.locale__sys ?? "");
-        if (
-          locale &&
-          !isLocaleAllowedForLanguageEdit(
-            form.l10n?.locale_references_by_language,
-            String(raw ?? ""),
-            locale,
-          )
-        ) {
-          updated.locale__sys = "";
-        }
+    const prev = valuesRef.current;
+    let updated = { ...prev, [name]: raw };
+    updated = pruneInvalidPicklistValues(updated, form?.sections ?? [], name);
+    if (name === "language__sys" && hasL10nLocaleCascade(form?.l10n)) {
+      const locale = String(updated.locale__sys ?? "");
+      if (
+        locale &&
+        !isLocaleAllowedForLanguageEdit(
+          form.l10n?.locale_references_by_language,
+          String(raw ?? ""),
+          locale,
+        )
+      ) {
+        updated.locale__sys = "";
       }
-      if (isDocumentObjectClass(form?.object_class)) {
-        if (name === "type__v") {
-          updated.subtype__v = "";
-          updated.classification__v = "";
-        }
-        if (name === "subtype__v") {
-          updated.classification__v = "";
-        }
+    }
+    if (isDocumentObjectClass(form?.object_class)) {
+      if (name === "type__v") {
+        updated.subtype__v = "";
+        updated.classification__v = "";
       }
-      return updated;
-    });
+      if (name === "subtype__v") {
+        updated.classification__v = "";
+      }
+    }
+    valuesRef.current = updated;
+    setValues(updated);
   }
 
   const load = useCallback(async (opts?: { layoutOverride?: string | null }) => {
@@ -507,18 +525,35 @@ export function RecordDetailPage() {
   }
 
   async function enterEdit() {
-    if (!vaultId || !objectName || !recordId || editing) return;
+    if (!vaultId || !objectName || !recordId) return;
+    const loadId = ++editLoadIdRef.current;
     setEditing(true);
     setFormLoading(true);
     setEditError(null);
     setFieldValidationErrors({});
     try {
       const model = await api.editForm(vaultId, objectName, recordId, { layout, page: pageApiName });
+      if (loadId !== editLoadIdRef.current) {
+        return;
+      }
+      const loadedValues = { ...(model.values ?? {}) };
+      const nextValues = applyLoadedRecordFormValues({
+        loadId,
+        activeLoadId: editLoadIdRef.current,
+        loadedValues,
+        currentValues: valuesRef.current,
+        isDirty: JSON.stringify(valuesRef.current) !== JSON.stringify(initialValues),
+      });
       setForm(model);
-      const nextValues = { ...(model.values ?? {}) };
-      setValues(nextValues);
-      setInitialValues(nextValues);
+      if (nextValues) {
+        valuesRef.current = nextValues;
+        setValues(nextValues);
+        setInitialValues(loadedValues);
+      }
     } catch (err) {
+      if (loadId !== editLoadIdRef.current) {
+        return;
+      }
       setEditing(false);
       setForm(null);
       setError(err instanceof Error ? err.message : displayText(shell.load_form_failed));
@@ -529,7 +564,9 @@ export function RecordDetailPage() {
         );
       }
     } finally {
-      setFormLoading(false);
+      if (loadId === editLoadIdRef.current) {
+        setFormLoading(false);
+      }
     }
   }
 
@@ -542,8 +579,10 @@ export function RecordDetailPage() {
   }
 
   function cancelEdit() {
+    editLoadIdRef.current += 1;
     setEditing(false);
     setForm(null);
+    valuesRef.current = {};
     setValues({});
     setInitialValues({});
     setEditError(null);
@@ -552,7 +591,16 @@ export function RecordDetailPage() {
   }
 
   useEffect(() => {
+    editLoadIdRef.current += 1;
     editRouteHandledRef.current = false;
+    setEditing(false);
+    setForm(null);
+    valuesRef.current = {};
+    setValues({});
+    setInitialValues({});
+    setFormLoading(false);
+    setEditError(null);
+    setFieldValidationErrors({});
   }, [vaultId, objectName, recordId, isEditRoute]);
 
   useEffect(() => {
@@ -573,10 +621,14 @@ export function RecordDetailPage() {
   async function saveEdit(e: FormEvent) {
     e.preventDefault();
     if (!vaultId || !objectName || !recordId || !form || submitting) return;
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
+    }
+    const fields = valuesRef.current;
     const formChrome = form.chrome ?? defaultFormChrome;
     const validation = validateRecordFormSections(
       displaySections,
-      values,
+      fields,
       formChrome.field_required ?? defaultFormChrome.field_required,
       { invalidEmailMessage: formChrome.field_invalid_email ?? defaultFormChrome.field_invalid_email },
     );
@@ -602,7 +654,7 @@ export function RecordDetailPage() {
     try {
       if (savingChangeType) {
         await api.submitChangeType(vaultId, objectName, recordId, {
-          fields: values,
+          fields,
           object_type_name: form.object_type_api_name!.trim(),
           form_guard: form.form_guard,
           form_context_token: form.form_context_token,
@@ -612,7 +664,7 @@ export function RecordDetailPage() {
         setSearchParams(next, { replace: true });
       } else {
         await api.submitEdit(vaultId, objectName, recordId, {
-          fields: values,
+          fields,
           object_type_name: form.object_type_api_name,
           form_guard: form.form_guard,
           form_context_token: form.form_context_token,
@@ -620,6 +672,7 @@ export function RecordDetailPage() {
       }
       setEditing(false);
       setForm(null);
+      valuesRef.current = {};
       setValues({});
       setInitialValues({});
       if (isEditRoute) {
@@ -649,6 +702,7 @@ export function RecordDetailPage() {
     if (!vaultId || !objectName || !recordId) {
       return;
     }
+    const loadId = ++editLoadIdRef.current;
     setChangeTypePending(true);
     setEditing(true);
     setFormLoading(true);
@@ -658,20 +712,38 @@ export function RecordDetailPage() {
       const model = await api.changeTypeForm(vaultId, objectName, recordId, {
         object_type_name: objectTypeName,
       });
+      if (loadId !== editLoadIdRef.current) {
+        return;
+      }
+      const loadedValues = { ...(model.values ?? {}) };
+      const nextValues = applyLoadedRecordFormValues({
+        loadId,
+        activeLoadId: editLoadIdRef.current,
+        loadedValues,
+        currentValues: valuesRef.current,
+        isDirty: JSON.stringify(valuesRef.current) !== JSON.stringify(initialValues),
+      });
       setForm(model);
-      const nextValues = { ...(model.values ?? {}) };
-      setValues(nextValues);
-      setInitialValues(nextValues);
+      if (nextValues) {
+        valuesRef.current = nextValues;
+        setValues(nextValues);
+        setInitialValues(loadedValues);
+      }
       setChangeTypeOpen(false);
       setChangeTypeWarningOpen(false);
       setChangeTypeWarning(null);
       setPendingChangeTypeName("");
     } catch (err) {
+      if (loadId !== editLoadIdRef.current) {
+        return;
+      }
       setEditing(false);
       setForm(null);
       await handleStaleError(err, load, setError, displayText(shell.action_failed), shell);
     } finally {
-      setFormLoading(false);
+      if (loadId === editLoadIdRef.current) {
+        setFormLoading(false);
+      }
       setChangeTypePending(false);
     }
   }
@@ -808,7 +880,7 @@ export function RecordDetailPage() {
       : null;
 
   const editFormActions =
-    editing && form && !formLoading ? (
+    editFormReady && form ? (
       <div className="page-header__actions">
         <Button type="text" onClick={cancelEdit} disabled={submitting}>
           {displayText(shell.cancel)}
@@ -828,12 +900,12 @@ export function RecordDetailPage() {
     ) : null;
 
   const recordMain =
-    editing && formLoading ? (
+    showEditLoading ? (
       <Spin
         description={displayText(defaultFormChrome.loading_form)}
         className="page-loading page__loading"
       />
-    ) : editing && form ? (
+    ) : editFormReady && form ? (
       <form id={RECORD_EDIT_FORM_ID} className="record-form record-form--edit" onSubmit={saveEdit}>
         <FormMetaProvider
           objectApiName={form.object_api_name}
@@ -1021,7 +1093,7 @@ export function RecordDetailPage() {
               title={displayText(defaultFormChrome.updating_rules)}
             />
           )}
-          {editing && formLoading && (
+          {showEditLoading && (
             <Spin
               description={displayText(defaultFormChrome.loading_form)}
               className="page-loading page__loading"

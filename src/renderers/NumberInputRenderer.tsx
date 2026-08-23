@@ -26,6 +26,8 @@ export function NumberInputRenderer({
       value={Number.isFinite(numericValue) ? numericValue : null}
       precision={scale}
       disabled={disabled}
+      // Commit while typing so a late form/prefetch re-render cannot wipe an un-blurred draft.
+      changeOnBlur={false}
       aria-label={showLabel ? undefined : label}
       style={{ width: "100%" }}
       onChange={(next) => onChange(next ?? null)}
