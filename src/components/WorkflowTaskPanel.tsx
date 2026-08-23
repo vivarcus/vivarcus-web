@@ -149,6 +149,29 @@ export function WorkflowTaskPanel({
     }
   }
 
+  async function unclaimTask(task: WorkflowTaskAction) {
+    if (!task.workflow_task_id) return;
+    setBusy(task.workflow_task_id);
+    onError("");
+    try {
+      const res = await api.workflowUnclaim(vaultId, objectName, recordId, {
+        workflow_task_id: task.workflow_task_id,
+        action_guard: actionGuard(page),
+        layout: page.selected_layout.api_name,
+      });
+      onPageUpdate(res.page);
+    } catch (err) {
+      const fallback = displayText(workflow.unclaim_failed);
+      if (onReloadPage) {
+        await handleStaleError(err, onReloadPage, onError, fallback, shell);
+      } else {
+        onError(err instanceof Error ? err.message : fallback);
+      }
+    } finally {
+      setBusy(null);
+    }
+  }
+
   async function cancelWorkflow(task: WorkflowTaskAction) {
     const reason = window.prompt(
       displayText(workflow.cancel_reason_prompt),
@@ -194,6 +217,15 @@ export function WorkflowTaskPanel({
             onClick={() => void claimTask(task)}
           >
             {displayText(workflow.claim_task)}
+          </Button>
+        )}
+        {task.can_unclaim && (
+          <Button
+            disabled={busy !== null}
+            loading={taskBusy}
+            onClick={() => void unclaimTask(task)}
+          >
+            {displayText(workflow.unclaim_task)}
           </Button>
         )}
         {task.can_complete && (

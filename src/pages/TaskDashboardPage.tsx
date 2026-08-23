@@ -190,15 +190,19 @@ function TaskRow({
   chrome,
   onComplete,
   onAccept,
+  onUnclaim,
   completing,
   accepting,
+  unclaiming,
 }: {
   task: TaskDashboardTaskItem;
   chrome: TaskDashboardChrome;
   onComplete?: (task: TaskDashboardTaskItem) => void;
   onAccept?: (task: TaskDashboardTaskItem) => void;
+  onUnclaim?: (task: TaskDashboardTaskItem) => void;
   completing?: boolean;
   accepting?: boolean;
+  unclaiming?: boolean;
 }) {
   const [expanded, setExpanded] = useState(false);
   const path = task.record_detail_href;
@@ -220,6 +224,7 @@ function TaskRow({
         Boolean(task.record_id)));
   const showContinue = Boolean(task.can_continue && path);
   const showAccept = Boolean(task.can_accept && task.workflow_task_id && onAccept);
+  const showUnclaim = Boolean(task.can_unclaim && task.workflow_task_id && onUnclaim);
   const requiredLabel = displayText(chrome.required);
 
   const contentNode = contentLabel ? (
@@ -314,7 +319,7 @@ function TaskRow({
             </div>
           )}
         </div>
-        {(showComplete || showContinue || showAccept) && (
+        {(showComplete || showContinue || showAccept || showUnclaim) && (
           <div className="home-task-actions">
             {showAccept && (
               <Button size="small" type="primary" loading={accepting} onClick={() => onAccept?.(task)}>
@@ -324,6 +329,11 @@ function TaskRow({
             {showComplete && (
               <Button size="small" type="primary" loading={completing} onClick={() => onComplete?.(task)}>
                 {displayText(chrome.complete)}
+              </Button>
+            )}
+            {showUnclaim && (
+              <Button size="small" loading={unclaiming} onClick={() => onUnclaim?.(task)}>
+                {displayText(chrome.unclaim_task)}
               </Button>
             )}
             {showContinue && path && (
@@ -345,15 +355,19 @@ function TaskGrid({
   chrome,
   onComplete,
   onAccept,
+  onUnclaim,
   completingId,
   acceptingId,
+  unclaimingId,
 }: {
   tasks: TaskDashboardTaskItem[];
   chrome: TaskDashboardChrome;
   onComplete?: (task: TaskDashboardTaskItem) => void;
   onAccept?: (task: TaskDashboardTaskItem) => void;
+  onUnclaim?: (task: TaskDashboardTaskItem) => void;
   completingId?: string | null;
   acceptingId?: string | null;
+  unclaimingId?: string | null;
 }) {
   const requiredLabel = displayText(chrome.required);
   const columns: ColumnsType<TaskDashboardTaskItem> = [
@@ -437,7 +451,7 @@ function TaskGrid({
     {
       title: displayText(chrome.column_actions),
       key: "actions",
-      width: 120,
+      width: 220,
       render: (_value, task) => {
         const showComplete =
           task.can_complete &&
@@ -447,7 +461,8 @@ function TaskGrid({
               Boolean(task.workflow_task_id)));
         const showContinue = Boolean(task.can_continue && task.record_detail_href);
         const showAccept = Boolean(task.can_accept && task.workflow_task_id);
-        if (!showComplete && !showContinue && !showAccept) return null;
+        const showUnclaim = Boolean(task.can_unclaim && task.workflow_task_id);
+        if (!showComplete && !showContinue && !showAccept && !showUnclaim) return null;
         return (
           <div className="home-grid-actions">
             {showAccept && (
@@ -468,6 +483,15 @@ function TaskGrid({
                 onClick={() => onComplete?.(task)}
               >
                 {displayText(chrome.complete)}
+              </Button>
+            )}
+            {showUnclaim && (
+              <Button
+                size="small"
+                loading={unclaimingId === task.task_id}
+                onClick={() => onUnclaim?.(task)}
+              >
+                {displayText(chrome.unclaim_task)}
               </Button>
             )}
             {showContinue && task.record_detail_href && (
@@ -507,6 +531,7 @@ export function TaskDashboardPage() {
   const [error, setError] = useState<string | null>(null);
   const [completingId, setCompletingId] = useState<string | null>(null);
   const [acceptingId, setAcceptingId] = useState<string | null>(null);
+  const [unclaimingId, setUnclaimingId] = useState<string | null>(null);
   const completingRef = useRef<string | null>(null);
   const [workflowComplete, setWorkflowComplete] = useState<{
     page: RecordPageModel | null;
@@ -708,6 +733,27 @@ export function TaskDashboardPage() {
         );
       } finally {
         setAcceptingId(null);
+      }
+    },
+    [vaultId, load],
+  );
+
+  const unclaimWorkflowTask = useCallback(
+    async (task: TaskDashboardTaskItem) => {
+      if (!vaultId || !task.workflow_task_id || !task.can_unclaim) return;
+      setUnclaimingId(task.task_id);
+      setError(null);
+      try {
+        await api.unclaimHomeWorkflowTask(vaultId, task.workflow_task_id);
+        await load();
+      } catch (err) {
+        setError(
+          err instanceof Error
+            ? err.message
+            : displayText(defaultTaskDashboardChrome.unclaim_failed),
+        );
+      } finally {
+        setUnclaimingId(null);
       }
     },
     [vaultId, load],
@@ -1018,8 +1064,10 @@ export function TaskDashboardPage() {
               chrome={chrome}
               onComplete={completeTask}
               onAccept={acceptWorkflowTask}
+              onUnclaim={unclaimWorkflowTask}
               completingId={completingId}
               acceptingId={acceptingId}
+              unclaimingId={unclaimingId}
             />
           ) : (
             <div className="home-task-list">
@@ -1030,8 +1078,10 @@ export function TaskDashboardPage() {
                   chrome={chrome}
                   onComplete={completeTask}
                   onAccept={acceptWorkflowTask}
+                  onUnclaim={unclaimWorkflowTask}
                   completing={completingId === task.task_id}
                   accepting={acceptingId === task.task_id}
+                  unclaiming={unclaimingId === task.task_id}
                 />
               ))}
             </div>

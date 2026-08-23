@@ -304,6 +304,14 @@ export const api = {
     });
   },
 
+  unclaimHomeWorkflowTask(vaultId: string, workflowTaskId: string) {
+    return vaultFetch<{ status: string }>(vaultId, `/ui/task-dashboard/unclaim`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ workflow_task_id: workflowTaskId }),
+    });
+  },
+
   completeHomeWorkflowTask(
     vaultId: string,
     workflowTaskId: string,
@@ -1922,6 +1930,29 @@ export const api = {
         throw new Error("workflow claim failed");
       }
       return { page: res.workflow_claim.page };
+    });
+  },
+
+  workflowUnclaim(
+    vaultId: string,
+    objectName: string,
+    recordId: string,
+    body: {
+      workflow_task_id: string;
+      action_guard: import("./types").ActionGuard;
+      layout?: string;
+    },
+  ) {
+    return this.executeAction(vaultId, `workflow-unclaim.${body.workflow_task_id}`, {
+      object_api_name: objectName,
+      record_id: recordId,
+      action_guard: body.action_guard,
+      layout: body.layout,
+    }).then((res) => {
+      if (!res.workflow_unclaim?.page) {
+        throw new Error("workflow unclaim failed");
+      }
+      return { page: res.workflow_unclaim.page };
     });
   },
 

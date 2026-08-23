@@ -365,6 +365,31 @@ export function WorkflowTimeline({
     }
   }
 
+  async function unclaimTask(task: WorkflowTaskAction) {
+    if (!interactive || !page || !vaultId || !objectName || !recordId || !onPageUpdate || !task.workflow_task_id) {
+      return;
+    }
+    setBusy(task.workflow_task_id);
+    onError?.("");
+    try {
+      const res = await api.workflowUnclaim(vaultId, objectName, recordId, {
+        workflow_task_id: task.workflow_task_id,
+        action_guard: actionGuard(page),
+        layout: page.selected_layout.api_name,
+      });
+      onPageUpdate(res.page);
+    } catch (err) {
+      const fallback = displayText(workflow.unclaim_failed);
+      if (onReloadPage) {
+        await handleStaleError(err, onReloadPage, onError ?? (() => {}), fallback, shell);
+      } else {
+        onError?.(err instanceof Error ? err.message : fallback);
+      }
+    } finally {
+      setBusy(null);
+    }
+  }
+
   async function openParticipants(instance: WorkflowTimelineInstance) {
     if (!vaultId || !objectName || !recordId) return;
     onError?.("");
@@ -465,6 +490,13 @@ export function WorkflowTimeline({
         key: "claim",
         label: displayText(workflow.claim_task),
         onClick: () => void claimTask(enriched),
+      });
+    }
+    if (enriched.can_unclaim) {
+      items.push({
+        key: "unclaim",
+        label: displayText(workflow.unclaim_task),
+        onClick: () => void unclaimTask(enriched),
       });
     }
     if (task.actions.can_complete) {

@@ -137,6 +137,7 @@ export type TaskDashboardTaskItem = {
   content_count?: number;
   complete_action?: string;
   can_accept?: boolean;
+  can_unclaim?: boolean;
   can_complete?: boolean;
   can_continue?: boolean;
   record_detail_href?: string;
@@ -1416,6 +1417,7 @@ export type WorkflowTaskAction = {
   completion_draft?: WorkflowTaskCompletionDraft;
   can_complete?: boolean;
   can_claim?: boolean;
+  can_unclaim?: boolean;
   can_cancel?: boolean;
 };
 
@@ -1532,6 +1534,10 @@ export type ActionExecutionResult = {
     workflow_task_id: string;
   };
   workflow_claim?: {
+    page: RecordPageModel;
+    workflow_task_id: string;
+  };
+  workflow_unclaim?: {
     page: RecordPageModel;
     workflow_task_id: string;
   };
