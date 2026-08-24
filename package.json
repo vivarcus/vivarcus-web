@@ -13,7 +13,8 @@
     "acceptance:clinical-operations": "playwright test -c playwright.clinical-operations.config.ts",
     "acceptance:platform": "playwright test -c playwright.platform.config.ts",
     "acceptance:ui": "playwright test -c playwright.clinical-operations.config.ts --ui",
-    "acceptance:platform:ui": "playwright test -c playwright.platform.config.ts --ui"
+    "acceptance:platform:ui": "playwright test -c playwright.platform.config.ts --ui",
+    "lighthouse-recipe": "playwright test -c playwright.lighthouse.config.ts"
   },
   "dependencies": {
     "@ant-design/icons": "^6.2.5",

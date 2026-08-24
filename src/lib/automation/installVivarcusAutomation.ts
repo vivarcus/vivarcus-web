@@ -1,7 +1,7 @@
 import { createVivarcusAutomation } from "./vivarcusAutomation";
 
-/** Mount browser automation helpers on window.__vivarcus (dev / local acceptance only). */
-export function installVivarcusAutomation(): void {
+/** Mount browser automation helpers on window.__vivarcus (DEV install or Playwright inject). */
+export function installVivarcusAutomation(source: "dev" | "inject" = "dev"): void {
   if (typeof window === "undefined") {
     return;
   }
@@ -9,5 +9,6 @@ export function installVivarcusAutomation(): void {
   window.__vivarcus = {
     ...(window.__vivarcus ?? {}),
     ...automation,
+    __source: source,
   };
 }

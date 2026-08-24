@@ -1,7 +1,17 @@
+import { clickAction, type ClickActionResult } from "./clickAction";
+import {
+  fillRecord,
+  getFieldValue,
+  listFormFields,
+  type FillRecordResult,
+  type FormFieldInfo,
+} from "./fillRecord";
+import { login, type LoginOptions, type LoginResult } from "./login";
+import { saveRecord, type SaveRecordResult } from "./saveRecord";
 import {
   findFieldByApiName,
   findFieldByLabel,
-  getPicklistSelection,
+  getPicklistSelection as readPicklistSelection,
   listFormPicklistFields,
   selectPicklistField,
   type FormPicklistFieldInfo,
@@ -19,6 +29,12 @@ export type VivarcusAutomation = {
   selectPicklistByLabel: (fieldLabel: string, optionLabel: string) => Promise<SelectPicklistResult>;
   getPicklistSelection: (fieldApiName: string) => string | null;
   listFormPicklistFields: () => FormPicklistFieldInfo[];
+  fillRecord: (values: Record<string, string>) => Promise<FillRecordResult>;
+  saveRecord: () => Promise<SaveRecordResult>;
+  clickAction: (label: string) => Promise<ClickActionResult>;
+  login: (options: LoginOptions) => Promise<LoginResult>;
+  getField: (fieldApiName: string) => string | null;
+  listFields: () => FormFieldInfo[];
 };
 
 async function selectPicklistOnField(
@@ -69,9 +85,15 @@ export function createVivarcusAutomation(): VivarcusAutomation {
       if (!item) {
         return null;
       }
-      return getPicklistSelection(item);
+      return readPicklistSelection(item);
     },
 
     listFormPicklistFields,
+    fillRecord,
+    saveRecord,
+    clickAction,
+    login,
+    getField: getFieldValue,
+    listFields: listFormFields,
   };
 }
