@@ -4,6 +4,7 @@ import type { InputRef } from "antd/es/input";
 import type { Dayjs } from "dayjs";
 import type { CSSProperties } from "react";
 import { useEffect, useId, useMemo, useRef, useState } from "react";
+import { flushSync } from "react-dom";
 import {
   dateFieldPlaceholder,
   datePickerFormat,
@@ -231,7 +232,12 @@ export function DateFieldInput({
               restoreTextFocusWithoutOpening();
               return;
             }
-            // Defer close so a calendar-day mousedown can commit via onCalendarChange.
+            // Flush the typed value before the next event (submit click) reads
+            // parent state. Closing the calendar stays deferred so a day
+            // mousedown can still reach onCalendarChange.
+            flushSync(() => {
+              commitText(textRef.current);
+            });
             window.setTimeout(() => {
               const active = document.activeElement;
               if (
@@ -241,7 +247,6 @@ export function DateFieldInput({
                 return;
               }
               setFocused(false);
-              commitText(textRef.current);
               setOpen(false);
             }, 0);
           }}

@@ -18,6 +18,40 @@ function getEditInput(container: HTMLElement): HTMLInputElement {
 }
 
 describe("DateFieldInput", () => {
+  it("commits typed date before a following submit click reads parent state", async () => {
+    const user = userEvent.setup();
+    const onSubmit = vi.fn();
+    const enUS = {
+      locale: "en-US",
+      timezone: "America/Los_Angeles",
+      language: "en",
+    };
+
+    function Harness() {
+      const [due, setDue] = useState<string>("");
+      return (
+        <div>
+          <DateFieldInput
+            value={due || null}
+            displayContext={enUS}
+            onChange={(next) => setDue(next ?? "")}
+          />
+          <button type="button" onClick={() => onSubmit(due)}>
+            submit
+          </button>
+        </div>
+      );
+    }
+
+    const { container } = render(<Harness />);
+    const input = getEditInput(container);
+    await user.click(input);
+    await user.paste("09/30/2026");
+    await user.click(screen.getByRole("button", { name: "submit" }));
+
+    expect(onSubmit).toHaveBeenCalledWith("2026-09-30");
+  });
+
   it("commits pasted ISO dates with trailing newline on blur", async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();

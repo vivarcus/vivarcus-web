@@ -405,11 +405,13 @@ function ObjectListPageInner({
       ? api.businessAdminObjectListFacets(vaultId, listKey, {
           view: selectedView,
           navigationContext,
+          filter: filter || undefined,
           facetFilters: hasFacetFilters(facetFilters) ? facetFilters : undefined,
         })
       : api.objectListFacets(vaultId, listKey, {
           view: selectedView,
           navigationContext,
+          filter: filter || undefined,
           facetFilters: hasFacetFilters(facetFilters) ? facetFilters : undefined,
         });
     void facetsPromise
@@ -440,6 +442,7 @@ function ObjectListPageInner({
     model?.selected_view,
     model?.list_context_fingerprint,
     facetFilters,
+    filter,
   ]);
 
   useEffect(() => {
