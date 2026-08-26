@@ -1,6 +1,25 @@
 import { describe, expect, it } from "vitest";
-import { workflowDialogFieldElement } from "./workflowStartField";
+import { workflowControlFieldName, workflowDialogFieldElement } from "./workflowStartField";
 import type { PageElement, WorkflowStartDialogControl } from "../api/types";
+
+describe("workflowControlFieldName", () => {
+  it("prefers participant name for reviewer pickers", () => {
+    expect(
+      workflowControlFieldName({
+        type: "participant",
+        control_name: "reviewers__c",
+        participant_name: "reviewers__c",
+        label: "审查者",
+      }),
+    ).toBe("reviewers__c");
+  });
+
+  it("falls back to date control name", () => {
+    expect(workflowControlFieldName({ type: "date", control_name: "due_date__c", label: "到期日期" })).toBe(
+      "due_date__c",
+    );
+  });
+});
 
 describe("workflowDialogFieldElement", () => {
   it("forces editable field_render when reusing a read-only page element", () => {

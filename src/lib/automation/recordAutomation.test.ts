@@ -86,6 +86,28 @@ describe("saveRecord", () => {
     expect(result.ok).toBe(false);
     expect(result.reason).toBe("Name is required");
   });
+
+  it("confirms the workflow start modal instead of the page save button", async () => {
+    let clicked = "";
+    document.body.innerHTML = `
+      <div class="page-header__actions">
+        <button type="button" class="ant-btn ant-btn-primary">Save</button>
+      </div>
+      <div class="ant-modal workflow-start-modal">
+        <div class="ant-modal-footer">
+          <button type="button" class="ant-btn ant-btn-primary">提交以供审查</button>
+        </div>
+      </div>
+    `;
+    document.querySelector(".page-header__actions button")!.addEventListener("click", () => {
+      clicked = "page";
+    });
+    document.querySelector(".workflow-start-modal button")!.addEventListener("click", () => {
+      clicked = "workflow";
+    });
+    await expect(saveRecord()).resolves.toEqual({ ok: true });
+    expect(clicked).toBe("workflow");
+  });
 });
 
 describe("clickAction", () => {
@@ -114,6 +136,28 @@ describe("clickAction", () => {
       document.body.append(item);
     });
     await expect(clickAction("Ready to Enroll")).resolves.toEqual({ ok: true });
+    expect(clicked).toBe(true);
+  });
+
+  it("opens Workflow and State Change then clicks the menu item", async () => {
+    let clicked = false;
+    document.body.innerHTML = `
+      <button type="button" class="record-toolbar__workflow-state" aria-label="工作流和状态更改">▾</button>
+      <button type="button" class="record-toolbar__menu-trigger" aria-label="所有操作">⋯</button>
+    `;
+    document.querySelector(".record-toolbar__workflow-state")!.addEventListener("click", () => {
+      const item = document.createElement("div");
+      item.setAttribute("role", "menuitem");
+      item.textContent = "提交以供审查";
+      item.addEventListener("click", () => {
+        clicked = true;
+      });
+      document.body.append(item);
+    });
+    document.querySelector(".record-toolbar__menu-trigger")!.addEventListener("click", () => {
+      throw new Error("should not open All actions");
+    });
+    await expect(clickAction("提交以供审查")).resolves.toEqual({ ok: true });
     expect(clicked).toBe(true);
   });
 });

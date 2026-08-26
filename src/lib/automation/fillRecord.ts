@@ -1,4 +1,9 @@
-import { findFieldByApiName, getPicklistSelection, selectPicklistField } from "./selectPicklistField";
+import {
+  fieldLabelText,
+  findFieldByApiName,
+  getPicklistSelection,
+  selectPicklistField,
+} from "./selectPicklistField";
 import { commitInput, setNativeInputValue } from "./nativeValue";
 
 export type FillRecordResult = {
@@ -15,8 +20,7 @@ export type FormFieldInfo = {
 };
 
 function fieldLabel(item: HTMLElement, fallback: string): string {
-  const raw = item.querySelector("dt")?.textContent?.trim() ?? fallback;
-  return raw.replace(/\*$/, "").trim();
+  return fieldLabelText(item, fallback);
 }
 
 function fieldKind(item: HTMLElement): FormFieldInfo["kind"] {

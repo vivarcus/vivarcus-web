@@ -224,6 +224,26 @@ describe("selectPicklistField", () => {
   });
 });
 
+describe("findFieldByLabel workflow start controls", () => {
+  it("finds reviewer pickers by label and api name", () => {
+    document.body.innerHTML = `
+      <div class="workflow-start-control" data-field-api-name="reviewers__c">
+        <div class="ant-form-item-label">
+          <label>
+            <span>审查者</span>
+            <span>已分配</span>
+          </label>
+        </div>
+        <div class="ant-select">
+          <div role="combobox"></div>
+        </div>
+      </div>
+    `;
+    expect(findFieldByLabel("审查者")?.getAttribute("data-field-api-name")).toBe("reviewers__c");
+    expect(findFieldByApiName("reviewers__c")).not.toBeNull();
+  });
+});
+
 describe("listFormPicklistFields", () => {
   beforeEach(() => {
     buildPicklistFieldDom({

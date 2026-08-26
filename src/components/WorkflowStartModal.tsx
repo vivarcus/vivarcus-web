@@ -14,7 +14,7 @@ import {
   displayTextTemplate,
   type WorkflowChrome,
 } from "../lib/i18n";
-import { workflowDialogFieldElement } from "../lib/workflowStartField";
+import { workflowControlFieldName, workflowDialogFieldElement } from "../lib/workflowStartField";
 import { RecordFieldCell } from "./record/RecordFieldCell";
 import { DateFieldInput } from "../renderers/DateFieldInput";
 import { WorkflowParticipantControl } from "./WorkflowParticipantControl";
@@ -246,6 +246,7 @@ export function WorkflowStartModal({
           <div
             key={`${control.type}-${control.field_api_name ?? control.participant_name ?? control.control_name ?? control.label ?? index}`}
             className="workflow-start-control"
+            data-field-api-name={workflowControlFieldName(control) || undefined}
           >
             <WorkflowStartControl
               control={control}

@@ -132,7 +132,8 @@ export function WorkflowParticipantControl({
         value={value}
         options={selectOptions}
         placeholder={displayText(workflow.select_users)}
-        getPopupContainer={(trigger) => trigger.parentElement ?? document.body}
+        // Portal to body so options are not clipped inside the start-dialog modal.
+        getPopupContainer={() => document.body}
         onSearch={(term) => {
           setSearch(term);
           void runSearch(term);

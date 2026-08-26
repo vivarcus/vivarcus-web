@@ -21,6 +21,12 @@ function visibleError(): string | null {
 }
 
 function saveButton(): HTMLButtonElement | null {
+  const workflowOk = document.querySelector<HTMLButtonElement>(
+    ".workflow-start-modal .ant-modal-footer button.ant-btn-primary, .ant-modal.workflow-start-modal .ant-btn-primary",
+  );
+  if (workflowOk) {
+    return workflowOk;
+  }
   const scoped = document.querySelector<HTMLButtonElement>(
     ".page-header__actions button.ant-btn-primary, .record-page-header__actions button.ant-btn-primary",
   );

@@ -49,6 +49,20 @@ export function activeSelectDropdown(): HTMLElement | null {
   return dropdowns.length > 0 ? dropdowns[dropdowns.length - 1]! : null;
 }
 
+export function fieldLabelText(item: HTMLElement, fallback = ""): string {
+  const dt = item.querySelector("dt");
+  if (dt) {
+    return (dt.textContent?.trim() ?? fallback).replace(/\*$/, "").trim();
+  }
+  const formLabel = item.querySelector<HTMLElement>(
+    ".ant-form-item-label span, .ant-form-item-label label",
+  );
+  if (formLabel) {
+    return (formLabel.textContent?.trim() ?? fallback).replace(/\*$/, "").trim();
+  }
+  return fallback.replace(/\*$/, "").trim();
+}
+
 export function findFieldByApiName(fieldApiName: string): HTMLElement | null {
   const escaped = typeof CSS !== "undefined" && "escape" in CSS ? CSS.escape(fieldApiName) : fieldApiName;
   return document.querySelector<HTMLElement>(`[data-field-api-name="${escaped}"]`);
@@ -56,12 +70,14 @@ export function findFieldByApiName(fieldApiName: string): HTMLElement | null {
 
 export function findFieldByLabel(fieldLabel: string): HTMLElement | null {
   const pattern = fieldLabelPattern(fieldLabel);
-  const items = document.querySelectorAll<HTMLElement>(".field-grid__item");
+  const items = document.querySelectorAll<HTMLElement>(".field-grid__item, .workflow-start-control");
   for (const item of items) {
-    const dt = item.querySelector("dt");
-    const text = dt?.textContent?.trim() ?? "";
-    if (pattern.test(text)) {
-      return item;
+    const nodes = item.querySelectorAll("dt, .ant-form-item-label span, .ant-form-item-label label");
+    for (const node of nodes) {
+      const text = (node.textContent?.trim() ?? "").replace(/\*$/, "").trim();
+      if (pattern.test(text) || pattern.test(node.textContent?.trim() ?? "")) {
+        return item;
+      }
     }
   }
   return null;
@@ -200,8 +216,7 @@ export function listFormPicklistFields(): FormPicklistFieldInfo[] {
     if (!fieldApiName) {
       continue;
     }
-    const rawLabel = item.querySelector("dt")?.textContent?.trim() ?? fieldApiName;
-    const label = rawLabel.replace(/\*$/, "").trim();
+    const label = fieldLabelText(item, fieldApiName);
     out.push({
       fieldApiName,
       label,

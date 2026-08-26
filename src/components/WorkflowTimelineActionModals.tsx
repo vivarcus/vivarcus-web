@@ -16,6 +16,7 @@ import {
 } from "../lib/i18n";
 import { resolveActionErrorMessage } from "../lib/lifecycleActionError";
 import { handleStaleError, isStaleError } from "../lib/staleGuard";
+import { workflowControlFieldName } from "../lib/workflowStartField";
 import { DateFieldInput } from "../renderers/DateFieldInput";
 import { WorkflowParticipantControl } from "./WorkflowParticipantControl";
 import { WorkflowUserSelect } from "./WorkflowUserSelect";
@@ -448,6 +449,7 @@ export function WorkflowTimelineActionModals({
                 <div
                   key={`${control.type}-${groupName}-${index}`}
                   className="workflow-start-control"
+                  data-field-api-name={workflowControlFieldName(control) || groupName}
                 >
                   <WorkflowParticipantControl
                     control={control}

@@ -35,12 +35,55 @@ function matchingControl(label: string): HTMLElement | null {
   return null;
 }
 
-function overflowTrigger(): HTMLElement | null {
-  return (
-    document.querySelector<HTMLElement>(
-      '.record-toolbar__overflow, .record-toolbar__menu-trigger, button[aria-label="All actions"], button[aria-label="全部操作"], button[title="All actions"], button[title="全部操作"]',
-    ) ?? null
-  );
+function firstMatching(selectors: string[]): HTMLElement | null {
+  for (const selector of selectors) {
+    const el = document.querySelector<HTMLElement>(selector);
+    if (el) {
+      return el;
+    }
+  }
+  return null;
+}
+
+function workflowMenuTrigger(): HTMLElement | null {
+  return firstMatching([
+    ".record-toolbar__workflow-state",
+    'button[aria-label="Workflow and State Change"]',
+    'button[aria-label="工作流和状态更改"]',
+    'button[title="Workflow and State Change"]',
+    'button[title="工作流和状态更改"]',
+  ]);
+}
+
+function allActionsTrigger(): HTMLElement | null {
+  return firstMatching([
+    ".record-toolbar__overflow",
+    ".record-toolbar__menu-trigger",
+    'button[aria-label="All actions"]',
+    'button[aria-label="所有操作"]',
+    'button[aria-label="全部操作"]',
+    'button[title="All actions"]',
+    'button[title="所有操作"]',
+    'button[title="全部操作"]',
+  ]);
+}
+
+function closeOpenMenus(): void {
+  document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+}
+
+async function clickInMenu(trigger: HTMLElement, label: string): Promise<boolean> {
+  closeOpenMenus();
+  await sleep(30);
+  trigger.click();
+  const found = await waitUntil(() => matchingControl(label) !== null, 2_000);
+  if (!found) {
+    closeOpenMenus();
+    return false;
+  }
+  matchingControl(label)?.click();
+  await sleep(30);
+  return true;
 }
 
 export async function clickAction(label: string): Promise<ClickActionResult> {
@@ -53,16 +96,19 @@ export async function clickAction(label: string): Promise<ClickActionResult> {
     direct.click();
     return { ok: true };
   }
-  const overflow = overflowTrigger();
-  if (!overflow) {
+
+  const workflow = workflowMenuTrigger();
+  if (workflow && (await clickInMenu(workflow, trimmed))) {
+    return { ok: true };
+  }
+
+  const overflow = allActionsTrigger();
+  if (overflow && (await clickInMenu(overflow, trimmed))) {
+    return { ok: true };
+  }
+
+  if (!workflow && !overflow) {
     return { ok: false, reason: `action not found: ${trimmed}` };
   }
-  overflow.click();
-  const found = await waitUntil(() => matchingControl(trimmed) !== null, 2_000);
-  if (!found) {
-    return { ok: false, reason: `action not found in All actions: ${trimmed}` };
-  }
-  matchingControl(trimmed)?.click();
-  await sleep(30);
-  return { ok: true };
+  return { ok: false, reason: `action not found in Workflow or All actions: ${trimmed}` };
 }

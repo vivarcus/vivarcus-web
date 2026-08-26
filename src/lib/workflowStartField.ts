@@ -50,6 +50,16 @@ function pageElementToFormElement(element: PageElement, required?: boolean): For
   };
 }
 
+/** API name used as data-field-api-name on start-dialog controls. */
+export function workflowControlFieldName(control: WorkflowStartDialogControl): string {
+  return (
+    control.field_api_name?.trim() ||
+    control.participant_name?.trim() ||
+    control.control_name?.trim() ||
+    ""
+  );
+}
+
 export function workflowDialogFieldElement(
   control: WorkflowStartDialogControl,
   pageElement?: PageElement,
