@@ -142,6 +142,33 @@ describe("clickSelectOption", () => {
     expect(activeSelectDropdown()).not.toBeNull();
   });
 
+  it("does not click a leftover sibling dropdown's already-selected option", () => {
+    document.body.innerHTML = `
+      <div class="ant-select-dropdown" id="qc_list">
+        <div class="ant-select-item-option">qa.lead User</div>
+      </div>
+      <div class="ant-select-dropdown">
+        <div class="ant-select-item-option ant-select-item-option-selected">qa.lead User</div>
+      </div>
+    `;
+    const owned = document.querySelector("#qc_list .ant-select-item-option")!;
+    const leftover = document.querySelector(".ant-select-item-option-selected")!;
+    let leftoverClicked = false;
+    let ownedClicked = false;
+    leftover.addEventListener("click", () => {
+      leftoverClicked = true;
+    });
+    owned.addEventListener("click", () => {
+      ownedClicked = true;
+    });
+    const combobox = document.createElement("div");
+    combobox.setAttribute("role", "combobox");
+    combobox.setAttribute("aria-controls", "qc_list");
+    expect(clickSelectOption("qa.lead User", combobox)).toBe(true);
+    expect(leftoverClicked).toBe(false);
+    expect(ownedClicked).toBe(true);
+  });
+
   it("ignores the hidden ARIA listbox whose options are UUIDs", () => {
     document.body.insertAdjacentHTML(
       "beforeend",
@@ -164,6 +191,51 @@ describe("clickSelectOption", () => {
 });
 
 describe("selectPicklistField", () => {
+  it("does not treat typed search text as a selection", () => {
+    buildPicklistFieldDom({
+      fieldApiName: "reviewers__c",
+      label: "审查者",
+      options: ["qa.lead User"],
+      dropdownOpen: true,
+    });
+    const item = findFieldByApiName("reviewers__c")!;
+    const input = item.querySelector<HTMLInputElement>("input.ant-select-selection-search-input")!;
+    input.value = "qa.lead User";
+    expect(getPicklistSelection(item)).toBeNull();
+  });
+
+  it("reads multiple-select tags without the remove icon", () => {
+    document.body.innerHTML = `
+      <div class="workflow-start-control" data-field-api-name="reviewers__c">
+        <div class="ant-select">
+          <div role="combobox">
+            <span class="ant-select-selection-item">
+              <span class="ant-select-selection-item-content">qa.lead User</span>
+              <span class="ant-select-selection-item-remove">×</span>
+            </span>
+          </div>
+        </div>
+      </div>
+    `;
+    const item = findFieldByApiName("reviewers__c")!;
+    expect(getPicklistSelection(item)).toBe("qa.lead User");
+  });
+
+  it("still clicks the option when the search input already shows the label", async () => {
+    buildPicklistFieldDom({
+      fieldApiName: "reviewers__c",
+      label: "审查者",
+      options: ["qa.lead User"],
+      dropdownOpen: true,
+    });
+    wireOptionSelection("reviewers__c");
+    const item = findFieldByApiName("reviewers__c")!;
+    const input = item.querySelector<HTMLInputElement>("input.ant-select-selection-search-input")!;
+    input.value = "qa.lead User";
+    await expect(selectPicklistField(item, "qa.lead User")).resolves.toEqual({ ok: true });
+    expect(getPicklistSelection(item)).toBe("qa.lead User");
+  });
+
   it("returns ok when option is already selected", async () => {
     buildPicklistFieldDom({
       fieldApiName: "study_phase__v",
@@ -197,8 +269,9 @@ describe("selectPicklistField", () => {
       dropdownOpen: true,
     });
     wireOptionSelection("study_phase__v");
-    document.addEventListener("keydown", (event) => {
-      if (event.key === "Escape") {
+    document.addEventListener("mousedown", (event) => {
+      const target = event.target as HTMLElement | null;
+      if (target === document.body || target?.closest(".workflow-start-modal")) {
         document.querySelector(".ant-select-dropdown")?.classList.add("ant-select-dropdown-hidden");
       }
     });
@@ -241,6 +314,22 @@ describe("findFieldByLabel workflow start controls", () => {
     `;
     expect(findFieldByLabel("审查者")?.getAttribute("data-field-api-name")).toBe("reviewers__c");
     expect(findFieldByApiName("reviewers__c")).not.toBeNull();
+  });
+
+  it("prefers the start-dialog field over a same-named page field", () => {
+    document.body.innerHTML = `
+      <div class="field-grid__item" data-field-api-name="reviewers__c">
+        <dt>审查者</dt>
+      </div>
+      <div class="ant-modal workflow-start-modal">
+        <div class="workflow-start-control" data-field-api-name="reviewers__c">
+          <div class="ant-form-item-label"><span>审查者</span></div>
+          <div class="ant-select"><div role="combobox"></div></div>
+        </div>
+      </div>
+    `;
+    expect(findFieldByApiName("reviewers__c")?.classList.contains("workflow-start-control")).toBe(true);
+    expect(findFieldByLabel("审查者")?.classList.contains("workflow-start-control")).toBe(true);
   });
 });
 

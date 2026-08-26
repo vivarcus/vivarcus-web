@@ -44,6 +44,15 @@ function saveButton(): HTMLButtonElement | null {
 }
 
 export async function saveRecord(): Promise<SaveRecordResult> {
+  const found = saveButton();
+  if (!found) {
+    return { ok: false, reason: "save button not found" };
+  }
+  // Workflow start "确定" stays disabled until required participants land.
+  await waitUntil(() => {
+    const next = saveButton();
+    return next !== null && !next.disabled;
+  }, 2_000);
   const button = saveButton();
   if (!button) {
     return { ok: false, reason: "save button not found" };
