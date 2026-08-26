@@ -17,11 +17,14 @@ export function useAuditPanelLoader({
   const [panel, setPanel] = useState<AuditPanelModel | null>(null);
   const [pageToken, setPageToken] = useState<string | undefined>();
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(enabled);
 
   const load = useCallback(
     async (token?: string) => {
-      if (!enabled) return;
+      if (!enabled) {
+        setLoading(false);
+        return;
+      }
       setLoading(true);
       setError(null);
       try {

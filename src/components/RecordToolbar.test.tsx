@@ -139,6 +139,28 @@ describe("RecordToolbar placement", () => {
     expect(screen.getByText(displayText(defaultPageActionLabels.menu_group_view))).toBeInTheDocument();
   });
 
+  it("hides audit when the page entrance is not visible", async () => {
+    const user = userEvent.setup();
+    renderToolbar({
+      page: makePage({
+        audit: { visible: false },
+        actions: {
+          edit_allowed: false,
+          delete_allowed: false,
+          copy_allowed: false,
+          labels: defaultPageActionLabels,
+        },
+      }),
+      onAuditOpen: vi.fn(),
+    });
+
+    const overflow = screen.queryByRole("button", { name: displayText(defaultPageActionLabels.all_actions) });
+    if (overflow) {
+      await user.click(overflow);
+    }
+    expect(screen.queryByRole("menuitem", { name: displayText(defaultPageActionLabels.audit) })).toBeNull();
+  });
+
   it("shows Object Record as a toolbar shortcut on document records", () => {
     renderToolbar({
       objectName: "document__v",
