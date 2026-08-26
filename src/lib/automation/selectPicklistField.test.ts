@@ -141,6 +141,26 @@ describe("clickSelectOption", () => {
     expect(clickSelectOption("Phase III")).toBe(true);
     expect(activeSelectDropdown()).not.toBeNull();
   });
+
+  it("ignores the hidden ARIA listbox whose options are UUIDs", () => {
+    document.body.insertAdjacentHTML(
+      "beforeend",
+      `<div role="listbox" style="height:0;overflow:hidden">
+        <div role="option">aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee</div>
+        <div role="option">Phase III</div>
+      </div>`,
+    );
+    const hidden = [...document.querySelectorAll('[role="option"]')].find(
+      (el) => el.textContent === "Phase III" && !el.classList.contains("ant-select-item-option"),
+    );
+    let hiddenClicked = false;
+    hidden?.addEventListener("click", () => {
+      hiddenClicked = true;
+    });
+    expect(clickSelectOption("Phase III")).toBe(true);
+    expect(hiddenClicked).toBe(false);
+    expect(clickSelectOption("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee")).toBe(false);
+  });
 });
 
 describe("selectPicklistField", () => {
@@ -167,6 +187,24 @@ describe("selectPicklistField", () => {
     const result = await selectPicklistField(item, "Phase III");
     expect(result.ok).toBe(true);
     expect(getPicklistSelection(item)).toBe("Phase III");
+  });
+
+  it("closes the dropdown after a successful select", async () => {
+    buildPicklistFieldDom({
+      fieldApiName: "study_phase__v",
+      label: "Study Phase",
+      options: ["Phase I", "Phase III"],
+      dropdownOpen: true,
+    });
+    wireOptionSelection("study_phase__v");
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") {
+        document.querySelector(".ant-select-dropdown")?.classList.add("ant-select-dropdown-hidden");
+      }
+    });
+    const item = findFieldByApiName("study_phase__v")!;
+    await expect(selectPicklistField(item, "Phase III")).resolves.toEqual({ ok: true });
+    expect(activeSelectDropdown()).toBeNull();
   });
 
   it("selects option after a cold dropdown slower than 300ms", async () => {

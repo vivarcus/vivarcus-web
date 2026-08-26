@@ -91,26 +91,20 @@ function isOptionSelected(item: HTMLElement, optionLabel: string): boolean {
 
 export function clickSelectOption(optionLabel: string): boolean {
   const optionPattern = new RegExp(`^\\s*${escapeRegex(optionLabel)}\\s*$`);
-  const roots: ParentNode[] = [];
+  // Only the visible Ant Design dropdown. `[role=option]` / `[role=listbox]` also
+  // match a height-0 ARIA layer whose option text is UUIDs, not labels.
   const dropdown = activeSelectDropdown();
-  if (dropdown) {
-    roots.push(dropdown);
+  if (!dropdown) {
+    return false;
   }
-  const listboxes = document.querySelectorAll('[role="listbox"]');
-  if (listboxes.length > 0) {
-    roots.push(listboxes[listboxes.length - 1]!);
-  }
-
-  for (const root of roots) {
-    const options = root.querySelectorAll<HTMLElement>(".ant-select-item-option, [role='option']");
-    for (const option of options) {
-      const text = option.textContent?.trim() ?? "";
-      const ariaLabel = option.getAttribute("aria-label")?.trim() ?? "";
-      if (optionPattern.test(text) || text === optionLabel || optionPattern.test(ariaLabel)) {
-        option.scrollIntoView?.({ block: "nearest" });
-        option.click();
-        return true;
-      }
+  const options = dropdown.querySelectorAll<HTMLElement>(".ant-select-item-option");
+  for (const option of options) {
+    const text = option.textContent?.trim() ?? "";
+    const ariaLabel = option.getAttribute("aria-label")?.trim() ?? "";
+    if (optionPattern.test(text) || text === optionLabel || optionPattern.test(ariaLabel)) {
+      option.scrollIntoView?.({ block: "nearest" });
+      option.click();
+      return true;
     }
   }
   return false;
@@ -169,6 +163,7 @@ export async function selectPicklistField(
     openSelectCombobox(combobox);
     if (await waitUntil(() => clickSelectOption(optionLabel), DROPDOWN_WAIT_MS)) {
       if (await waitUntil(() => isOptionSelected(item, optionLabel), 500)) {
+        closeDropdown();
         return { ok: true };
       }
     }
@@ -176,6 +171,7 @@ export async function selectPicklistField(
     await typeIntoSelectSearch(item, combobox, optionLabel);
     if (await waitUntil(() => clickSelectOption(optionLabel), 500)) {
       if (await waitUntil(() => isOptionSelected(item, optionLabel), 500)) {
+        closeDropdown();
         return { ok: true };
       }
     }
