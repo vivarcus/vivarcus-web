@@ -34,9 +34,32 @@ export function auditTypeForPanel(panelKind: string): string {
   }
 }
 
-export function localDateTimeInputToRFC3339(value: string): string | undefined {
+/**
+ * Convert a datetime-local value to RFC3339.
+ * Minute-only values (`YYYY-MM-DDTHH:mm`) are common for `<input type="datetime-local">`.
+ * When `endOfMinute` is set, those map to 59.999s of that minute so a "To" bound
+ * includes events that occurred after the truncated :00 second (Admin Logs default).
+ */
+export function localDateTimeInputToRFC3339(value: string, endOfMinute = false): string | undefined {
   const trimmed = value.trim();
   if (!trimmed) return undefined;
+  const match = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2})(?:\.(\d{1,3}))?)?$/.exec(trimmed);
+  if (match) {
+    const year = Number(match[1]);
+    const month = Number(match[2]) - 1;
+    const day = Number(match[3]);
+    const hour = Number(match[4]);
+    const minute = Number(match[5]);
+    const hasSeconds = match[6] != null;
+    const second = hasSeconds ? Number(match[6]) : 0;
+    const ms = match[7] != null ? Number(match[7].padEnd(3, "0")) : 0;
+    const date =
+      endOfMinute && !hasSeconds
+        ? new Date(year, month, day, hour, minute, 59, 999)
+        : new Date(year, month, day, hour, minute, second, ms);
+    if (Number.isNaN(date.getTime())) return undefined;
+    return date.toISOString();
+  }
   const parsed = new Date(trimmed);
   if (Number.isNaN(parsed.getTime())) return undefined;
   return parsed.toISOString();

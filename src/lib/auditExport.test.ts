@@ -26,6 +26,19 @@ describe("localDateTimeInputToRFC3339", () => {
     const iso = localDateTimeInputToRFC3339("2026-05-30T12:30");
     expect(iso).toMatch(/^2026-05-30T/);
   });
+
+  it("keeps minute-only From at second 0", () => {
+    const iso = localDateTimeInputToRFC3339("2026-08-27T10:06");
+    const parsed = new Date(iso!);
+    expect(parsed.getSeconds()).toBe(0);
+    expect(parsed.getMilliseconds()).toBe(0);
+  });
+
+  it("extends minute-only To through the end of that minute", () => {
+    const start = localDateTimeInputToRFC3339("2026-08-27T10:06");
+    const end = localDateTimeInputToRFC3339("2026-08-27T10:06", true);
+    expect(Date.parse(end!) - Date.parse(start!)).toBe(59_999);
+  });
 });
 
 describe("localDateInputToRFC3339", () => {
