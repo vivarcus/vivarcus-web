@@ -1831,6 +1831,7 @@ export const api = {
       timezone?: string;
       date_format_profile?: string;
       locale?: string;
+      include_related?: string[];
     } = {},
   ) {
     const q = new URLSearchParams();
@@ -1843,6 +1844,10 @@ export const api = {
     if (params.timezone) q.set("timezone", params.timezone);
     if (params.date_format_profile) q.set("date_format_profile", params.date_format_profile);
     if (params.locale) q.set("locale", params.locale);
+    for (const name of params.include_related ?? []) {
+      const trimmed = name.trim();
+      if (trimmed) q.append("include_related", trimmed);
+    }
     const suffix = q.toString() ? `?${q}` : "";
     return vaultFetch<import("./types").AuditPanelModel>(
       vaultId,

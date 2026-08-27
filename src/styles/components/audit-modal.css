@@ -36,6 +36,25 @@
   gap: 0.35rem;
 }
 
+.record-audit-panel__related {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.35rem;
+}
+
+.record-audit-panel__related-label {
+  font-size: 0.8125rem;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.record-audit-panel__related-select {
+  flex: 1;
+  min-width: 16rem;
+}
+
 .record-audit-panel__filter-row {
   display: flex;
   flex-wrap: wrap;

@@ -37,15 +37,18 @@ export function enrichRecordAuditRows(
   rows: Array<Record<string, unknown>>,
   recordCell?: string,
   chrome: AuditChrome = defaultAuditChrome,
+  primary?: { objectName: string; recordId: string },
 ): Array<Record<string, unknown>> {
   const fixedRecord = recordCell?.trim();
   return rows.map((row) => {
+    const isPrimary = isPrimaryAuditRow(row, primary);
+    const recordLabel = isPrimary && fixedRecord ? fixedRecord : formatAuditRecordCell(row);
     const next: Record<string, unknown> = {
       ...row,
-      record: fixedRecord || formatAuditRecordCell(row),
+      record: recordLabel,
       user_name: formatAuditUserName(row, chrome),
     };
-    if (fixedRecord && isCreateAction(row)) {
+    if (isPrimary && fixedRecord && isCreateAction(row)) {
       next.event_description = displayTextTemplate(
         chrome.item_created,
         { item: fixedRecord },
@@ -55,6 +58,19 @@ export function enrichRecordAuditRows(
     }
     return next;
   });
+}
+
+function isPrimaryAuditRow(
+  row: Record<string, unknown>,
+  primary?: { objectName: string; recordId: string },
+): boolean {
+  if (!primary?.objectName || !primary.recordId) {
+    return true;
+  }
+  return (
+    String(row.object_name ?? "").trim() === primary.objectName &&
+    String(row.record_id ?? "").trim() === primary.recordId
+  );
 }
 
 function isCreateAction(row: Record<string, unknown>): boolean {
@@ -118,6 +134,43 @@ export function auditResultsSummaryRange(
     return { from: "—", to: "—" };
   }
   return { from: timestamps[timestamps.length - 1], to: timestamps[0] };
+}
+
+export function relatedAuditStorageKey(vaultId: string, objectName: string): string {
+  return `vivarcus.audit.includeRelated:${vaultId}:${objectName}`;
+}
+
+export function loadRelatedAuditSelection(key: string): string[] {
+  if (typeof localStorage === "undefined") return [];
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) return [];
+    const parsed: unknown = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed
+      .filter((value): value is string => typeof value === "string" && value.trim() !== "")
+      .map((value) => value.trim())
+      .slice(0, 10);
+  } catch {
+    return [];
+  }
+}
+
+export function saveRelatedAuditSelection(key: string, objectNames: string[]): void {
+  if (typeof localStorage === "undefined") return;
+  try {
+    const names = objectNames
+      .filter((value) => value.trim() !== "")
+      .map((value) => value.trim())
+      .slice(0, 10);
+    if (names.length === 0) {
+      localStorage.removeItem(key);
+      return;
+    }
+    localStorage.setItem(key, JSON.stringify(names));
+  } catch {
+    // quota / private mode
+  }
 }
 
 function formatSummaryDate(iso: string): string {

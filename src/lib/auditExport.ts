@@ -16,6 +16,7 @@ export type AuditExportQuery = {
   timezone?: string;
   date_format_profile?: string;
   locale?: string;
+  include_related?: string[];
 };
 
 export function auditTypeForPanel(panelKind: string): string {
@@ -83,6 +84,7 @@ export function buildExportQuery(
     vaultIdFilter?: string;
     time_from?: string;
     time_to?: string;
+    include_related?: string[];
     displayContext?: DisplayContext;
   } = {},
 ): AuditExportQuery {
@@ -106,6 +108,9 @@ export function buildExportQuery(
     query.date_format_profile = opts.displayContext.date_format_profile;
   }
   if (opts.displayContext?.locale) query.locale = opts.displayContext.locale;
+  if (opts.include_related?.length) {
+    query.include_related = opts.include_related.filter((name) => name.trim());
+  }
   return query;
 }
 

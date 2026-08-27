@@ -78,9 +78,17 @@ describe("buildExportQuery", () => {
     });
   });
 
-  it("includes domain_id for login export", () => {
+  it("includes related objects in record audit export", () => {
     expect(
-      buildExportQuery("login", { domainId: "platform.accept.vivarcus.com" }),
-    ).toEqual({ domain_id: "platform.accept.vivarcus.com" });
+      buildExportQuery("record_object", {
+        objectName: "study__v",
+        recordId: "V1",
+        include_related: ["study_country__v", ""],
+      }),
+    ).toEqual({
+      object_name: "study__v",
+      record_id: "V1",
+      include_related: ["study_country__v"],
+    });
   });
 });

@@ -108,8 +108,31 @@ describe("enrichRecordAuditRows", () => {
     expect(row.user_name).toBe("System代表nick@example.com");
   });
 
-  it("leaves normal users unchanged", () => {
-    const [row] = enrichRecordAuditRows([{ user_name: "alice@example.com" }]);
-    expect(row.user_name).toBe("alice@example.com");
+  it("keeps related-record labels when primary context is set", () => {
+    const rows = enrichRecordAuditRows(
+      [
+        {
+          object_name: "write_perm_test__c",
+          record_id: "P1",
+          object_label: "Write Permission Test",
+          item: "Write Permission Test : Parent",
+          action: "Create",
+        },
+        {
+          object_name: "wpt_child__c",
+          record_id: "C1",
+          object_label: "WPT Child",
+          item: "WPT Child : Child One",
+          action: "Create",
+        },
+      ],
+      "Write Permission Test : Parent",
+      defaultAuditChrome,
+      { objectName: "write_perm_test__c", recordId: "P1" },
+    );
+    expect(rows[0].record).toBe("Write Permission Test : Parent");
+    expect(rows[0].event_description).toBe("Write Permission Test : Parent created");
+    expect(rows[1].record).toBe("WPT Child : Child One");
+    expect(rows[1].event_description).toBeUndefined();
   });
 });

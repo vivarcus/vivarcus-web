@@ -1972,6 +1972,8 @@ export type AuditPanelModel = {
   domain_rows?: Array<Record<string, unknown>>;
   pagination: { next_page_token?: string };
   actions: { export_allowed: boolean };
+  related_objects?: Array<{ object_name: string; object_label: string }>;
+  related_truncated?: boolean;
   chrome?: import("../lib/i18n/chromeTypes").AuditChrome;
 };
 

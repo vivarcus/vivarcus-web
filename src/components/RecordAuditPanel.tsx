@@ -10,6 +10,9 @@ import { buildExportQuery, localDateTimeInputToRFC3339 } from "../lib/auditExpor
 import {
   auditResultsSummaryRange,
   enrichRecordAuditRows,
+  loadRelatedAuditSelection,
+  relatedAuditStorageKey,
+  saveRelatedAuditSelection,
 } from "../lib/recordAuditDisplay";
 import { defaultAuditChrome, displayText, displayTextTemplate, type AuditChrome } from "../lib/i18n";
 
@@ -83,6 +86,13 @@ export function RecordAuditPanel({
   const { shell, displayContext } = useUi();
   const [draft, setDraft] = useState<FilterDraft>(defaultDraft);
   const [appliedFilters, setAppliedFilters] = useState<RecordAuditFilters>(emptyAppliedFilters);
+  const relatedStorageKey = relatedAuditStorageKey(vaultId, objectName);
+  const [draftRelated, setDraftRelated] = useState<string[]>(() =>
+    loadRelatedAuditSelection(relatedStorageKey),
+  );
+  const [appliedRelated, setAppliedRelated] = useState<string[]>(() =>
+    loadRelatedAuditSelection(relatedStorageKey),
+  );
 
   const fetchPanel = useCallback(
     async (token?: string) =>
@@ -90,11 +100,12 @@ export function RecordAuditPanel({
         page_token: token,
         page_size: 50,
         ...filtersToQuery(appliedFilters),
+        include_related: appliedRelated,
         timezone: displayContext.timezone,
         date_format_profile: displayContext.date_format_profile,
         locale: displayContext.locale,
       }),
-    [vaultId, objectName, recordId, appliedFilters, displayContext],
+    [vaultId, objectName, recordId, appliedFilters, appliedRelated, displayContext],
   );
 
   const { panel, pageToken, error, loading, load, auditChrome } = useAuditPanelLoader({
@@ -113,27 +124,58 @@ export function RecordAuditPanel({
         recordId,
         ...filtersToQuery(appliedFilters),
         displayContext,
+        include_related: appliedRelated,
       }),
-    [objectName, recordId, appliedFilters, displayContext],
+    [objectName, recordId, appliedFilters, appliedRelated, displayContext],
   );
 
   const rawRows = panel ? auditPanelRows(panel) : [];
-  const rows = enrichRecordAuditRows(rawRows, recordCell, auditChrome);
+  const rows = enrichRecordAuditRows(rawRows, recordCell, auditChrome, {
+    objectName,
+    recordId,
+  });
   const resultCount = rows.length;
   const summaryRange = auditResultsSummaryRange(
     rows,
     appliedFilters.timeFrom,
     appliedFilters.timeTo,
   );
+  const relatedOptions = (panel?.related_objects ?? []).map((opt) => ({
+    value: opt.object_name,
+    label: opt.object_label || opt.object_name,
+  }));
 
   function applyFilters() {
     setAppliedFilters(draftToApplied(draft));
+    setAppliedRelated(draftRelated);
+    saveRelatedAuditSelection(relatedStorageKey, draftRelated);
   }
 
   return (
     <div className="record-audit-panel record-audit-panel--veeva">
       <section className="record-audit-panel__filters">
         <Form className="record-audit-panel__filter-form" onFinish={applyFilters}>
+          {relatedOptions.length > 0 && (
+            <div className="record-audit-panel__related">
+              <span
+                className="record-audit-panel__related-label"
+                title={displayText(auditChrome.include_related_help)}
+              >
+                {displayText(auditChrome.include_related_objects)}
+              </span>
+              <Select
+                className="record-audit-panel__related-select"
+                mode="multiple"
+                allowClear
+                maxCount={10}
+                value={draftRelated}
+                placeholder={displayText(auditChrome.include_related_placeholder)}
+                options={relatedOptions}
+                onChange={(value: string[]) => setDraftRelated(value)}
+                aria-label={displayText(auditChrome.include_related_objects)}
+              />
+            </div>
+          )}
           <div className="record-audit-panel__filter-row">
             <Select
               className="record-audit-panel__filter-kind"
@@ -248,6 +290,14 @@ export function RecordAuditPanel({
       </section>
 
       {error && <Alert type="error" title={error} showIcon role="alert" />}
+      {panel?.related_truncated && (
+        <Alert
+          type="info"
+          title={displayText(auditChrome.include_related_truncated)}
+          showIcon
+          role="status"
+        />
+      )}
       {loading && !panel && (
         <Spin
           description={displayText(auditChrome.loading_records)}

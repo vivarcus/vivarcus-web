@@ -1448,6 +1448,7 @@ export type AuditChrome = {
   include_related_objects: DisplayText;
   include_related_help: DisplayText;
   include_related_placeholder: DisplayText;
+  include_related_truncated: DisplayText;
   filter_timestamp: DisplayText;
   filter_all: DisplayText;
   filter_in_range: DisplayText;
@@ -5152,6 +5153,10 @@ export const defaultAuditChrome: AuditChrome = {
   include_related_placeholder: t(
     "Select related objects…",
     "audit.include_related_placeholder",
+  ),
+  include_related_truncated: t(
+    "Export the audit trail to view the full audit history for the selected related objects.",
+    "audit.include_related_truncated",
   ),
   filter_timestamp: t("Timestamp", "audit.filter_timestamp"),
   filter_all: t("all", "audit.filter_all"),
