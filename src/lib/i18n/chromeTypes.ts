@@ -1071,6 +1071,10 @@ export type OperationsChrome = {
   running: DisplayText;
   history: DisplayText;
   start_now: DisplayText;
+  download_log: DisplayText;
+  make_job_inactive: DisplayText;
+  view_job_definition: DisplayText;
+  queueing: DisplayText;
   started: DisplayText;
   cancelled: DisplayText;
   queued: DisplayText;
@@ -2941,6 +2945,10 @@ export const defaultOperationsChrome: OperationsChrome = {
   running: t("Running", "operations.running"),
   history: t("History", "operations.history"),
   start_now: t("Start Now", "operations.start_now"),
+  download_log: t("Download Log", "operations.download_log"),
+  make_job_inactive: t("Make Job Inactive", "operations.make_job_inactive"),
+  view_job_definition: t("View Job Definition", "operations.view_job_definition"),
+  queueing: t("Queueing", "operations.queueing"),
   started: t("Started", "operations.started"),
   cancelled: t("Cancelled", "operations.cancelled"),
   queued: t("Queued", "operations.queued"),

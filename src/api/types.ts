@@ -4166,8 +4166,11 @@ export type JobStatusInstance = {
   completed_at?: string;
   affected_records: number;
   error_summary?: unknown;
+  job_definition_version?: string;
   can_start_now: boolean;
   can_cancel: boolean;
+  can_download_log: boolean;
+  can_make_inactive: boolean;
 };
 
 export type JobStatusBoard = {
@@ -4175,6 +4178,7 @@ export type JobStatusBoard = {
   running: JobStatusInstance[];
   history: JobStatusInstance[];
   can_interact: boolean;
+  can_edit: boolean;
 };
 
 export type EmailNotificationStatusItem = {

@@ -3850,6 +3850,21 @@ export const api = {
     );
   },
 
+  downloadJobLog(vaultId: string, id: string) {
+    return vaultFetchBlob(
+      vaultId,
+      `/ui/operations/job-status/${encodeURIComponent(id)}/log`,
+    );
+  },
+
+  makeJobInactive(vaultId: string, id: string) {
+    return vaultFetch<void>(
+      vaultId,
+      `/ui/operations/job-status/${encodeURIComponent(id)}/make-inactive`,
+      { method: "POST", body: "{}" },
+    );
+  },
+
   listJobQueues(vaultId: string) {
     return vaultFetch<{ items: import("./types").JobQueueListItem[] }>(
       vaultId,
