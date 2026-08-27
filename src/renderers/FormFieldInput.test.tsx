@@ -59,6 +59,29 @@ describe("FormFieldInput registry dispatch", () => {
     expect(screen.getByRole("radio", { name: "Yes" })).toBeChecked();
   });
 
+  it("renders time_input from renderer_kind", () => {
+    renderFormInput(
+      {
+        kind: "field",
+        field_api_name: "start_time__c",
+        label: { text: "Start Time" },
+        field_type: "Time",
+        field_render: {
+          field_ref: { field_api_name: "start_time__c" },
+          field_type: "Time",
+          renderer_kind: "time_input",
+          support_state: "supported",
+          visibility: "visible",
+          editability: "editable",
+          requiredness: "optional",
+          required_satisfaction: "satisfied",
+        },
+      },
+      "15:04:05",
+    );
+    expect(screen.getByRole("textbox", { name: "Start Time" })).toBeInTheDocument();
+  });
+
   it("renders rich_text_editor from renderer_kind", () => {
     renderFormInput(
       {

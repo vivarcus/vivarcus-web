@@ -4,10 +4,12 @@ import {
   dateTimeDayjsToUtcIso,
   parseDateTimeDayjsValue,
   parseDayjsValue,
+  parseTimeDayjsValue,
   picklistSelectBehavior,
   resolveFieldScale,
   resolveFieldUnavailableMessage,
   resolvePicklistOptionsWithCurrentValues,
+  timeDayjsToRfc3339,
 } from "./formUtils";
 import { defaultShellChrome } from "../lib/i18n";
 
@@ -150,6 +152,15 @@ describe("parseDateTimeDayjsValue", () => {
     expect(picker?.hour()).toBe(9);
     expect(picker?.minute()).toBe(29);
     expect(dateTimeDayjsToUtcIso(picker, laContext)).toBe(stored);
+  });
+});
+
+describe("parseTimeDayjsValue", () => {
+  it("round-trips a stored Time without applying timezone", () => {
+    const picker = parseTimeDayjsValue("2026-07-22T15:04:00Z");
+    expect(picker?.hour()).toBe(15);
+    expect(picker?.minute()).toBe(4);
+    expect(timeDayjsToRfc3339(picker)).toBe("1970-01-01T15:04:00.000Z");
   });
 });
 

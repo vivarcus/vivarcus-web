@@ -4,6 +4,8 @@ import type { FormElement, PicklistEntryOption } from "../api/types";
 import {
   datePickerInputFormats,
   normalizeDateInputText,
+  parseTimeToUtcDate,
+  timeWallClockToRfc3339,
   utcInstantToWallClock,
   wallClockToUtcIso,
   type WallClock,
@@ -236,4 +238,28 @@ export function dateTimeDayjsToUtcIso(
 export function resolveFieldScale(element: FormElement): number | undefined {
   const scale = element.field_render?.scale;
   return scale != null && scale >= 0 ? scale : undefined;
+}
+
+/** Parses a stored Time field into a picker value (UTC wall-clock, no timezone). */
+export function parseTimeDayjsValue(value: unknown): Dayjs | null {
+  const parsed = parseTimeToUtcDate(value);
+  if (!parsed) {
+    return null;
+  }
+  return dayjs()
+    .year(1970)
+    .month(0)
+    .date(1)
+    .hour(parsed.getUTCHours())
+    .minute(parsed.getUTCMinutes())
+    .second(parsed.getUTCSeconds())
+    .millisecond(0);
+}
+
+/** Serializes a Time picker value as RFC3339 UTC on 1970-01-01. */
+export function timeDayjsToRfc3339(value: Dayjs | null): string {
+  if (!value) {
+    return "";
+  }
+  return timeWallClockToRfc3339(value.hour(), value.minute(), value.second());
 }

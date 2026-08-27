@@ -2,6 +2,7 @@ import { BooleanCheckboxRenderer } from "./BooleanCheckboxRenderer";
 import { ComponentPickerRenderer } from "./ComponentPickerRenderer";
 import { DateInputRenderer } from "./DateInputRenderer";
 import { DateTimeInputRenderer } from "./DateTimeInputRenderer";
+import { TimeInputRenderer } from "./TimeInputRenderer";
 import {
   FormDisplayLinkRenderer,
   FormDisplayRichTextRenderer,
@@ -25,6 +26,7 @@ const FORM_RENDERERS: Record<FormRendererKind, FormRendererComponent> = {
   boolean_checkbox: BooleanCheckboxRenderer,
   date_input: DateInputRenderer,
   datetime_input: DateTimeInputRenderer,
+  time_input: TimeInputRenderer,
   picklist_select: PicklistSelectRenderer,
   picklist_multiselect: PicklistMultiRenderer,
   record_picker: RecordPickerRenderer,

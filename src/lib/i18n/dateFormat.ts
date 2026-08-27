@@ -382,3 +382,95 @@ export function dateFieldPlaceholder(
   const sample = new Date(Date.UTC(2025, 0, 23, 12, 0, 0));
   return formatDateDisplayValue(sample, ctx);
 }
+
+const TIME_ONLY = /^(\d{1,2}):(\d{2})(?::(\d{2}))?$/;
+const TIME_STORAGE_DATE = "1970-01-01";
+
+/** Parses a Time field (HH:mm[:ss] or RFC3339) as UTC wall-clock on 1970-01-01. */
+export function parseTimeToUtcDate(value: unknown): Date | null {
+  if (value == null || value === "") {
+    return null;
+  }
+  if (value instanceof Date) {
+    if (Number.isNaN(value.getTime())) {
+      return null;
+    }
+    return new Date(
+      Date.UTC(1970, 0, 1, value.getUTCHours(), value.getUTCMinutes(), value.getUTCSeconds()),
+    );
+  }
+  const raw = normalizeDateInputText(String(value));
+  if (!raw) {
+    return null;
+  }
+  const timeOnly = raw.match(TIME_ONLY);
+  if (timeOnly) {
+    const hour = Number(timeOnly[1]);
+    const minute = Number(timeOnly[2]);
+    const second = Number(timeOnly[3] ?? 0);
+    if (hour > 23 || minute > 59 || second > 59) {
+      return null;
+    }
+    return new Date(Date.UTC(1970, 0, 1, hour, minute, second));
+  }
+  const ms = Date.parse(raw);
+  if (Number.isNaN(ms)) {
+    return null;
+  }
+  const parsed = new Date(ms);
+  return new Date(
+    Date.UTC(1970, 0, 1, parsed.getUTCHours(), parsed.getUTCMinutes(), parsed.getUTCSeconds()),
+  );
+}
+
+/** Formats a Time field for display. Locale only — no timezone conversion. */
+export function formatTimeDisplayValue(
+  date: Date,
+  ctx: DisplayContext | undefined,
+): string {
+  const locale = resolveLocale(ctx);
+  try {
+    return new Intl.DateTimeFormat(locale, {
+      hour: "numeric",
+      minute: "2-digit",
+      timeZone: "UTC",
+    }).format(date);
+  } catch {
+    return date.toISOString().slice(11, 16);
+  }
+}
+
+/** dayjs / Ant Design TimePicker mask from the user's locale (12h vs 24h). */
+export function timePickerFormat(ctx: DisplayContext | undefined): string {
+  try {
+    const locale = resolveLocale(ctx);
+    const parts = new Intl.DateTimeFormat(locale, {
+      hour: "numeric",
+      minute: "2-digit",
+    }).formatToParts(LOCALE_FORMAT_SAMPLE);
+    const hour12 = parts.some((part) => part.type === "dayPeriod");
+    const tokens = parts
+      .filter((part) => part.type !== "year" && part.type !== "month" && part.type !== "day")
+      .map((part) => intlPartToDayjsToken(part, hour12))
+      .join("")
+      .trim();
+    return tokens || (hour12 ? "h:mm A" : "HH:mm");
+  } catch {
+    return "HH:mm";
+  }
+}
+
+/** Placeholder text for empty Time inputs. */
+export function timeFieldPlaceholder(ctx: DisplayContext | undefined): string {
+  const sample = new Date(Date.UTC(1970, 0, 1, PREVIEW_WALL_CLOCK.hour, PREVIEW_WALL_CLOCK.minute, 0));
+  return formatTimeDisplayValue(sample, ctx);
+}
+
+function padTimeUnit(value: number): string {
+  return String(value).padStart(2, "0");
+}
+
+/** Serializes a Time picker value as RFC3339 UTC on 1970-01-01. */
+export function timeWallClockToRfc3339(hour: number, minute: number, second = 0): string {
+  return `${TIME_STORAGE_DATE}T${padTimeUnit(hour)}:${padTimeUnit(minute)}:${padTimeUnit(second)}.000Z`;
+}

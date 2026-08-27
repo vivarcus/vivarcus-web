@@ -49,6 +49,7 @@ export const FORM_RENDERER_KINDS = [
   "boolean_checkbox",
   "date_input",
   "datetime_input",
+  "time_input",
   "picklist_select",
   "picklist_multiselect",
   "record_picker",

@@ -59,6 +59,9 @@ describe("resolveFormRendererKind", () => {
   it("infers legacy kinds from field_type when field_render is missing", () => {
     expect(inferLegacyFormRendererKind(formElement({ field_type: "LongText" }))).toBe("textarea");
     expect(inferLegacyFormRendererKind(formElement({ field_type: "Number" }))).toBe("number_input");
+    expect(inferLegacyFormRendererKind(formElement({ field_type: "Currency" }))).toBe(
+      "number_input",
+    );
     expect(inferLegacyFormRendererKind(formElement({ field_type: "Boolean" }))).toBe(
       "boolean_checkbox",
     );
@@ -66,6 +69,7 @@ describe("resolveFormRendererKind", () => {
     expect(inferLegacyFormRendererKind(formElement({ field_type: "DateTime" }))).toBe(
       "datetime_input",
     );
+    expect(inferLegacyFormRendererKind(formElement({ field_type: "Time" }))).toBe("time_input");
     expect(inferLegacyFormRendererKind(formElement({ field_type: "users" }))).toBe("user_picker");
     expect(
       inferLegacyFormRendererKind(formElement({ field_type: "Object", target_object_api_name: "study__v" })),

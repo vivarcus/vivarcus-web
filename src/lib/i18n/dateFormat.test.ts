@@ -7,11 +7,15 @@ import {
   formatDateFormatPreview,
   formatDateFormatRegionalPreviews,
   formatDateTimeDisplayValue,
+  formatTimeDisplayValue,
   localeNumericDatePickerFormat,
   normalizeDateFormatProfile,
   normalizeDateInputText,
   normalizeIntlLocale,
+  parseTimeToUtcDate,
   PREVIEW_WALL_CLOCK,
+  timePickerFormat,
+  timeWallClockToRfc3339,
   utcInstantToWallClock,
   wallClockInstantInTimeZone,
   wallClockToUtcIso,
@@ -239,5 +243,43 @@ describe("localeNumericDatePickerFormat", () => {
 describe("dateFieldPlaceholder", () => {
   it("returns a formatted sample", () => {
     expect(dateFieldPlaceholder(enUS, false)).toMatch(/2025/);
+  });
+});
+
+describe("formatTimeDisplayValue", () => {
+  const sample = new Date(Date.UTC(1970, 0, 1, 15, 4, 0));
+
+  it("uses a 12-hour clock for en-US and ignores timezone", () => {
+    const text = formatTimeDisplayValue(sample, enUS);
+    expect(text).toMatch(/3:04/);
+    expect(text).toMatch(/PM/i);
+  });
+
+  it("uses a 24-hour clock for de-DE", () => {
+    expect(formatTimeDisplayValue(sample, { ...enUS, locale: "de-DE" })).toMatch(/15:04/);
+  });
+});
+
+describe("parseTimeToUtcDate", () => {
+  it("parses clock strings and RFC3339 as UTC wall-clock", () => {
+    const fromClock = parseTimeToUtcDate("15:04:05");
+    const fromIso = parseTimeToUtcDate("2026-07-22T15:04:05Z");
+    expect(fromClock?.toISOString()).toBe("1970-01-01T15:04:05.000Z");
+    expect(fromIso?.toISOString()).toBe("1970-01-01T15:04:05.000Z");
+  });
+});
+
+describe("timePickerFormat", () => {
+  it("derives 12-hour vs 24-hour masks from locale", () => {
+    expect(timePickerFormat(enUS)).toMatch(/h:mm/);
+    expect(timePickerFormat(enUS)).toMatch(/A/);
+    expect(timePickerFormat({ ...enUS, locale: "de-DE" })).toMatch(/H/i);
+    expect(timePickerFormat({ ...enUS, locale: "de-DE" })).not.toMatch(/A/);
+  });
+});
+
+describe("timeWallClockToRfc3339", () => {
+  it("stores Time on the 1970-01-01 UTC epoch date", () => {
+    expect(timeWallClockToRfc3339(15, 4, 5)).toBe("1970-01-01T15:04:05.000Z");
   });
 });

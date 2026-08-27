@@ -65,6 +65,10 @@
   width: 7.5rem;
 }
 
+.field__time {
+  width: 100%;
+}
+
 .field__datetime-now {
   margin: 0;
   padding: 0;

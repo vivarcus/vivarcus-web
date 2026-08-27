@@ -29,6 +29,8 @@ export function inferLegacyFormRendererKind(element: FormElement): FormRendererK
       }
       return "rich_text_editor";
     case "Number":
+    case "Currency":
+    case "Percent":
       return "number_input";
     case "Boolean":
       return "boolean_checkbox";
@@ -36,6 +38,8 @@ export function inferLegacyFormRendererKind(element: FormElement): FormRendererK
       return "date_input";
     case "DateTime":
       return "datetime_input";
+    case "Time":
+      return "time_input";
     case "Picklist":
       return element.field_render?.multi_value ||
         element.field_render?.renderer_kind === "picklist_multiselect"

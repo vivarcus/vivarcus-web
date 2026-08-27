@@ -53,4 +53,34 @@ describe("NumberInputRenderer", () => {
     expect(onChange).toHaveBeenCalled();
     expect(onChange).toHaveBeenLastCalledWith(80);
   });
+
+  it("displays Currency-style grouping from the user locale when not typing", () => {
+    render(
+      <AntdProvider>
+        <UiProvider
+          displayContext={{ locale: "en-US", timezone: "UTC", language: "en" }}
+        >
+          <NumberInputRenderer
+            vaultId="vault-1"
+            element={{
+              ...plannedElement,
+              field_api_name: "amount__c",
+              label: { text: "Amount" },
+              field_type: "Currency",
+              field_render: {
+                ...plannedElement.field_render!,
+                field_ref: { field_api_name: "amount__c" },
+                field_type: "Currency",
+                scale: 2,
+              },
+            }}
+            value={1234.5}
+            onChange={vi.fn()}
+          />
+        </UiProvider>
+      </AntdProvider>,
+    );
+
+    expect(screen.getByRole("spinbutton", { name: "Amount" })).toHaveValue("1,234.5");
+  });
 });

@@ -9,11 +9,21 @@ export {
   formatDateFormatPreview,
   formatDateFormatRegionalPreviews,
   formatDateTimeDisplayValue,
+  formatTimeDisplayValue,
   normalizeDateInputText,
   normalizeIntlLocale,
+  parseTimeToUtcDate,
   PREVIEW_WALL_CLOCK,
+  timeFieldPlaceholder,
+  timePickerFormat,
+  timeWallClockToRfc3339,
   wallClockInstantInTimeZone,
 } from "./dateFormat";
+export {
+  formatNumberDisplayValue,
+  localeNumberParts,
+  parseLocaleNumberInput,
+} from "./numberFormat";
 export { formatFieldDisplayValue, resolveDisplayFormatValue } from "./formatValue";
 export type {
   AuditChrome,

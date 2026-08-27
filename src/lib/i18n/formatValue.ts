@@ -2,8 +2,10 @@ import type { PicklistEntryOption } from "../../api/types";
 import {
   formatDateDisplayValue,
   formatDateTimeDisplayValue,
-  normalizeIntlLocale,
+  formatTimeDisplayValue,
+  parseTimeToUtcDate,
 } from "./dateFormat";
+import { formatNumberDisplayValue } from "./numberFormat";
 import type { DisplayContext } from "./types";
 import { defaultDisplayContext } from "./types";
 
@@ -83,24 +85,19 @@ function parseStrictBooleanDisplay(value: unknown): boolean | null {
   return null;
 }
 
-function formatNumberDisplay(value: unknown, locale: string): string | null {
+function formatNumberDisplay(
+  value: unknown,
+  ctx: DisplayContext | undefined,
+): string | null {
   if (typeof value === "number" && Number.isFinite(value)) {
-    try {
-      return new Intl.NumberFormat(locale).format(value);
-    } catch {
-      return String(value);
-    }
+    return formatNumberDisplayValue(value, ctx);
   }
   if (typeof value === "string") {
     const text = value.trim();
     if (!text) return null;
     const num = Number(text);
     if (!Number.isFinite(num)) return null;
-    try {
-      return new Intl.NumberFormat(locale).format(num);
-    } catch {
-      return text;
-    }
+    return formatNumberDisplayValue(num, ctx);
   }
   return null;
 }
@@ -113,7 +110,6 @@ export function formatFieldDisplayValue(
   picklistOptions?: PicklistEntryOption[],
 ): string {
   if (value == null) return "";
-  const locale = normalizeIntlLocale(ctx?.locale);
   const language = ctx?.language ?? defaultDisplayContext.language;
 
   // Boolean only: accept 1/0. Do not apply this to Number — "# Expected"=1 was showing as 是.
@@ -125,8 +121,8 @@ export function formatFieldDisplayValue(
     return formatBoolean(boolVal, language);
   }
 
-  if (fieldType === "Number") {
-    const formatted = formatNumberDisplay(value, locale);
+  if (fieldType === "Number" || fieldType === "Currency") {
+    const formatted = formatNumberDisplay(value, ctx);
     if (formatted != null) {
       return formatted;
     }
@@ -140,12 +136,17 @@ export function formatFieldDisplayValue(
     }
   }
 
-  if (fieldType === "Date" || fieldType === "DateTime") {
+  if (fieldType === "Date" || fieldType === "DateTime" || fieldType === "Time") {
     const text = String(value).trim();
     if (!text) return "";
-    const date = parseDateValue(text);
-    if (!date) return text;
     try {
+      if (fieldType === "Time") {
+        const time = parseTimeToUtcDate(text);
+        if (!time) return text;
+        return formatTimeDisplayValue(time, ctx);
+      }
+      const date = parseDateValue(text);
+      if (!date) return text;
       if (fieldType === "DateTime") {
         return formatDateTimeDisplayValue(date, ctx);
       }

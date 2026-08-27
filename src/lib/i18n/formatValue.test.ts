@@ -39,6 +39,29 @@ describe("formatFieldDisplayValue", () => {
     expect(formatFieldDisplayValue("0", "Number", zhCtx)).toBe("0");
   });
 
+  it("formats Number and Currency with locale grouping", () => {
+    const enCtx = { ...defaultDisplayContext, locale: "en-US" };
+    const deCtx = { ...defaultDisplayContext, locale: "de-DE" };
+    expect(formatFieldDisplayValue(1234.5, "Number", enCtx)).toBe("1,234.5");
+    expect(formatFieldDisplayValue("1234.5", "Currency", enCtx)).toBe("1,234.5");
+    expect(formatFieldDisplayValue(1234.5, "Currency", deCtx)).toBe("1.234,5");
+  });
+
+  it("formats Time by locale without applying timezone", () => {
+    const nyCtx = {
+      ...defaultDisplayContext,
+      locale: "en-US",
+      timezone: "America/New_York",
+    };
+    const deCtx = { ...defaultDisplayContext, locale: "de-DE", timezone: "America/New_York" };
+    const fromIso = formatFieldDisplayValue("2026-07-22T15:04:05Z", "Time", nyCtx);
+    const fromClock = formatFieldDisplayValue("15:04:05", "Time", nyCtx);
+    expect(fromIso).toMatch(/3:04/);
+    expect(fromIso).toMatch(/PM/i);
+    expect(fromClock).toBe(fromIso);
+    expect(formatFieldDisplayValue("15:04:05", "Time", deCtx)).toMatch(/15:04/);
+  });
+
   it("localizes Formula boolean without treating numeric counts as boolean", () => {
     expect(formatFieldDisplayValue("false", "Formula", zhCtx)).toBe("否");
     expect(formatFieldDisplayValue("true", "Formula", zhCtx)).toBe("是");
