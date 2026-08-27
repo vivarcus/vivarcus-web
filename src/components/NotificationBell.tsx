@@ -14,8 +14,13 @@ import {
 
 dayjs.extend(relativeTime);
 
-const POLL_INTERVAL_MS = 30_000;
+export const POLL_INTERVAL_MS = 30_000;
 const MESSAGE_COLLAPSE_LEN = 160;
+
+/** Unread-count polling runs only while this tab is visible and focused. */
+export function pageHasFocus(): boolean {
+  return document.visibilityState === "visible" && document.hasFocus();
+}
 
 type Props = {
   vaultId: string;
@@ -122,11 +127,48 @@ export function NotificationBell({ vaultId }: Props) {
   }, [vaultId, view, markDisplayedAsRead]);
 
   useEffect(() => {
-    void refreshCount();
-    const timer = window.setInterval(() => {
+    let timer: number | undefined;
+    let polling = false;
+
+    const stop = () => {
+      if (timer !== undefined) {
+        window.clearInterval(timer);
+        timer = undefined;
+      }
+      polling = false;
+    };
+
+    const start = () => {
+      if (polling) {
+        return;
+      }
+      polling = true;
       void refreshCount();
-    }, POLL_INTERVAL_MS);
-    return () => window.clearInterval(timer);
+      timer = window.setInterval(() => {
+        void refreshCount();
+      }, POLL_INTERVAL_MS);
+    };
+
+    const sync = () => {
+      if (pageHasFocus()) {
+        start();
+      } else {
+        stop();
+      }
+    };
+
+    sync();
+    window.addEventListener("focus", sync);
+    window.addEventListener("blur", sync);
+    window.addEventListener("pageshow", sync);
+    document.addEventListener("visibilitychange", sync);
+    return () => {
+      stop();
+      window.removeEventListener("focus", sync);
+      window.removeEventListener("blur", sync);
+      window.removeEventListener("pageshow", sync);
+      document.removeEventListener("visibilitychange", sync);
+    };
   }, [refreshCount]);
 
   useEffect(() => {
