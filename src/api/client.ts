@@ -2608,6 +2608,33 @@ export const api = {
     );
   },
 
+  listLanguageRegionTranslations(
+    vaultId: string,
+    params: { language: string; category?: string; q?: string; limit?: number; offset?: number },
+  ) {
+    const query = new URLSearchParams();
+    query.set("language", params.language);
+    if (params.category) query.set("category", params.category);
+    if (params.q) query.set("q", params.q);
+    if (params.limit != null) query.set("limit", String(params.limit));
+    if (params.offset != null) query.set("offset", String(params.offset));
+    return vaultFetch<import("./types").LanguageRegionTranslationList>(
+      vaultId,
+      `/ui/settings/language-region/translations?${query.toString()}`,
+    );
+  },
+
+  patchLanguageRegionTranslation(
+    vaultId: string,
+    body: { key: string; language: string; translated_text: string },
+  ) {
+    return vaultFetch<import("./types").LanguageRegionTranslationRow>(
+      vaultId,
+      `/ui/settings/language-region/translations`,
+      { method: "PATCH", body: JSON.stringify(body) },
+    );
+  },
+
   getBrandingSettings(vaultId: string) {
     return vaultFetch<import("./types").BrandingSettingsModel>(
       vaultId,

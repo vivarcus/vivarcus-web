@@ -2204,6 +2204,7 @@ export type UserProfileModel = {
     avatar_media_id?: string;
   };
   general_fields?: UserProfileGeneralField[];
+  language_needs_reselect?: boolean;
   l10n?: {
     locale_references_by_language?: Record<string, PicklistEntryOption[]>;
   };
@@ -2300,6 +2301,7 @@ export type UserProfileModel = {
     avatar_no_file_selected?: DisplayText;
     avatar_unsupported_type?: DisplayText;
     avatar_too_large?: DisplayText;
+    language_reselect_banner?: DisplayText;
   };
 };
 
@@ -2400,10 +2402,20 @@ export type LanguageRegionPageChrome = {
   import_success_rows: DisplayText;
   import_ignored_rows: DisplayText;
   import_error_rows: DisplayText;
+  download_details: DisplayText;
   ok_button: DisplayText;
   cannot_deactivate_language: DisplayText;
   category_system_messages: DisplayText;
   category_field_labels: DisplayText;
+  translation_admin_title: DisplayText;
+  translation_admin_search_placeholder: DisplayText;
+  translation_type_column: DisplayText;
+  translation_key_column: DisplayText;
+  translation_property_column: DisplayText;
+  translation_base_column: DisplayText;
+  translation_translated_column: DisplayText;
+  translation_empty: DisplayText;
+  translation_saved: DisplayText;
 };
 
 export type LanguageRegionSettingsModel = {
@@ -2481,11 +2493,44 @@ export type LanguageRegionDeactivationPrep = {
   blocked_reason?: DisplayText;
 };
 
+export type LanguageRegionImportRowDetail = {
+  outcome: "success" | "ignored" | "error" | "unauthorized";
+  reason?: string;
+  file?: string;
+  type?: string;
+  key: string;
+  property?: string;
+  base_label?: string;
+  translated_label: string;
+  language: string;
+};
+
 export type LanguageRegionImportResult = {
   success: number;
   ignored: number;
   error: number;
   unauthorized: number;
+  details?: LanguageRegionImportRowDetail[];
+};
+
+export type LanguageRegionTranslationRow = {
+  type: string;
+  key: string;
+  property: string;
+  base_label: string;
+  translated_label: string;
+  language: string;
+};
+
+export type LanguageRegionTranslationList = {
+  language: string;
+  category?: string;
+  q?: string;
+  limit: number;
+  offset: number;
+  total: number;
+  can_edit: boolean;
+  rows: LanguageRegionTranslationRow[];
 };
 
 export type BrandingAssetSlot =

@@ -270,6 +270,22 @@
   margin-bottom: 0;
 }
 
+.language-region-settings__admin-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  margin-bottom: 0.85rem;
+}
+
+.language-region-settings__admin-filter {
+  min-width: 12rem;
+}
+
+.language-region-settings__admin-search {
+  flex: 1;
+  min-width: 16rem;
+}
+
 .language-region-settings__modal-meta {
   margin: 0.65rem 0 0;
   font-size: 0.8125rem;

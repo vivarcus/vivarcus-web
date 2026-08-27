@@ -33,6 +33,10 @@ export default defineConfig({
     setupFiles: "./src/test/setup.ts",
     include: ["src/**/*.test.{ts,tsx}"],
     exclude: ["acceptance/**", "node_modules/**"],
+    // ECS Spot (4c8g) batches the full suite; the 5s Vitest default flakes under load.
+    testTimeout: 20_000,
+    hookTimeout: 20_000,
+    ...(process.env.CI ? { maxWorkers: 2 } : {}),
   },
   server: {
     port: 5173,

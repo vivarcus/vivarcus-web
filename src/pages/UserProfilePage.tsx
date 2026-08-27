@@ -319,6 +319,17 @@ export function UserProfilePage() {
 
       <div className="user-profile-page__main">
         {error && <Alert type="error" title={error} showIcon role="alert" />}
+        {model?.language_needs_reselect ? (
+          <Alert
+            type="warning"
+            showIcon
+            role="alert"
+            title={displayText(
+              chrome?.language_reselect_banner,
+              "Your previous language is no longer available. Please choose a language.",
+            )}
+          />
+        ) : null}
 
         {profile && (
           <div className="user-profile-page__body">

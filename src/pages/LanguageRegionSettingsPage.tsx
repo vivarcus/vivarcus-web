@@ -28,6 +28,8 @@ import {
   displayTextTemplate,
   formatDateFormatRegionalPreviews,
 } from "../lib/i18n";
+import { downloadTextFile, importDetailsCsv } from "../lib/l10nImportDetails";
+import { TranslationAdminSection } from "./TranslationAdminSection";
 
 function statusLabel(chrome: LanguageRegionPageChrome, status: string): string {
   return status === "Active"
@@ -89,6 +91,7 @@ export function LanguageRegionSettingsPage() {
     ignored: number;
     error: number;
     unauthorized: number;
+    details?: import("../api/types").LanguageRegionImportRowDetail[];
   } | null>(null);
   const [languagesReordering, setLanguagesReordering] = useState(false);
   const [pendingLanguageOrder, setPendingLanguageOrder] = useState<string[]>([]);
@@ -774,17 +777,59 @@ export function LanguageRegionSettingsPage() {
                       {displayTextTemplate(chrome.import_success_rows, {
                         count: importResult.success,
                       })}
+                      {importResult.success > 0 ? (
+                        <Button
+                          type="link"
+                          size="small"
+                          onClick={() =>
+                            downloadTextFile(
+                              "import-success.csv",
+                              importDetailsCsv(importResult.details ?? [], "success"),
+                            )
+                          }
+                        >
+                          {displayText(chrome.download_details)}
+                        </Button>
+                      ) : null}
                     </p>
                     <p>
                       {displayTextTemplate(chrome.import_ignored_rows, {
                         count: importResult.ignored,
                         unauthorized: importResult.unauthorized,
                       })}
+                      {importResult.ignored > 0 ? (
+                        <Button
+                          type="link"
+                          size="small"
+                          onClick={() =>
+                            downloadTextFile(
+                              "import-ignored.csv",
+                              importDetailsCsv(importResult.details ?? [], "ignored"),
+                            )
+                          }
+                        >
+                          {displayText(chrome.download_details)}
+                        </Button>
+                      ) : null}
                     </p>
                     <p>
                       {displayTextTemplate(chrome.import_error_rows, {
                         count: importResult.error,
                       })}
+                      {importResult.error > 0 ? (
+                        <Button
+                          type="link"
+                          size="small"
+                          onClick={() =>
+                            downloadTextFile(
+                              "import-error.csv",
+                              importDetailsCsv(importResult.details ?? [], "error"),
+                            )
+                          }
+                        >
+                          {displayText(chrome.download_details)}
+                        </Button>
+                      ) : null}
                     </p>
                   </div>
                 ) : null}
@@ -792,6 +837,13 @@ export function LanguageRegionSettingsPage() {
             </div>
           </div>
         </AdminPageSection>
+
+        <TranslationAdminSection
+          vaultId={vaultId}
+          model={settingsModel}
+          chrome={pageChrome}
+          disabled={pageEditing}
+        />
       </div>
 
       <Modal
