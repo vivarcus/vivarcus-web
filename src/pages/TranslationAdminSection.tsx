@@ -1,4 +1,4 @@
-import { Button, Input, Select, Table, message } from "antd";
+import { Button, Checkbox, Input, Select, Table, Tag, message } from "antd";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { api } from "../api/client";
 import type {
@@ -28,6 +28,7 @@ export function TranslationAdminSection({
   const [language, setLanguage] = useState(defaultLanguage);
   const [category, setCategory] = useState<string | undefined>(undefined);
   const [query, setQuery] = useState("");
+  const [staleOnly, setStaleOnly] = useState(false);
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
   const [rows, setRows] = useState<LanguageRegionTranslationRow[]>([]);
@@ -44,6 +45,7 @@ export function TranslationAdminSection({
         language,
         category,
         q: query.trim() || undefined,
+        stale: staleOnly || undefined,
         limit: PAGE_SIZE,
         offset: (page - 1) * PAGE_SIZE,
       });
@@ -56,7 +58,7 @@ export function TranslationAdminSection({
     } finally {
       setLoading(false);
     }
-  }, [vaultId, language, category, query, page, chrome.load_failed]);
+  }, [vaultId, language, category, query, staleOnly, page, chrome.load_failed]);
 
   useEffect(() => {
     void load();
@@ -123,12 +125,41 @@ export function TranslationAdminSection({
         ),
       },
       {
+        title: displayText(chrome.translation_stale_column),
+        key: "stale",
+        width: 100,
+        render: (_: unknown, row: LanguageRegionTranslationRow) =>
+          row.stale ? (
+            <Tag color="warning">{displayText(chrome.translation_stale_yes)}</Tag>
+          ) : (
+            <span className="language-region-settings__stale-current">
+              {displayText(chrome.translation_stale_no)}
+            </span>
+          ),
+      },
+      {
+        title: displayText(chrome.translation_base_updated_column),
+        dataIndex: "base_updated_at",
+        key: "base_updated_at",
+        width: 170,
+        ellipsis: true,
+        render: (value: string | undefined) => formatAdminTime(value),
+      },
+      {
+        title: displayText(chrome.translation_updated_column),
+        dataIndex: "translation_updated_at",
+        key: "translation_updated_at",
+        width: 170,
+        ellipsis: true,
+        render: (value: string | undefined) => formatAdminTime(value),
+      },
+      {
         title: displayText(chrome.save_button),
         key: "save",
         width: 96,
         render: (_: unknown, row: LanguageRegionTranslationRow) => {
           const next = (drafts[row.key] ?? row.translated_label).trim();
-          const dirty = next !== row.translated_label.trim();
+          const dirty = next !== row.translated_label.trim() || Boolean(row.stale);
           return (
             <Button
               type="link"
@@ -184,6 +215,15 @@ export function TranslationAdminSection({
             setPage(1);
           }}
         />
+        <Checkbox
+          checked={staleOnly}
+          onChange={(e) => {
+            setStaleOnly(e.target.checked);
+            setPage(1);
+          }}
+        >
+          {displayText(chrome.translation_stale_only)}
+        </Checkbox>
       </div>
       <Table
         rowKey="key"
@@ -202,4 +242,12 @@ export function TranslationAdminSection({
       />
     </AdminPageSection>
   );
+}
+
+function formatAdminTime(value?: string): string {
+  const raw = value?.trim() ?? "";
+  if (!raw) return "—";
+  const parsed = Date.parse(raw);
+  if (Number.isNaN(parsed)) return raw;
+  return new Date(parsed).toISOString().replace("T", " ").replace(/\.\d+Z$/, " UTC");
 }

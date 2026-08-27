@@ -2586,7 +2586,7 @@ export const api = {
 
   async exportLanguageRegionTranslations(
     vaultId: string,
-    body: { language: string; categories: string[] },
+    body: { language: string; categories: string[]; include_diagnostics?: boolean },
   ): Promise<Blob> {
     const res = await vaultFetchRaw(
       vaultId,
@@ -2610,12 +2610,20 @@ export const api = {
 
   listLanguageRegionTranslations(
     vaultId: string,
-    params: { language: string; category?: string; q?: string; limit?: number; offset?: number },
+    params: {
+      language: string;
+      category?: string;
+      q?: string;
+      stale?: boolean;
+      limit?: number;
+      offset?: number;
+    },
   ) {
     const query = new URLSearchParams();
     query.set("language", params.language);
     if (params.category) query.set("category", params.category);
     if (params.q) query.set("q", params.q);
+    if (params.stale) query.set("stale", "true");
     if (params.limit != null) query.set("limit", String(params.limit));
     if (params.offset != null) query.set("offset", String(params.offset));
     return vaultFetch<import("./types").LanguageRegionTranslationList>(

@@ -281,9 +281,9 @@
   min-width: 12rem;
 }
 
-.language-region-settings__admin-search {
-  flex: 1;
-  min-width: 16rem;
+.language-region-settings__stale-current {
+  color: var(--muted);
+  font-size: 0.8125rem;
 }
 
 .language-region-settings__modal-meta {

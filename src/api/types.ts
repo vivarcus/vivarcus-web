@@ -2414,6 +2414,13 @@ export type LanguageRegionPageChrome = {
   translation_property_column: DisplayText;
   translation_base_column: DisplayText;
   translation_translated_column: DisplayText;
+  translation_stale_column: DisplayText;
+  translation_stale_yes: DisplayText;
+  translation_stale_no: DisplayText;
+  translation_base_updated_column: DisplayText;
+  translation_updated_column: DisplayText;
+  translation_stale_only: DisplayText;
+  export_include_diagnostics: DisplayText;
   translation_empty: DisplayText;
   translation_saved: DisplayText;
 };
@@ -2520,6 +2527,9 @@ export type LanguageRegionTranslationRow = {
   base_label: string;
   translated_label: string;
   language: string;
+  stale?: boolean;
+  base_updated_at?: string;
+  translation_updated_at?: string;
 };
 
 export type LanguageRegionTranslationList = {

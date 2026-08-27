@@ -85,6 +85,7 @@ export function LanguageRegionSettingsPage() {
 
   const [exportCategories, setExportCategories] = useState<string[]>([]);
   const [exportLanguage, setExportLanguage] = useState<string>("");
+  const [exportIncludeDiagnostics, setExportIncludeDiagnostics] = useState(false);
   const [importFiles, setImportFiles] = useState<File[]>([]);
   const [importResult, setImportResult] = useState<{
     success: number;
@@ -319,6 +320,7 @@ export function LanguageRegionSettingsPage() {
       const blob = await api.exportLanguageRegionTranslations(vaultId, {
         language: exportLanguage,
         categories: exportCategories,
+        include_diagnostics: exportIncludeDiagnostics,
       });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -703,6 +705,13 @@ export function LanguageRegionSettingsPage() {
                   }))}
                   onChange={setExportLanguage}
                 />
+                <Checkbox
+                  checked={exportIncludeDiagnostics}
+                  disabled={!model.bulk.can_export || pageEditing}
+                  onChange={(e) => setExportIncludeDiagnostics(e.target.checked)}
+                >
+                  {displayText(chrome.export_include_diagnostics)}
+                </Checkbox>
                 <Button
                   type="primary"
                   disabled={!model.bulk.can_export || pageEditing}
