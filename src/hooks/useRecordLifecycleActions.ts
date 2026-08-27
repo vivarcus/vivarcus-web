@@ -161,7 +161,11 @@ export function useRecordLifecycleActions({
   const [workflowFieldValues, setWorkflowFieldValues] = useState<Record<string, unknown>>({});
   const [workflowParticipantValues, setWorkflowParticipantValues] = useState<Record<string, string[]>>({});
   const [workflowDateValues, setWorkflowDateValues] = useState<Record<string, string>>({});
+  const [workflowAssignmentTypeValues, setWorkflowAssignmentTypeValues] = useState<
+    Record<string, string>
+  >({});
   const [preExecutionInputValues, setPreExecutionInputValues] = useState<Record<string, string>>({});
+  const [envelopeRecordIds, setEnvelopeRecordIds] = useState<string[] | null>(null);
 
   /**
    * Trail hop for an action that navigates away. Only the page's own record can
@@ -199,8 +203,10 @@ export function useRecordLifecycleActions({
         workflowFields?: Record<string, unknown>;
         workflowParticipants?: Record<string, string[]>;
         workflowDates?: Record<string, string>;
+        workflowAssignmentTypes?: Record<string, string>;
         preExecutionInputs?: Record<string, string>;
         userInputFields?: Record<string, unknown>;
+        recordIds?: string[];
       },
     ) => {
       if (!vaultId || lifecyclePending) {
@@ -220,8 +226,10 @@ export function useRecordLifecycleActions({
           workflow_fields: options?.workflowFields,
           workflow_participants: options?.workflowParticipants,
           workflow_dates: options?.workflowDates,
+          workflow_assignment_types: options?.workflowAssignmentTypes,
           pre_execution_inputs: options?.preExecutionInputs,
           user_input_fields: options?.userInputFields,
+          record_ids: options?.recordIds,
         });
         onPageUpdated?.(res.page);
         message.success(displayText(action.label, action.name));
@@ -234,6 +242,7 @@ export function useRecordLifecycleActions({
         setRowLifecycleFetchingId(null);
         setWorkflowDialogAction(null);
         setDialogTarget(null);
+        setEnvelopeRecordIds(null);
         clearPreExecutionState();
       }
     },
@@ -352,6 +361,7 @@ export function useRecordLifecycleActions({
     setWorkflowFieldValues(initial);
     setWorkflowParticipantValues(initialParticipants);
     setWorkflowDateValues(initialDates);
+    setWorkflowAssignmentTypeValues({});
     clearPreExecutionState();
     setDialogTarget(target);
     setWorkflowDialogAction(action);
@@ -369,6 +379,7 @@ export function useRecordLifecycleActions({
       setWorkflowFieldValues({});
       setWorkflowParticipantValues({});
       setWorkflowDateValues({});
+      setWorkflowAssignmentTypeValues({});
       setPreExecutionInputValues(initialPreExecutionValues(dialog));
       setDialogTarget(target);
       setPreExecutionDialog(dialog);
@@ -467,7 +478,16 @@ export function useRecordLifecycleActions({
   );
 
   const beginLifecycleAction = useCallback(
-    async (action: LifecycleAction, target: RecordLifecycleTarget) => {
+    async (
+      action: LifecycleAction,
+      target: RecordLifecycleTarget,
+      options?: { recordIds?: string[] },
+    ) => {
+      if (options?.recordIds && options.recordIds.length > 0) {
+        setEnvelopeRecordIds(options.recordIds);
+      } else {
+        setEnvelopeRecordIds(null);
+      }
       if (
         action.kind === "application_action" &&
         isViewExpectedDocumentsAction(action.name) &&
@@ -484,8 +504,9 @@ export function useRecordLifecycleActions({
         openWorkflowDialog(action, target);
         return;
       }
+      const recordIds = options?.recordIds;
       await beginPreExecution("lifecycle", target, action.name, action, undefined, () =>
-        runLifecycleAction(action, target),
+        runLifecycleAction(action, target, { recordIds }),
       );
     },
     [openWorkflowDialog, beginPreExecution, runLifecycleAction, navigate, navTrailForTarget],
@@ -614,7 +635,12 @@ export function useRecordLifecycleActions({
   );
 
   const handleRowLifecycleAction = useCallback(
-    async (objectName: string, recordId: string, action: LifecycleAction) => {
+    async (
+      objectName: string,
+      recordId: string,
+      action: LifecycleAction,
+      extras?: { recordIds?: string[] },
+    ) => {
       if (!vaultId || lifecyclePending || rowLifecycleFetchingId) {
         return;
       }
@@ -625,8 +651,11 @@ export function useRecordLifecycleActions({
         const resolvedAction = resolveLifecycleActionOnPage(page, action.name, action);
         const target = { objectName, recordId, page };
         setRowLifecycleFetchingId(null);
-        await beginLifecycleAction(resolvedAction, target);
+        await beginLifecycleAction(resolvedAction, target, {
+          recordIds: extras?.recordIds,
+        });
       } catch (err) {
+        setEnvelopeRecordIds(null);
         setRowLifecycleFetchingId(null);
         setError(err instanceof Error ? err.message : actionFailedLabel);
       }
@@ -678,6 +707,7 @@ export function useRecordLifecycleActions({
     const fields = { ...workflowFieldValues };
     const participants = { ...workflowParticipantValues };
     const dates = { ...workflowDateValues };
+    const assignmentTypes = { ...workflowAssignmentTypeValues };
     const fieldControls =
       action.workflow_start_dialog?.controls?.filter(
         (control) => control.type === "field" && control.field_api_name,
@@ -690,12 +720,24 @@ export function useRecordLifecycleActions({
       action.workflow_start_dialog?.controls?.filter(
         (control) => control.type === "date" && control.control_name,
       ) ?? [];
+    const hasRuntimeChoice = participantControls.some((control) => control.runtime_choice);
     await runLifecycleAction(action, target, {
       workflowFields: fieldControls.length > 0 ? fields : undefined,
       workflowParticipants: participantControls.length > 0 ? participants : undefined,
       workflowDates: dateControls.length > 0 ? dates : undefined,
+      workflowAssignmentTypes: hasRuntimeChoice ? assignmentTypes : undefined,
+      recordIds: envelopeRecordIds ?? undefined,
     });
-  }, [workflowDialogAction, dialogTarget, workflowFieldValues, workflowParticipantValues, workflowDateValues, runLifecycleAction]);
+  }, [
+    workflowDialogAction,
+    dialogTarget,
+    workflowFieldValues,
+    workflowParticipantValues,
+    workflowDateValues,
+    workflowAssignmentTypeValues,
+    envelopeRecordIds,
+    runLifecycleAction,
+  ]);
 
   const confirmPreExecutionDialog = useCallback(async () => {
     if (!dialogTarget || !preExecutionActionKind || !preExecutionDialog) {
@@ -726,7 +768,10 @@ export function useRecordLifecycleActions({
     if (await runChangeIssueTypePreview(target, preExecutionDialog, inputs)) {
       return;
     }
-    await runLifecycleAction(action, target, { preExecutionInputs: inputs });
+    await runLifecycleAction(action, target, {
+      preExecutionInputs: inputs,
+      recordIds: envelopeRecordIds ?? undefined,
+    });
   }, [
     dialogTarget,
     preExecutionActionKind,
@@ -734,6 +779,7 @@ export function useRecordLifecycleActions({
     preExecutionSdkAction,
     preExecutionLifecycleAction,
     preExecutionInputValues,
+    envelopeRecordIds,
     runSdkAction,
     runLifecycleAction,
     runChangeIssueTypePreview,
@@ -745,6 +791,7 @@ export function useRecordLifecycleActions({
     clearPreExecutionState();
     setDialogTarget(null);
     setRowLifecycleFetchingId(null);
+    setEnvelopeRecordIds(null);
   }, [clearPreExecutionState]);
 
   const isRowLifecycleBusy = useCallback(
@@ -786,10 +833,12 @@ export function useRecordLifecycleActions({
     workflowFieldValues,
     workflowParticipantValues,
     workflowDateValues,
+    workflowAssignmentTypeValues,
     preExecutionInputValues,
     setWorkflowFieldValues,
     setWorkflowParticipantValues,
     setWorkflowDateValues,
+    setWorkflowAssignmentTypeValues,
     setPreExecutionInputValues,
     handleLifecycleAction,
     handleSdkAction,

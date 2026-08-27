@@ -319,6 +319,7 @@ export const api = {
       verdict_label?: string;
       comment?: string;
       fields?: Record<string, string>;
+      content_verdicts?: Array<{ record_id: string; verdict_label: string; comment?: string }>;
     } = {},
   ) {
     return vaultFetch<{ status: string }>(vaultId, `/ui/task-dashboard/workflow-complete`, {
@@ -329,6 +330,7 @@ export const api = {
         verdict_label: body.verdict_label,
         comment: body.comment,
         fields: body.fields,
+        content_verdicts: body.content_verdicts,
       }),
     });
   },
@@ -1334,6 +1336,14 @@ export const api = {
     );
   },
 
+  listStartableWorkflows(vaultId: string, objectName: string, recordIds: string[]) {
+    return vaultFetch<{ model_type: string; actions: import("./types").LifecycleAction[] }>(
+      vaultId,
+      `/ui/objects/${encodeURIComponent(objectName)}/workflows/startable`,
+      { method: "POST", body: JSON.stringify({ record_ids: recordIds }) },
+    );
+  },
+
   relatedRecordRowActions(vaultId: string, sectionContextToken: string, recordId: string) {
     const params = new URLSearchParams({ section_context_token: sectionContextToken });
     return vaultFetch<import("./types").RecordRowActionsModel>(
@@ -1362,8 +1372,10 @@ export const api = {
       workflow_fields?: Record<string, unknown>;
       workflow_participants?: Record<string, string[]>;
       workflow_dates?: Record<string, string>;
+      workflow_assignment_types?: Record<string, string>;
       pre_execution_inputs?: Record<string, string>;
       user_input_fields?: Record<string, unknown>;
+      record_ids?: string[];
     },
   ) {
     const payload: Record<string, unknown> = {};
@@ -1376,11 +1388,17 @@ export const api = {
     if (body.workflow_dates) {
       payload.workflow_dates = body.workflow_dates;
     }
+    if (body.workflow_assignment_types) {
+      payload.workflow_assignment_types = body.workflow_assignment_types;
+    }
     if (body.pre_execution_inputs && Object.keys(body.pre_execution_inputs).length > 0) {
       payload.pre_execution_inputs = body.pre_execution_inputs;
     }
     if (body.user_input_fields && Object.keys(body.user_input_fields).length > 0) {
       payload.user_input_fields = body.user_input_fields;
+    }
+    if (body.record_ids && body.record_ids.length > 0) {
+      payload.record_ids = body.record_ids;
     }
     return this.executeAction(vaultId, `lifecycle.${body.action}`, {
       object_api_name: objectName,
@@ -1864,6 +1882,7 @@ export const api = {
       verdict_label?: string;
       comment?: string;
       fields?: Record<string, unknown>;
+      content_verdicts?: Array<{ record_id: string; verdict_label: string; comment?: string }>;
       action_guard: import("./types").ActionGuard;
     },
   ) {
@@ -1875,6 +1894,7 @@ export const api = {
         verdict_label: body.verdict_label,
         comment: body.comment,
         fields: body.fields,
+        content_verdicts: body.content_verdicts,
       },
     }).then((res) => {
       if (!res.workflow_signature) {
@@ -1893,6 +1913,7 @@ export const api = {
       verdict_label?: string;
       comment?: string;
       fields?: Record<string, unknown>;
+      content_verdicts?: Array<{ record_id: string; verdict_label: string; comment?: string }>;
       action_guard: import("./types").ActionGuard;
       layout?: string;
     },
@@ -1906,6 +1927,7 @@ export const api = {
         verdict_label: body.verdict_label,
         comment: body.comment,
         fields: body.fields,
+        content_verdicts: body.content_verdicts,
       },
     }).then((res) => {
       if (!res.workflow_complete?.page) {

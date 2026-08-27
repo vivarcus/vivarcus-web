@@ -25,6 +25,7 @@ import type {
   RecordPageModel,
   TaskDashboardModel,
   TaskDashboardTaskItem,
+  WorkflowContentVerdict,
   WorkflowTaskAction,
 } from "../api/types";
 import { useUi } from "../context/UiContext";
@@ -619,7 +620,11 @@ export function TaskDashboardPage() {
         return;
       }
       const fromDashboard = workflowTaskActionFromDashboard(task);
-      if (fromDashboard && !taskHasSignatureRequirement(fromDashboard)) {
+      if (
+        fromDashboard &&
+        !taskHasSignatureRequirement(fromDashboard) &&
+        !fromDashboard.multiple_verdicts
+      ) {
         setWorkflowComplete({ page: null, task: fromDashboard });
         return;
       }
@@ -693,7 +698,12 @@ export function TaskDashboardPage() {
   );
 
   const submitWorkflowComplete = useCallback(
-    async (verdictLabel: string, comment: string, fields: Record<string, string>) => {
+    async (
+      verdictLabel: string,
+      comment: string,
+      fields: Record<string, string>,
+      contentVerdicts?: WorkflowContentVerdict[],
+    ) => {
       if (!vaultId || !workflowComplete) return;
       const { page, task } = workflowComplete;
       if (!task.workflow_task_id) return;
@@ -703,6 +713,7 @@ export function TaskDashboardPage() {
             verdict_label: verdictLabel,
             comment,
             fields,
+            content_verdicts: contentVerdicts,
           });
         } else {
           await api.workflowComplete(vaultId, page.object_api_name, page.record_id, {
@@ -710,6 +721,7 @@ export function TaskDashboardPage() {
             verdict_label: verdictLabel,
             comment,
             fields,
+            content_verdicts: contentVerdicts,
             action_guard: {
               schema_fingerprint: page.schema_fingerprint,
               ui_fingerprint: page.ui_fingerprint,

@@ -1,13 +1,22 @@
 import { Button, Form, Input, Modal, Radio } from "antd";
 import { useMemo, useState } from "react";
-import type { WorkflowTaskAction, WorkflowVerdictOption } from "../api/types";
+import type { WorkflowContentVerdict, WorkflowTaskAction, WorkflowVerdictOption } from "../api/types";
 import { useUi } from "../context/UiContext";
 import { defaultWorkflowChrome, displayText, type WorkflowChrome } from "../lib/i18n";
 import {
+  anyContentCommentRequired,
+  anyContentShowsComment,
+  anyContentVerdictNeedsSignature,
+  collectedContentVerdicts,
   collectTaskFieldKeys,
+  initialContentVerdictLabels,
+  missingContentVerdictLabel,
   missingRequiredTaskField,
   selectedVerdictOption,
+  sharedContentVerdictLabel,
   taskCompletionFields,
+  taskCompletionFieldsForContents,
+  usesMultipleVerdicts,
   verdictNeedsSignature,
 } from "../lib/workflowTask";
 import { parseSoDExhausted } from "../lib/workflowSoD";
@@ -16,7 +25,12 @@ type Props = {
   task: WorkflowTaskAction;
   workflow?: WorkflowChrome;
   onClose: () => void;
-  onSubmit: (verdictLabel: string, comment: string, fields: Record<string, string>) => Promise<void>;
+  onSubmit: (
+    verdictLabel: string,
+    comment: string,
+    fields: Record<string, string>,
+    contentVerdicts?: WorkflowContentVerdict[],
+  ) => Promise<void>;
 };
 
 function verdictHasComment(opt: WorkflowVerdictOption): boolean {
@@ -49,16 +63,24 @@ export function TaskCompleteModal({ task, workflow = defaultWorkflowChrome, onCl
   }, [task, workflow]);
 
   const hasConfiguredVerdicts = (task.verdict_options?.length ?? 0) > 0;
+  const multiple = usesMultipleVerdicts(task);
 
   const [verdictLabel, setVerdictLabel] = useState(() => defaultVerdictLabel(task));
+  const [contentVerdicts, setContentVerdicts] = useState<Record<string, string>>(() =>
+    initialContentVerdictLabels(task),
+  );
   const [comment, setComment] = useState(task.completion_draft?.comment ?? "");
   const [fields, setFields] = useState<Record<string, string>>(() => initialTaskFields(task));
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
-  const selected = selectedVerdictOption(task, verdictLabel);
-  const activeFields = taskCompletionFields(task, verdictLabel);
-  const needsSignature = verdictNeedsSignature(task, verdictLabel);
+  const selected = selectedVerdictOption(task, multiple ? sharedContentVerdictLabel(contentVerdicts) : verdictLabel);
+  const activeFields = multiple
+    ? taskCompletionFieldsForContents(task, contentVerdicts)
+    : taskCompletionFields(task, verdictLabel);
+  const needsSignature = multiple
+    ? anyContentVerdictNeedsSignature(task, contentVerdicts)
+    : verdictNeedsSignature(task, verdictLabel);
   const taskCommentPrompt = task.task_comments?.[0];
   const verdictCommentPrompt =
     selected && verdictHasComment(selected)
@@ -68,17 +90,27 @@ export function TaskCompleteModal({ task, workflow = defaultWorkflowChrome, onCl
         }
       : null;
   const instructions = task.task_instructions?.trim() ?? "";
-  const showComment = Boolean(taskCommentPrompt || verdictCommentPrompt);
+  const showComment = multiple
+    ? Boolean(taskCommentPrompt || anyContentShowsComment(task, contentVerdicts))
+    : Boolean(taskCommentPrompt || verdictCommentPrompt);
   const commentLabel =
     verdictCommentPrompt?.label ||
     taskCommentPrompt?.label ||
     displayText(workflow.comment_label);
-  const commentRequired =
-    (verdictCommentPrompt?.required || taskCommentPrompt?.required) ?? false;
+  const commentRequired = multiple
+    ? Boolean(taskCommentPrompt?.required || anyContentCommentRequired(task, contentVerdicts))
+    : Boolean((verdictCommentPrompt?.required || taskCommentPrompt?.required) ?? false);
 
   async function handleSubmit() {
-    const resolvedVerdict = verdictLabel.trim();
-    if (hasConfiguredVerdicts && !resolvedVerdict) {
+    if (multiple) {
+      if (hasConfiguredVerdicts) {
+        const missing = missingContentVerdictLabel(task, contentVerdicts);
+        if (missing) {
+          setError(displayText(workflow.verdict_required));
+          return;
+        }
+      }
+    } else if (hasConfiguredVerdicts && !verdictLabel.trim()) {
       setError(displayText(workflow.verdict_required));
       return;
     }
@@ -94,7 +126,16 @@ export function TaskCompleteModal({ task, workflow = defaultWorkflowChrome, onCl
     setSubmitting(true);
     setError(null);
     try {
-      await onSubmit(resolvedVerdict, comment.trim(), fields);
+      if (multiple) {
+        await onSubmit(
+          sharedContentVerdictLabel(contentVerdicts),
+          comment.trim(),
+          fields,
+          collectedContentVerdicts(task, contentVerdicts, comment),
+        );
+      } else {
+        await onSubmit(verdictLabel.trim(), comment.trim(), fields);
+      }
     } catch (err) {
       const exhausted = parseSoDExhausted(err);
       if (exhausted) {
@@ -137,7 +178,35 @@ export function TaskCompleteModal({ task, workflow = defaultWorkflowChrome, onCl
           {instructions}
         </p>
       )}
-      {hasConfiguredVerdicts && (
+      {hasConfiguredVerdicts && multiple && (
+        <Form layout="vertical">
+          {(task.contents ?? []).map((content) => (
+            <Form.Item
+              key={content.record_id}
+              className="workflow-task__content-item"
+              label={content.name?.trim() || content.record_id}
+              required
+            >
+              <Radio.Group
+                value={contentVerdicts[content.record_id] ?? ""}
+                onChange={(e) =>
+                  setContentVerdicts((current) => ({
+                    ...current,
+                    [content.record_id]: e.target.value,
+                  }))
+                }
+              >
+                {options.map((opt) => (
+                  <Radio key={`${content.record_id}-${opt.name || opt.label}`} value={opt.label}>
+                    {opt.display_label || opt.label}
+                  </Radio>
+                ))}
+              </Radio.Group>
+            </Form.Item>
+          ))}
+        </Form>
+      )}
+      {hasConfiguredVerdicts && !multiple && (
         <Form layout="vertical">
           <Form.Item label={displayText(workflow.verdict_label)} required>
             <Radio.Group value={verdictLabel} onChange={(e) => setVerdictLabel(e.target.value)}>

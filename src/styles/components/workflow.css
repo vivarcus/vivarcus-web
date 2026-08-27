@@ -201,6 +201,10 @@
   margin-right: 0.35rem;
 }
 
+.workflow-task__content-item {
+  margin-bottom: 0.75rem;
+}
+
 .workflow-task__actions {
   display: flex;
   gap: 0.5rem;

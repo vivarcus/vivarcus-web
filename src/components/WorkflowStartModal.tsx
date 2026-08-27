@@ -64,9 +64,11 @@ function WorkflowStartControl({
   formValues,
   participantValue,
   dateValue,
+  assignmentType,
   onChange,
   onParticipantChange,
   onDateChange,
+  onAssignmentTypeChange,
 }: {
   control: WorkflowStartDialogControl;
   vaultId: string;
@@ -78,9 +80,11 @@ function WorkflowStartControl({
   formValues: Record<string, unknown>;
   participantValue: string[];
   dateValue: string;
+  assignmentType?: string;
   onChange: (value: unknown) => void;
   onParticipantChange: (value: string[]) => void;
   onDateChange: (value: string) => void;
+  onAssignmentTypeChange?: (value: string) => void;
 }) {
   if (control.type === "instructions") {
     const text = control.instructions || control.label;
@@ -105,6 +109,8 @@ function WorkflowStartControl({
         recordId={recordId}
         value={participantValue}
         onChange={onParticipantChange}
+        assignmentType={assignmentType}
+        onAssignmentTypeChange={control.runtime_choice ? onAssignmentTypeChange : undefined}
         workflow={workflow}
       />
     );
@@ -150,10 +156,12 @@ export function WorkflowStartModal({
   values,
   participantValues,
   dateValues,
+  assignmentTypeValues,
   pending,
   onValuesChange,
   onParticipantValuesChange,
   onDateValuesChange,
+  onAssignmentTypeValuesChange,
   onCancel,
   onConfirm,
 }: {
@@ -166,10 +174,12 @@ export function WorkflowStartModal({
   values: Record<string, unknown>;
   participantValues: Record<string, string[]>;
   dateValues: Record<string, string>;
+  assignmentTypeValues: Record<string, string>;
   pending: boolean;
   onValuesChange: (next: Record<string, unknown>) => void;
   onParticipantValuesChange: (next: Record<string, string[]>) => void;
   onDateValuesChange: (next: Record<string, string>) => void;
+  onAssignmentTypeValuesChange: (next: Record<string, string>) => void;
   onCancel: () => void;
   onConfirm: () => void;
 }) {
@@ -201,6 +211,16 @@ export function WorkflowStartModal({
       return false;
     }
     return dialog.controls.some((control) => {
+      if (control.type === "participant" && control.participant_name && control.runtime_choice) {
+        const selected = participantValues[control.participant_name] ?? [];
+        const hasUsers = selected.some((id) => id.trim() !== "");
+        if (control.required || hasUsers) {
+          const mode = assignmentTypeValues[control.participant_name];
+          if (mode !== "assigned" && mode !== "available") {
+            return true;
+          }
+        }
+      }
       if (!control.required) {
         return false;
       }
@@ -218,7 +238,7 @@ export function WorkflowStartModal({
       }
       return false;
     });
-  }, [dialog?.controls, dateValues, participantValues, values]);
+  }, [dialog?.controls, assignmentTypeValues, dateValues, participantValues, values]);
 
   if (!action || !dialog) {
     return null;
@@ -261,6 +281,9 @@ export function WorkflowStartModal({
                 control.participant_name ? (participantValues[control.participant_name] ?? []) : []
               }
               dateValue={control.control_name ? (dateValues[control.control_name] ?? "") : ""}
+              assignmentType={
+                control.participant_name ? (assignmentTypeValues[control.participant_name] ?? "") : ""
+              }
               onChange={(next) => {
                 if (!control.field_api_name) {
                   return;
@@ -283,6 +306,15 @@ export function WorkflowStartModal({
                 onDateValuesChange({
                   ...dateValues,
                   [control.control_name]: next,
+                });
+              }}
+              onAssignmentTypeChange={(next) => {
+                if (!control.participant_name) {
+                  return;
+                }
+                onAssignmentTypeValuesChange({
+                  ...assignmentTypeValues,
+                  [control.participant_name]: next,
                 });
               }}
             />

@@ -7,10 +7,20 @@ import { useUi } from "../context/UiContext";
 import { defaultWorkflowChrome, displayText, type WorkflowChrome } from "../lib/i18n";
 import { handleStaleError } from "../lib/staleGuard";
 import {
+  anyContentCommentRequired,
+  anyContentShowsComment,
+  anyContentVerdictNeedsSignature,
+  collectedContentVerdicts,
   collectTaskFieldKeys,
+  initialContentVerdictLabels,
+  missingContentVerdictLabel,
   missingRequiredTaskField,
   selectedVerdictOption,
+  signatureVerdictOption,
+  sharedContentVerdictLabel,
   taskCompletionFields,
+  taskCompletionFieldsForContents,
+  usesMultipleVerdicts,
   verdictNeedsSignature,
 } from "../lib/workflowTask";
 
@@ -65,8 +75,12 @@ export function SignatureModal({
   }, [task, workflow]);
 
   const hasConfiguredVerdicts = (task.verdict_options?.length ?? 0) > 0;
+  const multiple = usesMultipleVerdicts(task);
 
   const [verdictLabel, setVerdictLabel] = useState("");
+  const [contentVerdicts, setContentVerdicts] = useState<Record<string, string>>(() =>
+    initialContentVerdictLabels(task),
+  );
   const [comment, setComment] = useState(task.completion_draft?.comment ?? "");
   const [fields, setFields] = useState<Record<string, string>>(() => {
     const initial: Record<string, string> = {};
@@ -82,10 +96,16 @@ export function SignatureModal({
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
-  const selected = selectedVerdictOption(task, verdictLabel);
-  const activeFields = taskCompletionFields(task, verdictLabel);
-  const needsSignature =
-    verdictLabel.trim() !== "" && verdictNeedsSignature(task, verdictLabel);
+  const resolvedLabel = multiple ? sharedContentVerdictLabel(contentVerdicts) : verdictLabel;
+  const selected = multiple
+    ? signatureVerdictOption(task, contentVerdicts)
+    : selectedVerdictOption(task, resolvedLabel);
+  const activeFields = multiple
+    ? taskCompletionFieldsForContents(task, contentVerdicts)
+    : taskCompletionFields(task, verdictLabel);
+  const needsSignature = multiple
+    ? anyContentVerdictNeedsSignature(task, contentVerdicts)
+    : verdictLabel.trim() !== "" && verdictNeedsSignature(task, verdictLabel);
   const capacities = selected?.capacities ?? [];
   const capacitiesRequired = selected?.capacities_required ?? false;
   const capacitiesLabel =
@@ -102,18 +122,22 @@ export function SignatureModal({
   const instructions =
     task.task_instructions?.trim() ||
     displayText(workflow.approve_reject_esign_instructions);
-  const showComment = Boolean(taskCommentPrompt || verdictCommentPrompt);
+  const showComment = multiple
+    ? Boolean(taskCommentPrompt || anyContentShowsComment(task, contentVerdicts))
+    : Boolean(taskCommentPrompt || verdictCommentPrompt);
   const commentLabel =
     verdictCommentPrompt?.label ||
     taskCommentPrompt?.label ||
     displayText(workflow.comment_label);
-  const commentRequired =
-    (verdictCommentPrompt?.required || taskCommentPrompt?.required) ?? false;
+  const commentRequired = multiple
+    ? Boolean(taskCommentPrompt?.required || anyContentCommentRequired(task, contentVerdicts))
+    : Boolean((verdictCommentPrompt?.required || taskCommentPrompt?.required) ?? false);
 
   async function finishWithoutSignature(
     resolvedVerdict: string,
     resolvedComment: string,
     resolvedFields: Record<string, string>,
+    resolvedContents?: ReturnType<typeof collectedContentVerdicts>,
   ) {
     if (!task.workflow_task_id) return;
     const res = await api.workflowComplete(vaultId, objectName, recordId, {
@@ -121,6 +145,7 @@ export function SignatureModal({
       verdict_label: resolvedVerdict,
       comment: resolvedComment,
       fields: resolvedFields,
+      content_verdicts: resolvedContents,
       action_guard: actionGuard(page),
       layout: page.selected_layout.api_name,
     });
@@ -131,6 +156,7 @@ export function SignatureModal({
     resolvedVerdict: string,
     resolvedComment: string,
     resolvedFields: Record<string, string>,
+    resolvedContents?: ReturnType<typeof collectedContentVerdicts>,
   ) {
     if (!task.workflow_task_id) return;
     const signatureMeaning = capacity.trim();
@@ -139,6 +165,7 @@ export function SignatureModal({
       verdict_label: resolvedVerdict,
       comment: resolvedComment,
       fields: resolvedFields,
+      content_verdicts: resolvedContents,
       action_guard: actionGuard(page),
     });
     const stepUp = await api.authStepUp({
@@ -169,8 +196,15 @@ export function SignatureModal({
   }
 
   async function handleSubmit() {
-    const resolvedVerdict = verdictLabel.trim();
-    if (hasConfiguredVerdicts && !resolvedVerdict) {
+    const resolvedVerdict = multiple
+      ? sharedContentVerdictLabel(contentVerdicts)
+      : verdictLabel.trim();
+    if (multiple && hasConfiguredVerdicts) {
+      if (missingContentVerdictLabel(task, contentVerdicts)) {
+        setError(displayText(workflow.verdict_required));
+        return;
+      }
+    } else if (hasConfiguredVerdicts && !resolvedVerdict) {
       setError(displayText(workflow.verdict_required));
       return;
     }
@@ -211,10 +245,13 @@ export function SignatureModal({
     onError?.("");
     try {
       const resolvedComment = comment.trim();
+      const resolvedContents = multiple
+        ? collectedContentVerdicts(task, contentVerdicts, comment)
+        : undefined;
       if (needsSignature) {
-        await finishWithSignature(resolvedVerdict, resolvedComment, fields);
+        await finishWithSignature(resolvedVerdict, resolvedComment, fields, resolvedContents);
       } else {
-        await finishWithoutSignature(resolvedVerdict, resolvedComment, fields);
+        await finishWithoutSignature(resolvedVerdict, resolvedComment, fields, resolvedContents);
       }
     } catch (err) {
       const fallback = needsSignature
@@ -261,7 +298,36 @@ export function SignatureModal({
     >
       <p className="approve-reject-modal__intro">{instructions}</p>
       <Form layout="vertical" requiredMark className="approve-reject-form">
-        {hasConfiguredVerdicts && (
+        {hasConfiguredVerdicts && multiple &&
+          (task.contents ?? []).map((content) => (
+            <Form.Item
+              key={content.record_id}
+              className="workflow-task__content-item"
+              label={content.name?.trim() || content.record_id}
+              required
+            >
+              <Radio.Group
+                className="approve-reject-control"
+                value={contentVerdicts[content.record_id] || undefined}
+                onChange={(e) => {
+                  const nextLabels = {
+                    ...contentVerdicts,
+                    [content.record_id]: e.target.value,
+                  };
+                  setContentVerdicts(nextLabels);
+                  const next = selectedVerdictOption(task, sharedContentVerdictLabel(nextLabels));
+                  setCapacity(next?.capacities?.[0]?.label ?? "");
+                }}
+              >
+                {options.map((opt) => (
+                  <Radio key={`${content.record_id}-${opt.name || opt.label}`} value={opt.label}>
+                    {opt.display_label || opt.label}
+                  </Radio>
+                ))}
+              </Radio.Group>
+            </Form.Item>
+          ))}
+        {hasConfiguredVerdicts && !multiple && (
           <Form.Item label={displayText(workflow.verdict_label)} required>
             <Radio.Group
               className="approve-reject-control"

@@ -1313,6 +1313,7 @@ export type WorkflowStartDialogControl = {
   exclude_role_api_names?: string[];
   constrain_roles_not_allowed_api_names?: string[];
   assignment_mode_label?: string;
+  runtime_choice?: boolean;
   default_user_ids?: string[];
   set_workflow_due_date?: boolean;
   field_element?: FormElement;
@@ -1357,6 +1358,7 @@ export type LifecycleAction = {
   order?: number;
   kind?: "start_workflow" | "change_state" | "object_action" | "application_action";
   display_in_all_actions_menu?: boolean;
+  cardinality?: "One" | "OneOrMany" | string;
   placement?: ActionPlacement;
   workflow_start_dialog?: WorkflowStartDialog;
 };
@@ -1391,10 +1393,24 @@ export type WorkflowTaskFieldPrompt = {
   required?: boolean;
 };
 
+export type WorkflowEnvelopeContent = {
+  record_id: string;
+  ordinal: number;
+  name?: string;
+  verdict_label?: string;
+};
+
+export type WorkflowContentVerdict = {
+  record_id: string;
+  verdict_label: string;
+  comment?: string;
+};
+
 export type WorkflowTaskCompletionDraft = {
   verdict_label?: string;
   comment?: string;
   fields?: Record<string, string>;
+  content_verdicts?: WorkflowContentVerdict[];
 };
 
 export type WorkflowTaskAction = {
@@ -1415,6 +1431,8 @@ export type WorkflowTaskAction = {
   task_comments?: WorkflowTaskCommentPrompt[];
   task_fields?: WorkflowTaskFieldPrompt[];
   completion_draft?: WorkflowTaskCompletionDraft;
+  multiple_verdicts?: boolean;
+  contents?: WorkflowEnvelopeContent[];
   can_complete?: boolean;
   can_claim?: boolean;
   can_unclaim?: boolean;

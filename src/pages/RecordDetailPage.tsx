@@ -141,10 +141,12 @@ export function RecordDetailPage() {
     workflowFieldValues,
     workflowParticipantValues,
     workflowDateValues,
+    workflowAssignmentTypeValues,
     preExecutionInputValues,
     setWorkflowFieldValues,
     setWorkflowParticipantValues,
     setWorkflowDateValues,
+    setWorkflowAssignmentTypeValues,
     setPreExecutionInputValues,
     handleLifecycleAction,
     handleSdkAction,
@@ -1165,10 +1167,12 @@ export function RecordDetailPage() {
         values={workflowFieldValues}
         participantValues={workflowParticipantValues}
         dateValues={workflowDateValues}
+        assignmentTypeValues={workflowAssignmentTypeValues}
         pending={lifecyclePending}
         onValuesChange={setWorkflowFieldValues}
         onParticipantValuesChange={setWorkflowParticipantValues}
         onDateValuesChange={setWorkflowDateValues}
+        onAssignmentTypeValuesChange={setWorkflowAssignmentTypeValues}
         onCancel={cancelActionDialog}
         onConfirm={() => void confirmWorkflowDialog()}
       />

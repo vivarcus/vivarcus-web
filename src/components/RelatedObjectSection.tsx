@@ -1012,10 +1012,12 @@ export function RelatedObjectSection({
     workflowFieldValues,
     workflowParticipantValues,
     workflowDateValues,
+    workflowAssignmentTypeValues,
     preExecutionInputValues,
     setWorkflowFieldValues,
     setWorkflowParticipantValues,
     setWorkflowDateValues,
+    setWorkflowAssignmentTypeValues,
     setPreExecutionInputValues,
     handleRowLifecycleAction,
     handleRowSdkAction,
@@ -1961,10 +1963,12 @@ export function RelatedObjectSection({
           values={workflowFieldValues}
           participantValues={workflowParticipantValues}
           dateValues={workflowDateValues}
+          assignmentTypeValues={workflowAssignmentTypeValues}
           pending={lifecyclePending}
           onValuesChange={setWorkflowFieldValues}
           onParticipantValuesChange={setWorkflowParticipantValues}
           onDateValuesChange={setWorkflowDateValues}
+          onAssignmentTypeValuesChange={setWorkflowAssignmentTypeValues}
           onCancel={cancelActionDialog}
           onConfirm={() => void confirmWorkflowDialog()}
         />

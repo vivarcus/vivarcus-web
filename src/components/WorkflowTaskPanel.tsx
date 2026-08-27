@@ -4,6 +4,7 @@ import { api } from "../api/client";
 import type {
   ActionGuard,
   RecordPageModel,
+  WorkflowContentVerdict,
   WorkflowTaskAction,
 } from "../api/types";
 import { useUi } from "../context/UiContext";
@@ -88,6 +89,7 @@ export function WorkflowTaskPanel({
     verdictLabel: string,
     comment: string,
     fields: Record<string, string>,
+    contentVerdicts?: WorkflowContentVerdict[],
   ) {
     if (!task.workflow_task_id) return;
     setBusy(task.workflow_task_id);
@@ -98,6 +100,7 @@ export function WorkflowTaskPanel({
         verdict_label: verdictLabel,
         comment,
         fields,
+        content_verdicts: contentVerdicts,
         action_guard: actionGuard(page),
         layout: page.selected_layout.api_name,
       });
@@ -133,9 +136,10 @@ export function WorkflowTaskPanel({
     verdictLabel: string,
     comment: string,
     fields: Record<string, string>,
+    contentVerdicts?: WorkflowContentVerdict[],
   ) {
     if (!completeTask) return;
-    await finishWithoutSignature(completeTask, verdictLabel, comment, fields);
+    await finishWithoutSignature(completeTask, verdictLabel, comment, fields, contentVerdicts);
   }
 
   function openCompleteModal(task: WorkflowTaskAction) {

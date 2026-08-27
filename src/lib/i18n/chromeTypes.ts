@@ -1405,6 +1405,10 @@ export type WorkflowChrome = {
   load_users_failed: DisplayText;
   no_additional_info: DisplayText;
   field_not_on_layout: DisplayText;
+  start_workflow: DisplayText;
+  start_workflow_select: DisplayText;
+  start_workflow_none: DisplayText;
+  start_workflow_limit: DisplayText;
 };
 
 export type AuditChrome = {
@@ -5074,6 +5078,16 @@ export const defaultWorkflowChrome: WorkflowChrome = {
   field_not_on_layout: t(
     "Field {field} is not on this page layout.",
     "workflow.field_not_on_layout",
+  ),
+  start_workflow: t("Start Workflow", "workflow.start_workflow"),
+  start_workflow_select: t("Select a workflow", "workflow.start_workflow_select"),
+  start_workflow_none: t(
+    "No workflow is available for all selected records.",
+    "workflow.start_workflow_none",
+  ),
+  start_workflow_limit: t(
+    "Select up to 100 records to start a workflow.",
+    "workflow.start_workflow_limit",
   ),
 };
 

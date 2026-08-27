@@ -1,4 +1,4 @@
-import { Alert, Form, Select, Space, Tag } from "antd";
+import { Alert, Form, Radio, Select, Space, Tag } from "antd";
 import { QuestionCircleOutlined } from "@ant-design/icons";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { api } from "../api/client";
@@ -24,6 +24,8 @@ type Props = {
   recordId: string;
   value: string[];
   onChange: (next: string[]) => void;
+  assignmentType?: string;
+  onAssignmentTypeChange?: (next: string) => void;
   lockedUserIDs?: string[];
   disabled?: boolean;
   workflow?: WorkflowChrome;
@@ -36,6 +38,8 @@ export function WorkflowParticipantControl({
   recordId,
   value,
   onChange,
+  assignmentType,
+  onAssignmentTypeChange,
   lockedUserIDs = [],
   disabled = false,
   workflow: workflowProp,
@@ -110,6 +114,7 @@ export function WorkflowParticipantControl({
   }, [labelByUserID, options, value]);
 
   const modeLabel = assignmentModeLabel(control.assignment_mode_label, workflow);
+  const runtimeChoice = !!control.runtime_choice;
 
   return (
     <Form.Item
@@ -117,11 +122,24 @@ export function WorkflowParticipantControl({
         <Space size={4}>
           <span>{control.label || control.participant_name}</span>
           <QuestionCircleOutlined />
-          {modeLabel ? <Tag className="workflow-start-assignment-tag">{modeLabel}</Tag> : null}
+          {!runtimeChoice && modeLabel ? (
+            <Tag className="workflow-start-assignment-tag">{modeLabel}</Tag>
+          ) : null}
         </Space>
       }
       required={control.required && locked.length === 0}
     >
+      {runtimeChoice && onAssignmentTypeChange ? (
+        <Radio.Group
+          value={assignmentType || undefined}
+          disabled={disabled}
+          onChange={(e) => onAssignmentTypeChange?.(e.target.value)}
+          style={{ marginBottom: 8 }}
+        >
+          <Radio value="assigned">{displayText(workflow.assignment_assigned)}</Radio>
+          <Radio value="available">{displayText(workflow.assignment_available)}</Radio>
+        </Radio.Group>
+      ) : null}
       <Select
         mode="multiple"
         showSearch

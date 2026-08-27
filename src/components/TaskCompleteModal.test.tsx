@@ -71,6 +71,44 @@ describe("TaskCompleteModal", () => {
     expect(onSubmit).toHaveBeenCalledWith("Confirm", "", {});
   });
 
+  it("collects a verdict per envelope item for Multiple Verdicts", async () => {
+    const user = userEvent.setup();
+    const onSubmit = vi.fn().mockResolvedValue(undefined);
+    const task: WorkflowTaskAction = {
+      workflow_instance_id: "wf-1",
+      workflow_task_id: "task-1",
+      workflow_api_name: "batch_review__c",
+      workflow_label: "Batch Review",
+      task_label: "Review Items",
+      status: "active",
+      can_complete: true,
+      multiple_verdicts: true,
+      contents: [
+        { record_id: "rec-1", ordinal: 0, name: "Study A" },
+        { record_id: "rec-2", ordinal: 1, name: "Study B" },
+      ],
+      verdict_options: [
+        { name: "verdict_approve__c", label: "Approve" },
+        { name: "verdict_reject__c", label: "Reject" },
+      ],
+    };
+    renderModal(task, onSubmit);
+
+    expect(screen.getByText("Study A")).toBeInTheDocument();
+    expect(screen.getByText("Study B")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: /^Complete Task$/i }));
+    expect(onSubmit).not.toHaveBeenCalled();
+
+    const radios = screen.getAllByRole("radio", { name: "Approve" });
+    await user.click(radios[0]);
+    await user.click(screen.getAllByRole("radio", { name: "Reject" })[1]);
+    await user.click(screen.getByRole("button", { name: /^Complete Task$/i }));
+    expect(onSubmit).toHaveBeenCalledWith("Approve", "", {}, [
+      { record_id: "rec-1", verdict_label: "Approve" },
+      { record_id: "rec-2", verdict_label: "Reject" },
+    ]);
+  });
+
   it("shows verdict reason after selecting a verdict", async () => {
     const user = userEvent.setup();
     const task: WorkflowTaskAction = {

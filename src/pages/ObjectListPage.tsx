@@ -1,4 +1,4 @@
-import { Alert, Button, Modal, Spin } from "antd";
+import { Alert, Button, Modal, Spin, message } from "antd";
 import {
   ClockCircleOutlined,
   CloseCircleOutlined,
@@ -11,7 +11,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } fro
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useVaultId } from "../hooks/useVaultId";
 import { api } from "../api/client";
-import type { ListGridPreferences, ObjectListFacetModel, RelatedRowActions, ViewOption } from "../api/types";
+import type { LifecycleAction, ListGridPreferences, ObjectListFacetModel, RelatedRowActions, ViewOption } from "../api/types";
 import { AdminObjectListToolbar } from "../components/AdminObjectListToolbar";
 import { EditColumnsDialog } from "../components/EditColumnsDialog";
 import { EditDisplayFiltersDialog } from "../components/EditDisplayFiltersDialog";
@@ -31,7 +31,7 @@ import { useTabListActionsPublisher } from "../context/TabListActionsContext";
 import { useObjectListState } from "../hooks/useObjectListState";
 import { tabListActionsFromObjectList } from "../hooks/useTabListActions";
 import { handleStaleError } from "../lib/staleGuard";
-import { displayText, displayTextTemplate, defaultPageActionLabels, defaultRelatedChrome } from "../lib/i18n";
+import { displayText, displayTextTemplate, defaultPageActionLabels, defaultRelatedChrome, defaultWorkflowChrome } from "../lib/i18n";
 import {
   BUSINESS_ADMIN_OBJECTS_ENTRY_CONTEXT,
   rememberBusinessAdminObject,
@@ -54,12 +54,14 @@ import { rowHasRecordActions } from "../components/record/RecordRowActionMenu";
 import { recordEditHref } from "../lib/recordEditHref";
 import { DocumentViewerPanel } from "../components/record/DocumentViewerPanel";
 import { WorkflowStartModal } from "../components/WorkflowStartModal";
+import { StartWorkflowPickerModal } from "../components/StartWorkflowPickerModal";
 import { useRecordLifecycleActions } from "../hooks/useRecordLifecycleActions";
 import { saveLastTab, type ListRecordNavContext } from "../lib/vaultNav";
 import {
   OBJECT_LIST_PAGE_SIZE_OPTIONS,
   type ObjectListQuery,
 } from "../lib/objectListPage";
+import { MAX_WORKFLOW_ENVELOPE_RECORDS } from "../lib/workflowTask";
 
 export type ObjectListPageProps = {
   /** Defaults to Object Tab entry. Business Admin reuses the same list chrome. */
@@ -174,6 +176,12 @@ function ObjectListPageInner({
   const [favoritePendingId, setFavoritePendingId] = useState<string | null>(null);
   const [favoriteOverrides, setFavoriteOverrides] = useState<Record<string, boolean>>({});
   const [deletingRecordId, setDeletingRecordId] = useState<string | null>(null);
+  const [selectedRowKeys, setSelectedRowKeys] = useState<string[]>([]);
+  const [startablePicker, setStartablePicker] = useState<{
+    actions: LifecycleAction[];
+    recordIds: string[];
+  } | null>(null);
+  const [startablePending, setStartablePending] = useState(false);
   const [facetModel, setFacetModel] = useState<ObjectListFacetModel | null>(null);
   const [facetLoading, setFacetLoading] = useState(false);
   const [columnWidths, setColumnWidths] = useState<Record<string, number>>({});
@@ -329,10 +337,12 @@ function ObjectListPageInner({
     workflowFieldValues,
     workflowParticipantValues,
     workflowDateValues,
+    workflowAssignmentTypeValues,
     preExecutionInputValues,
     setWorkflowFieldValues,
     setWorkflowParticipantValues,
     setWorkflowDateValues,
+    setWorkflowAssignmentTypeValues,
     setPreExecutionInputValues,
     handleRowLifecycleAction,
     handleRowSdkAction,
@@ -348,8 +358,50 @@ function ObjectListPageInner({
     actionFailedLabel: displayText(shell.action_failed),
     onReload: reload,
     setError,
-    onAfterSuccess: reload,
+    onAfterSuccess: async () => {
+      setSelectedRowKeys([]);
+      await reload();
+    },
   });
+
+  const startSelectedWorkflow = useCallback(async () => {
+    if (!vaultId || !model || selectedRowKeys.length === 0 || startablePending) {
+      return;
+    }
+    if (selectedRowKeys.length > MAX_WORKFLOW_ENVELOPE_RECORDS) {
+      message.warning(displayText(defaultWorkflowChrome.start_workflow_limit));
+      return;
+    }
+    setStartablePending(true);
+    setError(null);
+    try {
+      const res = await api.listStartableWorkflows(vaultId, model.object_api_name, selectedRowKeys);
+      const actions = res.actions ?? [];
+      if (actions.length === 0) {
+        message.warning(displayText(defaultWorkflowChrome.start_workflow_none));
+        return;
+      }
+      if (actions.length === 1) {
+        await handleRowLifecycleAction(model.object_api_name, selectedRowKeys[0], actions[0], {
+          recordIds: selectedRowKeys,
+        });
+        return;
+      }
+      setStartablePicker({ actions, recordIds: selectedRowKeys });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : displayText(shell.action_failed));
+    } finally {
+      setStartablePending(false);
+    }
+  }, [
+    vaultId,
+    model,
+    selectedRowKeys,
+    startablePending,
+    setError,
+    shell.action_failed,
+    handleRowLifecycleAction,
+  ]);
 
   useEffect(() => {
     if (isBusinessAdmin) {
@@ -365,6 +417,7 @@ function ObjectListPageInner({
 
   useEffect(() => {
     setFavoriteOverrides({});
+    setSelectedRowKeys([]);
   }, [model?.list_context_fingerprint]);
 
   useEffect(() => {
@@ -1039,20 +1092,36 @@ function ObjectListPageInner({
                 disabled={loading}
               >
                 {(close) => (
-                  <ListGridMenuItems
-                    chrome={chrome}
-                    columns={model.columns}
-                    recordLinkField={model.record_link_field}
-                    current={model.grid_preferences ?? {}}
-                    editColumnsAllowed={model.edit_columns_allowed}
-                    disabled={loading}
-                    pageSize={showPagination ? pageSize : undefined}
-                    pageSizeOptions={showPagination ? OBJECT_LIST_PAGE_SIZE_OPTIONS : undefined}
-                    onPageSizeChange={showPagination ? setPageSize : undefined}
-                    onEditColumns={() => setEditColumnsOpen(true)}
-                    onSave={saveGridPreferences}
-                    close={close}
-                  />
+                  <>
+                    {selectedRowKeys.length > 0 && (
+                      <Button
+                        type="text"
+                        role="menuitem"
+                        className="list-actions-menu__item"
+                        disabled={loading || startablePending}
+                        onClick={() => {
+                          close();
+                          void startSelectedWorkflow();
+                        }}
+                      >
+                        {displayText(defaultWorkflowChrome.start_workflow)}
+                      </Button>
+                    )}
+                    <ListGridMenuItems
+                      chrome={chrome}
+                      columns={model.columns}
+                      recordLinkField={model.record_link_field}
+                      current={model.grid_preferences ?? {}}
+                      editColumnsAllowed={model.edit_columns_allowed}
+                      disabled={loading}
+                      pageSize={showPagination ? pageSize : undefined}
+                      pageSizeOptions={showPagination ? OBJECT_LIST_PAGE_SIZE_OPTIONS : undefined}
+                      onPageSizeChange={showPagination ? setPageSize : undefined}
+                      onEditColumns={() => setEditColumnsOpen(true)}
+                      onSave={saveGridPreferences}
+                      close={close}
+                    />
+                  </>
                 )}
               </ListActionsMenu>
             )}
@@ -1146,6 +1215,9 @@ function ObjectListPageInner({
                 columnWidths={columnWidths}
                 onColumnWidthChange={handleColumnWidthChange}
                 loading={loading}
+                selectable={!isAdminChrome}
+                selectedRowKeys={selectedRowKeys}
+                onSelectionChange={setSelectedRowKeys}
                 showFavoriteColumn
                 favoritePendingId={favoritePendingId}
                 onToggleFavorite={toggleFavorite}
@@ -1270,6 +1342,25 @@ function ObjectListPageInner({
       />
       )}
 
+      {startablePicker && (
+        <StartWorkflowPickerModal
+          open
+          actions={startablePicker.actions}
+          pending={lifecyclePending || startablePending}
+          onCancel={() => setStartablePicker(null)}
+          onSelect={(action) => {
+            const recordIds = startablePicker.recordIds;
+            setStartablePicker(null);
+            if (!model || recordIds.length === 0) {
+              return;
+            }
+            void handleRowLifecycleAction(model.object_api_name, recordIds[0], action, {
+              recordIds,
+            });
+          }}
+        />
+      )}
+
       {dialogTarget && model && (
         <WorkflowStartModal
           open={workflowDialogAction != null}
@@ -1281,10 +1372,12 @@ function ObjectListPageInner({
           values={workflowFieldValues}
           participantValues={workflowParticipantValues}
           dateValues={workflowDateValues}
+          assignmentTypeValues={workflowAssignmentTypeValues}
           pending={lifecyclePending}
           onValuesChange={setWorkflowFieldValues}
           onParticipantValuesChange={setWorkflowParticipantValues}
           onDateValuesChange={setWorkflowDateValues}
+          onAssignmentTypeValuesChange={setWorkflowAssignmentTypeValues}
           onCancel={cancelActionDialog}
           onConfirm={() => void confirmWorkflowDialog()}
         />

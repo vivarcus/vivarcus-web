@@ -12,7 +12,9 @@ import { api } from "../api/client";
 import type {
   ActionGuard,
   RecordPageModel,
+  WorkflowContentVerdict,
   WorkflowParticipantsModel,
+  WorkflowTaskAction,
   WorkflowTimelineInstance,
   WorkflowTimelineModel,
   WorkflowTimelineTask,
@@ -33,7 +35,6 @@ import { WorkflowDueDateStatusIcon } from "./WorkflowDueDateStatusIcon";
 import { UserAvatar } from "./UserAvatar";
 import { timelineTasksForDisplay } from "./workflowTimelineSort";
 import { enrichTimelineTaskAction } from "./workflowTimelineTaskAction";
-import type { WorkflowTaskAction } from "../api/types";
 import { taskHasSignatureRequirement } from "../lib/workflowTask";
 import { parseSoDExhausted } from "../lib/workflowSoD";
 
@@ -295,6 +296,7 @@ export function WorkflowTimeline({
     verdictLabel: string,
     comment: string,
     fields: Record<string, string>,
+    contentVerdicts?: WorkflowContentVerdict[],
   ) {
     if (!interactive || !page || !vaultId || !objectName || !recordId || !onPageUpdate || !task.workflow_task_id) {
       return;
@@ -307,6 +309,7 @@ export function WorkflowTimeline({
         verdict_label: verdictLabel,
         comment,
         fields,
+        content_verdicts: contentVerdicts,
         action_guard: actionGuard(page),
         layout: page.selected_layout.api_name,
       });
@@ -340,9 +343,10 @@ export function WorkflowTimeline({
     verdictLabel: string,
     comment: string,
     fields: Record<string, string>,
+    contentVerdicts?: WorkflowContentVerdict[],
   ) {
     if (!completeTask) return;
-    await finishWithoutSignature(completeTask, verdictLabel, comment, fields);
+    await finishWithoutSignature(completeTask, verdictLabel, comment, fields, contentVerdicts);
   }
 
   function openCompleteModal(task: WorkflowTaskAction) {
