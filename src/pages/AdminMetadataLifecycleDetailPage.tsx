@@ -261,6 +261,12 @@ function StateTypesTable({
       render: (_v, row) => displayText(row.state_label || undefined, row.state_api_name),
     },
     {
+      key: "api_name",
+      title: displayText(shell.metadata_lifecycle_name),
+      className: "mono",
+      render: (_v, row) => (row.api_name?.startsWith("derived:") ? "" : row.api_name),
+    },
+    {
       key: "description",
       dataIndex: "description",
       title: displayText(shell.description),
