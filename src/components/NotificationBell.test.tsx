@@ -1,4 +1,4 @@
-import { act, render, waitFor } from "@testing-library/react";
+import { act, render } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { MemoryRouter } from "react-router-dom";
 import { api } from "../api/client";
@@ -111,10 +111,8 @@ describe("NotificationBell unread-count polling", () => {
     await act(async () => {
       document.dispatchEvent(new Event("visibilitychange"));
       window.dispatchEvent(new Event("focus"));
+      await Promise.resolve();
     });
-
-    await waitFor(() => {
-      expect(api.notificationUnreadCount).toHaveBeenCalledTimes(2);
-    });
+    expect(api.notificationUnreadCount).toHaveBeenCalledTimes(2);
   });
 });
