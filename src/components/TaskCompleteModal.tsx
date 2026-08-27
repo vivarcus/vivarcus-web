@@ -10,6 +10,7 @@ import {
   taskCompletionFields,
   verdictNeedsSignature,
 } from "../lib/workflowTask";
+import { parseSoDExhausted } from "../lib/workflowSoD";
 
 type Props = {
   task: WorkflowTaskAction;
@@ -95,7 +96,13 @@ export function TaskCompleteModal({ task, workflow = defaultWorkflowChrome, onCl
     try {
       await onSubmit(resolvedVerdict, comment.trim(), fields);
     } catch (err) {
-      setError(err instanceof Error ? err.message : displayText(workflow.complete_failed));
+      const exhausted = parseSoDExhausted(err);
+      if (exhausted) {
+        const hint = displayText(workflow.sod_exhausted_hint);
+        setError(hint ? `${exhausted.message} ${hint}` : exhausted.message);
+      } else {
+        setError(err instanceof Error ? err.message : displayText(workflow.complete_failed));
+      }
     } finally {
       setSubmitting(false);
     }

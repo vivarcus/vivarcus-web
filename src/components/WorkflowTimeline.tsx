@@ -35,6 +35,7 @@ import { timelineTasksForDisplay } from "./workflowTimelineSort";
 import { enrichTimelineTaskAction } from "./workflowTimelineTaskAction";
 import type { WorkflowTaskAction } from "../api/types";
 import { taskHasSignatureRequirement } from "../lib/workflowTask";
+import { parseSoDExhausted } from "../lib/workflowSoD";
 
 type Props = {
   timeline?: WorkflowTimelineModel;
@@ -312,6 +313,18 @@ export function WorkflowTimeline({
       onPageUpdate(res.page);
       setCompleteTask(null);
     } catch (err) {
+      const exhausted = parseSoDExhausted(err);
+      if (exhausted) {
+        const inst = instances.find((row) => row.workflow_instance_id === exhausted.workflowInstanceId);
+        if (inst?.actions.can_add_participants) {
+          setAdminModal({
+            kind: "add-participants",
+            instance: inst,
+            focusGroup: exhausted.participantGroup,
+          });
+        }
+        throw err;
+      }
       const fallback = displayText(workflow.complete_failed);
       if (onReloadPage) {
         await handleStaleError(err, onReloadPage, onError ?? (() => {}), fallback, shell);

@@ -1396,6 +1396,7 @@ export type WorkflowChrome = {
   comment_label: DisplayText;
   comment_required: DisplayText;
   complete_failed: DisplayText;
+  sod_exhausted_hint: DisplayText;
   unclaim_failed: DisplayText;
   complete_task_fallback: DisplayText;
   select_users: DisplayText;
@@ -5049,6 +5050,10 @@ export const defaultWorkflowChrome: WorkflowChrome = {
   comment_label: t("Comment", "workflow.comment_label"),
   comment_required: t("Comment is required", "workflow.comment_required"),
   complete_failed: t("Failed to complete task", "workflow.complete_failed"),
+  sod_exhausted_hint: t(
+    "Add eligible participants, then complete the task again.",
+    "workflow.sod_exhausted_hint",
+  ),
   unclaim_failed: t("Failed to undo acceptance", "workflow.unclaim_failed"),
   complete_task_fallback: t("Complete Task", "workflow.complete_task_fallback"),
   select_users: t("Select users", "workflow.select_users"),

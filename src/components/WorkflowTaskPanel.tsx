@@ -9,11 +9,16 @@ import type {
 import { useUi } from "../context/UiContext";
 import { handleStaleError } from "../lib/staleGuard";
 import { defaultWorkflowChrome, displayText } from "../lib/i18n";
+import { parseSoDExhausted } from "../lib/workflowSoD";
 import { workflowDueTone } from "../lib/workflowDueDate";
 import { WorkflowDueDateLabel } from "./WorkflowDueDateLabel";
 import { WorkflowDueDateStatusIcon } from "./WorkflowDueDateStatusIcon";
 import { SignatureModal } from "./SignatureModal";
 import { TaskCompleteModal } from "./TaskCompleteModal";
+import {
+  WorkflowTimelineActionModals,
+  type TimelineAdminModalState,
+} from "./WorkflowTimelineActionModals";
 import { taskHasSignatureRequirement } from "../lib/workflowTask";
 
 type Props = {
@@ -56,6 +61,7 @@ export function WorkflowTaskPanel({
   const [signatureTask, setSignatureTask] = useState<WorkflowTaskAction | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [expandedByTask, setExpandedByTask] = useState<Record<string, boolean>>({});
+  const [adminModal, setAdminModal] = useState<TimelineAdminModalState | null>(null);
 
   if (tasks.length === 0) {
     return null;
@@ -98,6 +104,20 @@ export function WorkflowTaskPanel({
       onPageUpdate(res.page);
       setCompleteTask(null);
     } catch (err) {
+      const exhausted = parseSoDExhausted(err);
+      if (exhausted) {
+        const inst = (page.workflow_timeline?.instances ?? []).find(
+          (row) => row.workflow_instance_id === exhausted.workflowInstanceId,
+        );
+        if (inst?.actions.can_add_participants) {
+          setAdminModal({
+            kind: "add-participants",
+            instance: inst,
+            focusGroup: exhausted.participantGroup,
+          });
+        }
+        throw err;
+      }
       const fallback = displayText(workflow.complete_failed);
       if (onReloadPage) {
         await handleStaleError(err, onReloadPage, onError, fallback, shell);
@@ -390,6 +410,19 @@ export function WorkflowTaskPanel({
           onReloadPage={onReloadPage}
         />
       )}
+
+      <WorkflowTimelineActionModals
+        state={adminModal}
+        onClose={() => setAdminModal(null)}
+        vaultId={vaultId}
+        objectName={objectName}
+        recordId={recordId}
+        page={page}
+        workflow={workflow}
+        onPageUpdate={onPageUpdate}
+        onError={onError}
+        onReloadPage={onReloadPage}
+      />
     </>
   );
 }

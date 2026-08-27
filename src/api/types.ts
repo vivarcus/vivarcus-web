@@ -2148,6 +2148,11 @@ export type EntryCriteriaViolation = {
 
 export type ApiError = {
   error: string | { code?: string; message?: string };
+  code?: string;
+  message?: string;
+  participant_group?: string;
+  workflow_instance_id?: string;
+  role?: string;
   failed_rule?: string;
   target_state_label?: string;
   target_state_name?: string;

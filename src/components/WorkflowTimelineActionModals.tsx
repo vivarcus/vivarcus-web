@@ -26,7 +26,7 @@ export type TimelineAdminModalState =
   | { kind: "cancel-task"; instance: WorkflowTimelineInstance; task: WorkflowTimelineTask }
   | { kind: "reassign-task"; instance: WorkflowTimelineInstance; task: WorkflowTimelineTask }
   | { kind: "replace-owner"; instance: WorkflowTimelineInstance }
-  | { kind: "add-participants"; instance: WorkflowTimelineInstance }
+  | { kind: "add-participants"; instance: WorkflowTimelineInstance; focusGroup?: string }
   | { kind: "email-participants"; instance: WorkflowTimelineInstance }
   | { kind: "update-workflow-due"; instance: WorkflowTimelineInstance }
   | { kind: "update-task-due"; instance: WorkflowTimelineInstance; task: WorkflowTimelineTask };
@@ -180,7 +180,11 @@ export function WorkflowTimelineActionModals({
           );
           const existing = existingMembersByGroup(res.groups);
           const controls = addableParticipantControls(res.participant_controls ?? []);
-          setParticipantControls(controls);
+          const focused = state.focusGroup?.trim();
+          const visible = focused
+            ? controls.filter((control) => control.participant_name?.trim() === focused)
+            : controls;
+          setParticipantControls(visible.length > 0 ? visible : controls);
           setExistingParticipantIDs(existing);
           setParticipantValues(existing);
         } catch (err) {

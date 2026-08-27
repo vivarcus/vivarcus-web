@@ -33,9 +33,14 @@ import { useVaultId } from "../hooks/useVaultId";
 import { displayText, displayTextTemplate, defaultTaskDashboardChrome, defaultWorkflowChrome } from "../lib/i18n";
 import type { TaskDashboardChrome } from "../lib/i18n/chromeTypes";
 import { taskHasSignatureRequirement, workflowTaskActionFromDashboard } from "../lib/workflowTask";
+import { parseSoDExhausted } from "../lib/workflowSoD";
 import { UserAvatar } from "../components/UserAvatar";
 import { SignatureModal } from "../components/SignatureModal";
 import { TaskCompleteModal } from "../components/TaskCompleteModal";
+import {
+  WorkflowTimelineActionModals,
+  type TimelineAdminModalState,
+} from "../components/WorkflowTimelineActionModals";
 
 dayjs.extend(relativeTime);
 
@@ -541,6 +546,7 @@ export function TaskDashboardPage() {
     page: RecordPageModel;
     task: WorkflowTaskAction;
   } | null>(null);
+  const [sodAddModal, setSodAddModal] = useState<TimelineAdminModalState | null>(null);
   const [filters, setFilters] = useState<HomeFiltersState>(emptyFilters);
   const [expandedFilters, setExpandedFilters] = useState<Record<string, boolean>>({
     content_type: true,
@@ -691,25 +697,42 @@ export function TaskDashboardPage() {
       if (!vaultId || !workflowComplete) return;
       const { page, task } = workflowComplete;
       if (!task.workflow_task_id) return;
-      if (!page) {
-        await api.completeHomeWorkflowTask(vaultId, task.workflow_task_id, {
-          verdict_label: verdictLabel,
-          comment,
-          fields,
-        });
-      } else {
-        await api.workflowComplete(vaultId, page.object_api_name, page.record_id, {
-          workflow_task_id: task.workflow_task_id,
-          verdict_label: verdictLabel,
-          comment,
-          fields,
-          action_guard: {
-            schema_fingerprint: page.schema_fingerprint,
-            ui_fingerprint: page.ui_fingerprint,
-            record_version: page.record_version,
-          },
-          layout: page.selected_layout.api_name,
-        });
+      try {
+        if (!page) {
+          await api.completeHomeWorkflowTask(vaultId, task.workflow_task_id, {
+            verdict_label: verdictLabel,
+            comment,
+            fields,
+          });
+        } else {
+          await api.workflowComplete(vaultId, page.object_api_name, page.record_id, {
+            workflow_task_id: task.workflow_task_id,
+            verdict_label: verdictLabel,
+            comment,
+            fields,
+            action_guard: {
+              schema_fingerprint: page.schema_fingerprint,
+              ui_fingerprint: page.ui_fingerprint,
+              record_version: page.record_version,
+            },
+            layout: page.selected_layout.api_name,
+          });
+        }
+      } catch (err) {
+        const exhausted = parseSoDExhausted(err);
+        if (exhausted && page) {
+          const inst = (page.workflow_timeline?.instances ?? []).find(
+            (row) => row.workflow_instance_id === exhausted.workflowInstanceId,
+          );
+          if (inst?.actions.can_add_participants) {
+            setSodAddModal({
+              kind: "add-participants",
+              instance: inst,
+              focusGroup: exhausted.participantGroup,
+            });
+          }
+        }
+        throw err;
       }
       setWorkflowComplete(null);
       await load();
@@ -1104,6 +1127,22 @@ export function TaskDashboardPage() {
           onSubmit={submitWorkflowComplete}
         />
       )}
+
+      {workflowComplete?.page && vaultId ? (
+        <WorkflowTimelineActionModals
+          state={sodAddModal}
+          onClose={() => setSodAddModal(null)}
+          vaultId={vaultId}
+          objectName={workflowComplete.page.object_api_name}
+          recordId={workflowComplete.page.record_id}
+          page={workflowComplete.page}
+          workflow={workflowChrome}
+          onPageUpdate={(next) =>
+            setWorkflowComplete((current) => (current ? { ...current, page: next } : current))
+          }
+          onError={(message) => setError(message)}
+        />
+      ) : null}
 
       {workflowSignature && (
         <SignatureModal
