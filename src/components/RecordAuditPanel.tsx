@@ -55,7 +55,7 @@ function filtersToQuery(filters: RecordAuditFilters) {
     user: filters.user.trim() || undefined,
     action: filters.action.trim() || undefined,
     time_from: localDateTimeInputToRFC3339(filters.timeFrom),
-    time_to: localDateTimeInputToRFC3339(filters.timeTo, true),
+    time_to: localDateTimeInputToRFC3339(filters.timeTo),
   };
 }
 
