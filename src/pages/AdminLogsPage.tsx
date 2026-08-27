@@ -123,7 +123,7 @@ export function AdminLogsPage() {
       }
       return {
         time_from: localDateTimeInputToRFC3339(filters.timeFrom),
-        time_to: localDateTimeInputToRFC3339(filters.timeTo),
+        time_to: localDateTimeInputToRFC3339(filters.timeTo, true),
       };
     },
     [panel],
