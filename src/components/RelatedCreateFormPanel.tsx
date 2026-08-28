@@ -24,7 +24,7 @@ type Props = {
   objectTypeName?: string;
   modal?: boolean;
   chrome?: typeof defaultRelatedChrome;
-  onCreated: (section: RelatedSectionModel, createAnother?: boolean) => void;
+  onCreated: (section?: RelatedSectionModel, createAnother?: boolean) => void;
   onCancel: () => void;
   onError: (message: string) => void;
 };
