@@ -22,14 +22,38 @@ import { useVaultId } from "../hooks/useVaultId";
 import { displayText } from "../lib/i18n";
 
 const WEEK_DAYS = [
-  { value: "sunday", label: "Sunday" },
-  { value: "monday", label: "Monday" },
-  { value: "tuesday", label: "Tuesday" },
-  { value: "wednesday", label: "Wednesday" },
-  { value: "thursday", label: "Thursday" },
-  { value: "friday", label: "Friday" },
-  { value: "saturday", label: "Saturday" },
+  { value: "Sun", label: "Sunday" },
+  { value: "Mon", label: "Monday" },
+  { value: "Tue", label: "Tuesday" },
+  { value: "Wed", label: "Wednesday" },
+  { value: "Thu", label: "Thursday" },
+  { value: "Fri", label: "Friday" },
+  { value: "Sat", label: "Saturday" },
 ];
+
+function catalogWeekDay(value: string | undefined): string {
+  const map: Record<string, string> = {
+    sunday: "Sun",
+    sun: "Sun",
+    monday: "Mon",
+    mon: "Mon",
+    tuesday: "Tue",
+    tue: "Tue",
+    tues: "Tue",
+    wednesday: "Wed",
+    wed: "Wed",
+    thursday: "Thu",
+    thu: "Thu",
+    thur: "Thu",
+    thurs: "Thu",
+    friday: "Fri",
+    fri: "Fri",
+    saturday: "Sat",
+    sat: "Sat",
+  };
+  const key = (value ?? "").trim();
+  return map[key.toLowerCase()] ?? (key || "Mon");
+}
 
 const HOURLY_INTERVALS = [1, 2, 3, 4, 6, 12];
 
@@ -265,7 +289,7 @@ export function AdminJobDefinitionDetailPage() {
       schedule: "Daily",
       time: "02:00",
       hourly_interval: 1,
-      week_day: "monday",
+      week_day: "Mon",
       month_repeat_type: "dayOfTheMonth",
       day_of_month: 1,
       week_number: 1,
@@ -306,7 +330,7 @@ export function AdminJobDefinitionDetailPage() {
         schedule: d.schedule || "Daily",
         time: typeof sc.time === "string" ? sc.time : "02:00",
         hourly_interval: typeof sc.hourly_interval === "number" ? sc.hourly_interval : 1,
-        week_day: typeof sc.week_day === "string" ? sc.week_day : "monday",
+        week_day: catalogWeekDay(typeof sc.week_day === "string" ? sc.week_day : undefined),
         month_repeat_type:
           typeof sc.month_repeat_type === "string" ? sc.month_repeat_type : "dayOfTheMonth",
         day_of_month: typeof sc.day_of_month === "number" ? sc.day_of_month : 1,
