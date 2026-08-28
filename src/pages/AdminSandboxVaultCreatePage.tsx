@@ -153,7 +153,7 @@ export function AdminSandboxVaultCreatePage() {
           requiredMark={(label, { required }) =>
             required ? (
               <>
-                <span>{label}</span>
+                {label}
                 <span className="admin-page__required">*</span>
               </>
             ) : (

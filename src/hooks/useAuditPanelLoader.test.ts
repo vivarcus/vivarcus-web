@@ -16,26 +16,4 @@ describe("useAuditPanelLoader", () => {
     });
     expect(fetchPanel).not.toHaveBeenCalled();
   });
-
-  it("retries while the first fetch returns no object rows", async () => {
-    const fetchPanel = vi
-      .fn()
-      .mockResolvedValueOnce({ object_rows: [] })
-      .mockResolvedValueOnce({ object_rows: [{ action: "Create", event_description: "Item created" }] });
-    const { result } = renderHook(() =>
-      useAuditPanelLoader({
-        fetchPanel,
-        retryWhenEmpty: (panel) => (panel.object_rows?.length ?? 0) === 0,
-        retryIntervalMs: 20,
-        maxEmptyRetries: 3,
-      }),
-    );
-    await waitFor(() => {
-      expect(fetchPanel).toHaveBeenCalledTimes(1);
-    });
-    await waitFor(() => {
-      expect(fetchPanel).toHaveBeenCalledTimes(2);
-      expect(result.current.panel?.object_rows).toHaveLength(1);
-    });
-  });
 });

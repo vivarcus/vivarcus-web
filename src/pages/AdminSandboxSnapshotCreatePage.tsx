@@ -131,7 +131,7 @@ export function AdminSandboxSnapshotCreatePage() {
           requiredMark={(label, { required }) =>
             required ? (
               <>
-                <span>{label}</span>
+                {label}
                 <span className="admin-page__required">*</span>
               </>
             ) : (

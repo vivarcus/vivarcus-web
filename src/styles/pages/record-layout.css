@@ -9,10 +9,6 @@
   min-height: 0;
 }
 
-.record-page > .workflow-task-banner-stack {
-  flex-shrink: 0;
-}
-
 .record-page__header {
   padding: 1rem 1.25rem 0.5rem;
   flex-shrink: 0;

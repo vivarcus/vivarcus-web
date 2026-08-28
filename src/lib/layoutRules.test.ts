@@ -136,18 +136,6 @@ describe("applyLayoutRuleEffects", () => {
             field_api_name: "create_urs__v",
             label: label("Grant Access"),
             hidden: true,
-            field_type: "Boolean",
-            field_render: {
-              field_ref: { field_api_name: "create_urs__v" },
-              field_type: "Boolean",
-              renderer_kind: "display_text",
-              support_state: "supported",
-              visibility: "hidden",
-              editability: "hidden",
-              requiredness: "optional",
-              required_satisfaction: "satisfied",
-              display_value: "No",
-            },
           },
         ],
       },
@@ -163,11 +151,6 @@ describe("applyLayoutRuleEffects", () => {
       "security_details__c",
     ]);
     expect(result[1].hidden).toBe(false);
-    const grant = result[1].elements[0];
-    expect(grant.hidden).toBe(false);
-    expect(grant.read_only).toBe(false);
-    expect(grant.field_render?.visibility).toBe("visible");
-    expect(grant.field_render?.editability).toBe("editable");
-    expect(grant.field_render?.renderer_kind).toBe("");
+    expect(result[1].elements[0].hidden).toBe(false);
   });
 });

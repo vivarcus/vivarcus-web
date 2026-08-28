@@ -78,17 +78,11 @@ export function AdminSandboxSnapshotsPage() {
 
   const sectionTitle = useMemo(() => {
     if (!model) return "";
-    const allTitle = displayText(model.chrome.all_snapshots_title);
-    if (!sourceSandboxFilter) return allTitle;
-    const fromSnapshot = model.snapshots.find((row) => row.source_sandbox_id === sourceSandboxFilter)?.source_sandbox?.trim();
-    const fromOption = [...model.source_options, ...model.change_source_candidates].find(
-      (opt) => opt.id === sourceSandboxFilter,
-    )?.name?.trim();
-    const name = fromSnapshot || fromOption;
-    // AC-PLT-ENV-03 step 12: the filtered snapshots heading must include the
-    // source sandbox name even when that sandbox has not created a snapshot yet.
-    if (name) return `${allTitle} — ${name}`;
-    return allTitle;
+    if (!sourceSandboxFilter) return displayText(model.chrome.all_snapshots_title);
+    const match = model.snapshots.find((row) => row.source_sandbox_id === sourceSandboxFilter);
+    const name = match?.source_sandbox?.trim();
+    if (name) return `${displayText(model.chrome.all_snapshots_title)} — ${name}`;
+    return displayText(model.chrome.all_snapshots_title);
   }, [model, sourceSandboxFilter]);
 
   const confirmUpdate = (row: SandboxSnapshotRow) => {
