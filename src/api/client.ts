@@ -2228,6 +2228,7 @@ export const api = {
       workflow_task_id?: string;
       signature_type?: string;
       vault_id?: string;
+      read_and_understood?: boolean;
     };
   }) {
     return apiFetch<{ step_up_token: string; expires_at: string }>("/ui/auth/stepup", {

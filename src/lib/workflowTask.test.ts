@@ -29,6 +29,38 @@ describe("taskCompletionFields", () => {
       },
     ]);
   });
+
+  it("always includes task-level fields regardless of the selected verdict", () => {
+    const task: WorkflowTaskAction = {
+      workflow_instance_id: "wf-1",
+      workflow_api_name: "complete_risk_mitigation__v",
+      workflow_label: "Complete Risk Mitigation",
+      status: "active",
+      task_fields: [
+        {
+          name: "my_field_prompt_control__c",
+          reference: "Object.pdv__ctms.resolution__ctms",
+          field_api_name: "resolution__ctms",
+          field_label: "Resolution",
+          required: true,
+        },
+      ],
+      verdict_options: [
+        { name: "verdict_approve__c", label: "Approve" },
+        { name: "verdict_reject__c", label: "Reject" },
+      ],
+    };
+
+    const expected = [
+      {
+        field_api_name: "resolution__ctms",
+        field_label: "Resolution",
+        required: true,
+      },
+    ];
+    expect(taskCompletionFields(task, "")).toEqual(expected);
+    expect(taskCompletionFields(task, "Reject")).toEqual(expected);
+  });
 });
 
 describe("workflowTaskActionFromDashboard", () => {

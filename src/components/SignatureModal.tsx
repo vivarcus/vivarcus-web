@@ -176,6 +176,7 @@ export function SignatureModal({
         workflow_task_id: task.workflow_task_id,
         signature_type: selected?.signature_type ?? task.signature_type,
         vault_id: vaultId,
+        read_and_understood: task.read_and_understood === true,
       },
     });
     const complete = await api.completeSignature(vaultId, {

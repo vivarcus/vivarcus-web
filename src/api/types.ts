@@ -1444,6 +1444,7 @@ export type WorkflowTaskAction = {
   can_claim?: boolean;
   can_unclaim?: boolean;
   can_cancel?: boolean;
+  read_and_understood?: boolean;
 };
 
 export type WorkflowTimelineUser = {

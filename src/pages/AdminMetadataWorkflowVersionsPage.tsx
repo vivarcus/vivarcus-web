@@ -67,7 +67,7 @@ export function AdminMetadataWorkflowVersionsPage() {
       title: displayText(shell.metadata_lifecycle_label),
       render: (_v, row) => (
         <Button type="link" className="metadata-link" onClick={() => openVersion(row.definition_version)}>
-          {row.label || title}
+          {row.label || String(row.definition_version)}
         </Button>
       ),
     },
