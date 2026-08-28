@@ -1868,7 +1868,7 @@ export type RelatedSectionCreateResult = {
   record_id: string;
   version: number;
   fields: Record<string, unknown>;
-  section: RelatedSectionModel;
+  section?: RelatedSectionModel;
 };
 
 export type RelatedCreateFormModel = RecordFormModel & {

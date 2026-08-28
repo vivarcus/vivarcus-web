@@ -1303,10 +1303,9 @@ export function RelatedObjectSection({
     setExpanded((prev) => !prev);
   }
 
-  function handleCreateSuccess(section: RelatedSectionModel) {
+  function handleCreateSuccess(_section?: RelatedSectionModel) {
     resetPagination();
-    setModel(section);
-    onTotalChangeRef.current?.(relatedSectionRowCount(section));
+    void loadRef.current?.(undefined);
   }
 
   function applySectionMutation(section: RelatedSectionModel) {
