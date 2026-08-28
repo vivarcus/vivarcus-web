@@ -1,7 +1,7 @@
 import { Alert, Button, Form, Input, Modal, Radio, Select } from "antd";
 import { useMemo, useState } from "react";
 import { api, HttpError } from "../api/client";
-import type { ActionGuard, RecordPageModel, WorkflowTaskAction } from "../api/types";
+import type { ActionGuard, RecordPageModel, StartNextWorkflowResult, WorkflowTaskAction } from "../api/types";
 import { useAuth } from "../auth/AuthProvider";
 import { useUi } from "../context/UiContext";
 import { defaultWorkflowChrome, displayText, type WorkflowChrome } from "../lib/i18n";
@@ -32,7 +32,7 @@ type Props = {
   page: RecordPageModel;
   workflow?: WorkflowChrome;
   onClose: () => void;
-  onSuccess: (page: RecordPageModel) => void;
+  onSuccess: (page: RecordPageModel, startNext?: StartNextWorkflowResult | null) => void;
   onError?: (message: string) => void;
   onReloadPage?: () => Promise<void>;
 };
@@ -149,7 +149,7 @@ export function SignatureModal({
       action_guard: actionGuard(page),
       layout: page.selected_layout.api_name,
     });
-    onSuccess(res.page);
+    onSuccess(res.page, res.start_next ?? null);
   }
 
   async function finishWithSignature(
@@ -192,7 +192,23 @@ export function SignatureModal({
       recordId,
       { layout: page.selected_layout.api_name },
     );
-    onSuccess(refreshed);
+    let startNext: StartNextWorkflowResult | null = null;
+    if (task.workflow_task_id) {
+      try {
+        const prompt = await api.workflowStartNext(
+          vaultId,
+          objectName,
+          recordId,
+          task.workflow_task_id,
+        );
+        if (prompt.actions?.length) {
+          startNext = prompt;
+        }
+      } catch {
+        startNext = null;
+      }
+    }
+    onSuccess(refreshed, startNext);
   }
 
   async function handleSubmit() {

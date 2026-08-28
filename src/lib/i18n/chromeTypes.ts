@@ -185,6 +185,8 @@ export type ShellChrome = {
   metadata_workflow_decision_rules: DisplayText;
   metadata_workflow_notification_options: DisplayText;
   metadata_workflow_state_change_options: DisplayText;
+  metadata_workflow_end_options: DisplayText;
+  metadata_workflow_display_start_next: DisplayText;
   metadata_workflow_step_tags: DisplayText;
   metadata_workflow_control_type: DisplayText;
   metadata_workflow_control_heading: DisplayText;
@@ -1413,6 +1415,10 @@ export type WorkflowChrome = {
   start_workflow_select: DisplayText;
   start_workflow_none: DisplayText;
   start_workflow_limit: DisplayText;
+  start_next_workflow_title: DisplayText;
+  start_next_workflow_body: DisplayText;
+  start_next_workflow_start: DisplayText;
+  start_next_workflow_none: DisplayText;
 };
 
 export type AuditChrome = {
@@ -3620,6 +3626,11 @@ export const defaultShellChrome: ShellChrome = {
     "State Change",
     "metadata.workflow_state_change_options",
   ),
+  metadata_workflow_end_options: t("End Options", "metadata.workflow_end_options"),
+  metadata_workflow_display_start_next: t(
+    "Display start next workflow dialog when workflow ends",
+    "metadata.workflow_display_start_next",
+  ),
   metadata_workflow_step_tags: t("Tags", "metadata.workflow_step_tags"),
   metadata_workflow_control_type: t(
     "Control Type",
@@ -5096,6 +5107,22 @@ export const defaultWorkflowChrome: WorkflowChrome = {
   start_workflow_limit: t(
     "Select up to 100 records to start a workflow.",
     "workflow.start_workflow_limit",
+  ),
+  start_next_workflow_title: t(
+    "Start Next Workflow",
+    "workflow.start_next_workflow_title",
+  ),
+  start_next_workflow_body: t(
+    'All tasks for the workflow "{label}" have now been completed.',
+    "workflow.start_next_workflow_body",
+  ),
+  start_next_workflow_start: t(
+    "Start a workflow",
+    "workflow.start_next_workflow_start",
+  ),
+  start_next_workflow_none: t(
+    "Take no further action",
+    "workflow.start_next_workflow_none",
   ),
 };
 

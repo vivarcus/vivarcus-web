@@ -12,6 +12,7 @@ import { api } from "../api/client";
 import type {
   ActionGuard,
   RecordPageModel,
+  StartNextWorkflowResult,
   WorkflowContentVerdict,
   WorkflowParticipantsModel,
   WorkflowTaskAction,
@@ -37,6 +38,7 @@ import { timelineTasksForDisplay } from "./workflowTimelineSort";
 import { enrichTimelineTaskAction } from "./workflowTimelineTaskAction";
 import { taskHasSignatureRequirement } from "../lib/workflowTask";
 import { parseSoDExhausted } from "../lib/workflowSoD";
+import { isStartNextPrompt } from "../lib/startNextWorkflow";
 
 type Props = {
   timeline?: WorkflowTimelineModel;
@@ -48,6 +50,7 @@ type Props = {
   onPageUpdate?: (page: RecordPageModel) => void;
   onError?: (message: string) => void;
   onReloadPage?: () => Promise<void>;
+  onStartNext?: (prompt: StartNextWorkflowResult) => void;
 };
 
 function actionGuard(page: RecordPageModel): ActionGuard {
@@ -213,6 +216,7 @@ export function WorkflowTimeline({
   onPageUpdate,
   onError,
   onReloadPage,
+  onStartNext,
 }: Props) {
   const { shell, displayContext } = useUi();
   const workflow = useMemo(
@@ -314,6 +318,9 @@ export function WorkflowTimeline({
         layout: page.selected_layout.api_name,
       });
       onPageUpdate(res.page);
+      if (isStartNextPrompt(res.start_next)) {
+        onStartNext?.(res.start_next);
+      }
       setCompleteTask(null);
     } catch (err) {
       const exhausted = parseSoDExhausted(err);
@@ -809,8 +816,11 @@ export function WorkflowTimeline({
           page={page}
           workflow={workflow}
           onClose={() => setSignatureTask(null)}
-          onSuccess={(page) => {
-            onPageUpdate(page);
+          onSuccess={(nextPage, startNext) => {
+            onPageUpdate(nextPage);
+            if (isStartNextPrompt(startNext)) {
+              onStartNext?.(startNext);
+            }
             setSignatureTask(null);
           }}
           onError={onError}

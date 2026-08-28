@@ -7,6 +7,7 @@ import type {
   PageElement,
   PicklistEntryOption,
   RecordPageModel,
+  StartNextWorkflowResult,
   WorkflowTaskAction,
 } from "../../api/types";
 import { displayText } from "../../lib/i18n";
@@ -36,6 +37,7 @@ type ViewElementProps = {
   onPageUpdate?: (page: RecordPageModel) => void;
   onError?: (message: string) => void;
   onReloadPage?: () => Promise<void>;
+  onStartNext?: (prompt: StartNextWorkflowResult) => void;
 };
 
 type EditElementProps = {
@@ -176,6 +178,7 @@ export function RecordSectionElement(props: RecordSectionElementProps) {
     onPageUpdate,
     onError,
     onReloadPage,
+    onStartNext,
   } = props;
 
   switch (el.kind) {
@@ -230,6 +233,7 @@ export function RecordSectionElement(props: RecordSectionElementProps) {
           onPageUpdate={onPageUpdate}
           onError={onError}
           onReloadPage={onReloadPage}
+          onStartNext={onStartNext}
         />
       );
     case "control":

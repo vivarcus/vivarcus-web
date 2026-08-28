@@ -4,6 +4,7 @@ import { api } from "../api/client";
 import type {
   ActionGuard,
   RecordPageModel,
+  StartNextWorkflowResult,
   WorkflowContentVerdict,
   WorkflowTaskAction,
 } from "../api/types";
@@ -21,6 +22,7 @@ import {
   type TimelineAdminModalState,
 } from "./WorkflowTimelineActionModals";
 import { taskHasSignatureRequirement } from "../lib/workflowTask";
+import { isStartNextPrompt } from "../lib/startNextWorkflow";
 
 type Props = {
   vaultId: string;
@@ -30,6 +32,7 @@ type Props = {
   onPageUpdate: (page: RecordPageModel) => void;
   onError: (message: string) => void;
   onReloadPage?: () => Promise<void>;
+  onStartNext?: (prompt: StartNextWorkflowResult) => void;
   variant?: "banner" | "section";
 };
 
@@ -53,6 +56,7 @@ export function WorkflowTaskPanel({
   onPageUpdate,
   onError,
   onReloadPage,
+  onStartNext,
   variant = "banner",
 }: Props) {
   const { shell } = useUi();
@@ -105,6 +109,9 @@ export function WorkflowTaskPanel({
         layout: page.selected_layout.api_name,
       });
       onPageUpdate(res.page);
+      if (isStartNextPrompt(res.start_next)) {
+        onStartNext?.(res.start_next);
+      }
       setCompleteTask(null);
     } catch (err) {
       const exhausted = parseSoDExhausted(err);
@@ -406,8 +413,11 @@ export function WorkflowTaskPanel({
           page={page}
           workflow={workflow}
           onClose={closeSignatureModal}
-          onSuccess={(page) => {
-            onPageUpdate(page);
+          onSuccess={(nextPage, startNext) => {
+            onPageUpdate(nextPage);
+            if (isStartNextPrompt(startNext)) {
+              onStartNext?.(startNext);
+            }
             closeSignatureModal();
           }}
           onError={onError}

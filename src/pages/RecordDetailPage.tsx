@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } fro
 import { useLocation, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useVaultId } from "../hooks/useVaultId";
 import { api } from "../api/client";
-import type { ChangeTypeWarning, RecordFormModel, RecordPageModel } from "../api/types";
+import type { ChangeTypeWarning, LifecycleAction, RecordFormModel, RecordPageModel, StartNextWorkflowResult } from "../api/types";
 import { useUi } from "../context/UiContext";
 import { FormMetaProvider } from "../context/FormMetaContext";
 import { useVaultAI } from "../context/VaultAIContext";
@@ -51,6 +51,7 @@ import {
 import { ChangeTypeModal } from "../components/ChangeTypeModal";
 import { ChangeTypeWarningModal } from "../components/ChangeTypeWarningModal";
 import { WorkflowStartModal } from "../components/WorkflowStartModal";
+import { StartNextWorkflowModal } from "../components/StartNextWorkflowModal";
 import { WorkflowTaskPanel } from "../components/WorkflowTaskPanel";
 import { PreExecutionDialogModal } from "../components/PreExecutionDialogModal";
 import { getLastTab, type RecordNavState } from "../lib/vaultNav";
@@ -91,6 +92,7 @@ export function RecordDetailPage() {
   const { shell } = useUi();
   const { setPageNavigator } = useVaultAI();
   const [page, setPage] = useState<RecordPageModel | null>(null);
+  const [startNext, setStartNext] = useState<StartNextWorkflowResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -872,6 +874,7 @@ export function RecordDetailPage() {
         onPageUpdate={setPage}
         onError={(msg) => setError(msg || null)}
         onReloadPage={load}
+        onStartNext={setStartNext}
         variant="banner"
       />
     ) : null;
@@ -955,6 +958,7 @@ export function RecordDetailPage() {
         onPageUpdate={setPage}
         onError={(msg) => setError(msg || null)}
         onReloadPage={load}
+        onStartNext={setStartNext}
       />
     ) : null;
 
@@ -1177,6 +1181,19 @@ export function RecordDetailPage() {
         onConfirm={() => void confirmWorkflowDialog()}
       />
     )}
+    {startNext ? (
+      <StartNextWorkflowModal
+        open
+        workflowLabel={startNext.workflow_label}
+        actions={startNext.actions}
+        pending={lifecyclePending}
+        onCancel={() => setStartNext(null)}
+        onSelect={(action: LifecycleAction) => {
+          setStartNext(null);
+          handleLifecycleAction(action);
+        }}
+      />
+    ) : null}
     <PreExecutionDialogModal
       open={preExecutionActionKind != null && preExecutionDialog != null}
       actionLabel={preExecutionActionLabel}

@@ -199,6 +199,12 @@ function StepDetailBody({
         title: displayText(shell.metadata_workflow_state_change_options),
       });
     }
+    if (model.end) {
+      list.push({
+        id: `${idBase}-end`,
+        title: displayText(shell.metadata_workflow_end_options),
+      });
+    }
     return list;
   }, [idBase, model, shell]);
 
@@ -274,6 +280,25 @@ function StepDetailBody({
               <Field
                 label={displayText(shell.metadata_workflow_next_state)}
                 value={model.state_change.next_state || "—"}
+              />
+            </dl>
+          </section>
+        )}
+
+        {model.end && (
+          <section id={`${idBase}-end`} className="lifecycle-detail__section">
+            <h2 className="lifecycle-detail__section-title">
+              {displayText(shell.metadata_workflow_end_options)}
+            </h2>
+            <p className="metadata-view-only">{displayText(shell.metadata_config_view_only)}</p>
+            <dl className="lifecycle-detail__fields">
+              <Field
+                label={displayText(shell.metadata_workflow_display_start_next)}
+                value={
+                  model.end.display_start_next
+                    ? displayText(shell.metadata_yes)
+                    : displayText(shell.metadata_no)
+                }
               />
             </dl>
           </section>

@@ -5,6 +5,7 @@ import type {
   PageElement,
   PageSection,
   RecordPageModel,
+  StartNextWorkflowResult,
   WorkflowTaskAction,
 } from "../api/types";
 import {
@@ -215,6 +216,7 @@ export function RecordFieldSections({
   onPageUpdate,
   onError,
   onReloadPage,
+  onStartNext,
 }: {
   vaultId: string;
   objectName?: string;
@@ -232,6 +234,7 @@ export function RecordFieldSections({
   onPageUpdate?: (page: RecordPageModel) => void;
   onError?: (message: string) => void;
   onReloadPage?: () => Promise<void>;
+  onStartNext?: (prompt: StartNextWorkflowResult) => void;
 }) {
   return (
     <RecordSectionList
@@ -252,6 +255,7 @@ export function RecordFieldSections({
       onPageUpdate={onPageUpdate}
       onError={onError}
       onReloadPage={onReloadPage}
+      onStartNext={onStartNext}
     />
   );
 }

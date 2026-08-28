@@ -22,7 +22,9 @@ import { Link } from "react-router-dom";
 import { useAuth } from "../auth/AuthProvider";
 import { api } from "../api/client";
 import type {
+  LifecycleAction,
   RecordPageModel,
+  StartNextWorkflowResult,
   TaskDashboardModel,
   TaskDashboardTaskItem,
   WorkflowContentVerdict,
@@ -35,9 +37,14 @@ import { displayText, displayTextTemplate, defaultTaskDashboardChrome, defaultWo
 import type { TaskDashboardChrome } from "../lib/i18n/chromeTypes";
 import { taskHasSignatureRequirement, workflowTaskActionFromDashboard } from "../lib/workflowTask";
 import { parseSoDExhausted } from "../lib/workflowSoD";
+import { isStartNextPrompt } from "../lib/startNextWorkflow";
 import { UserAvatar } from "../components/UserAvatar";
 import { SignatureModal } from "../components/SignatureModal";
 import { TaskCompleteModal } from "../components/TaskCompleteModal";
+import { StartNextWorkflowModal } from "../components/StartNextWorkflowModal";
+import { WorkflowStartModal } from "../components/WorkflowStartModal";
+import { PreExecutionDialogModal } from "../components/PreExecutionDialogModal";
+import { useRecordLifecycleActions } from "../hooks/useRecordLifecycleActions";
 import {
   WorkflowTimelineActionModals,
   type TimelineAdminModalState,
@@ -548,6 +555,8 @@ export function TaskDashboardPage() {
     task: WorkflowTaskAction;
   } | null>(null);
   const [sodAddModal, setSodAddModal] = useState<TimelineAdminModalState | null>(null);
+  const [startNext, setStartNext] = useState<StartNextWorkflowResult | null>(null);
+  const [startNextPage, setStartNextPage] = useState<RecordPageModel | null>(null);
   const [filters, setFilters] = useState<HomeFiltersState>(emptyFilters);
   const [expandedFilters, setExpandedFilters] = useState<Record<string, boolean>>({
     content_type: true,
@@ -613,6 +622,51 @@ export function TaskDashboardPage() {
   useEffect(() => {
     void load();
   }, [load]);
+
+  const {
+    lifecyclePending,
+    workflowDialogAction,
+    preExecutionDialog,
+    preExecutionActionLabel,
+    preExecutionActionName,
+    preExecutionActionKind,
+    dialogTarget,
+    workflowFieldValues,
+    workflowParticipantValues,
+    workflowDateValues,
+    workflowAssignmentTypeValues,
+    preExecutionInputValues,
+    setWorkflowFieldValues,
+    setWorkflowParticipantValues,
+    setWorkflowDateValues,
+    setWorkflowAssignmentTypeValues,
+    setPreExecutionInputValues,
+    handleLifecycleAction,
+    confirmWorkflowDialog,
+    confirmPreExecutionDialog,
+    cancelActionDialog,
+  } = useRecordLifecycleActions({
+    vaultId,
+    actionFailedLabel: displayText(shell.action_failed),
+    onReload: load,
+    setError,
+    getFixedTarget: () => {
+      if (!startNextPage) {
+        return null;
+      }
+      return {
+        objectName: startNextPage.object_api_name,
+        recordId: startNextPage.record_id,
+        page: startNextPage,
+      };
+    },
+    onPageUpdated: setStartNextPage,
+    onAfterSuccess: async () => {
+      setStartNext(null);
+      setStartNextPage(null);
+      await load();
+    },
+  });
 
   const openWorkflowComplete = useCallback(
     async (task: TaskDashboardTaskItem) => {
@@ -716,7 +770,7 @@ export function TaskDashboardPage() {
             content_verdicts: contentVerdicts,
           });
         } else {
-          await api.workflowComplete(vaultId, page.object_api_name, page.record_id, {
+          const res = await api.workflowComplete(vaultId, page.object_api_name, page.record_id, {
             workflow_task_id: task.workflow_task_id,
             verdict_label: verdictLabel,
             comment,
@@ -729,6 +783,10 @@ export function TaskDashboardPage() {
             },
             layout: page.selected_layout.api_name,
           });
+          if (isStartNextPrompt(res.start_next)) {
+            setStartNext(res.start_next);
+            setStartNextPage(page);
+          }
         }
       } catch (err) {
         const exhausted = parseSoDExhausted(err);
@@ -1165,13 +1223,65 @@ export function TaskDashboardPage() {
           page={workflowSignature.page}
           workflow={workflowChrome}
           onClose={() => setWorkflowSignature(null)}
-          onSuccess={async () => {
+          onSuccess={async (nextPage, prompt) => {
             setWorkflowSignature(null);
+            if (isStartNextPrompt(prompt)) {
+              setStartNext(prompt);
+              setStartNextPage(nextPage);
+            }
             await load();
           }}
           onError={(message) => setError(message)}
         />
       )}
+      {startNext ? (
+        <StartNextWorkflowModal
+          open
+          workflowLabel={startNext.workflow_label}
+          actions={startNext.actions}
+          pending={lifecyclePending}
+          onCancel={() => {
+            setStartNext(null);
+            setStartNextPage(null);
+          }}
+          onSelect={(action: LifecycleAction) => {
+            setStartNext(null);
+            handleLifecycleAction(action);
+          }}
+        />
+      ) : null}
+      {dialogTarget && (
+        <WorkflowStartModal
+          open={workflowDialogAction != null}
+          action={workflowDialogAction}
+          page={dialogTarget.page}
+          vaultId={vaultId ?? ""}
+          objectName={dialogTarget.objectName}
+          recordId={dialogTarget.recordId}
+          values={workflowFieldValues}
+          participantValues={workflowParticipantValues}
+          dateValues={workflowDateValues}
+          assignmentTypeValues={workflowAssignmentTypeValues}
+          pending={lifecyclePending}
+          onValuesChange={setWorkflowFieldValues}
+          onParticipantValuesChange={setWorkflowParticipantValues}
+          onDateValuesChange={setWorkflowDateValues}
+          onAssignmentTypeValuesChange={setWorkflowAssignmentTypeValues}
+          onCancel={cancelActionDialog}
+          onConfirm={() => void confirmWorkflowDialog()}
+        />
+      )}
+      <PreExecutionDialogModal
+        open={preExecutionActionKind != null && preExecutionDialog != null}
+        actionLabel={preExecutionActionLabel}
+        actionName={preExecutionActionName}
+        dialog={preExecutionDialog}
+        values={preExecutionInputValues}
+        pending={lifecyclePending}
+        onValuesChange={setPreExecutionInputValues}
+        onCancel={cancelActionDialog}
+        onConfirm={() => void confirmPreExecutionDialog()}
+      />
     </div>
   );
 }

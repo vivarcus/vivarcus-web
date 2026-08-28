@@ -1344,6 +1344,14 @@ export const api = {
     );
   },
 
+  workflowStartNext(vaultId: string, objectName: string, recordId: string, workflowTaskId: string) {
+    const params = new URLSearchParams({ workflow_task_id: workflowTaskId });
+    return vaultFetch<import("./types").StartNextWorkflowResult>(
+      vaultId,
+      `/ui/objects/${encodeURIComponent(objectName)}/records/${encodeURIComponent(recordId)}/workflow-start-next?${params}`,
+    );
+  },
+
   relatedRecordRowActions(vaultId: string, sectionContextToken: string, recordId: string) {
     const params = new URLSearchParams({ section_context_token: sectionContextToken });
     return vaultFetch<import("./types").RecordRowActionsModel>(
@@ -1933,7 +1941,10 @@ export const api = {
       if (!res.workflow_complete?.page) {
         throw new Error("workflow complete failed");
       }
-      return { page: res.workflow_complete.page };
+      return {
+        page: res.workflow_complete.page,
+        start_next: res.workflow_complete.start_next ?? null,
+      };
     });
   },
 

@@ -9,6 +9,7 @@ import type {
   PageSection,
   PicklistEntryOption,
   RecordPageModel,
+  StartNextWorkflowResult,
   WorkflowTaskAction,
 } from "../../api/types";
 import { defaultPageMessages, displayText, type PageMessages } from "../../lib/i18n";
@@ -45,6 +46,7 @@ type ViewProps = {
   onPageUpdate?: (page: RecordPageModel) => void;
   onError?: (message: string) => void;
   onReloadPage?: () => Promise<void>;
+  onStartNext?: (prompt: StartNextWorkflowResult) => void;
 };
 
 type EditProps = {
@@ -361,6 +363,7 @@ function renderSectionBody(
             onPageUpdate={props.onPageUpdate}
             onError={props.onError}
             onReloadPage={props.onReloadPage}
+            onStartNext={props.onStartNext}
           />
         ))}
       </>

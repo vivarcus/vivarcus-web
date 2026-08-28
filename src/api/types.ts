@@ -1363,6 +1363,13 @@ export type LifecycleAction = {
   workflow_start_dialog?: WorkflowStartDialog;
 };
 
+export type StartNextWorkflowResult = {
+  workflow_label?: string;
+  object_name?: string;
+  record_ids?: string[];
+  actions: LifecycleAction[];
+};
+
 export type WorkflowVerdictOption = {
   name: string;
   label: string;
@@ -1550,6 +1557,7 @@ export type ActionExecutionResult = {
   workflow_complete?: {
     page: RecordPageModel;
     workflow_task_id: string;
+    start_next?: StartNextWorkflowResult | null;
   };
   workflow_claim?: {
     page: RecordPageModel;
@@ -3723,6 +3731,10 @@ export type MetadataWorkflowStateChangeStepView = {
   next_state: string;
 };
 
+export type MetadataWorkflowEndStepView = {
+  display_start_next: boolean;
+};
+
 export type MetadataWorkflowStepDetailModel = {
   model_type: string;
   vault_id: string;
@@ -3741,6 +3753,7 @@ export type MetadataWorkflowStepDetailModel = {
   decision?: MetadataWorkflowDecisionStepView | null;
   notification?: MetadataWorkflowNotificationStepView | null;
   state_change?: MetadataWorkflowStateChangeStepView | null;
+  end?: MetadataWorkflowEndStepView | null;
   step_detail_xml?: string;
   historical?: boolean;
   version?: number;
