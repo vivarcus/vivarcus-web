@@ -33,7 +33,9 @@ function toLocalDateValue(date: Date): string {
 }
 
 function defaultLastDayRange(): { timeFrom: string; timeTo: string } {
-  const to = new Date();
+  // datetime-local is minute-precision. Advance "to" by one minute so a login
+  // that lands in the current minute (or a slightly slow browser clock) is included.
+  const to = new Date(Date.now() + 60_000);
   const from = new Date(to.getTime() - 24 * 60 * 60 * 1000);
   return { timeFrom: toLocalInputValue(from), timeTo: toLocalInputValue(to) };
 }
@@ -160,6 +162,7 @@ export function AdminLogsPage() {
   const { panel: model, error, loading, load, auditChrome } = useAuditPanelLoader({
     enabled: Boolean(vaultId) && panelEnabled,
     fetchPanel,
+    retryWhenEmpty: panel === "login" ? (loaded) => auditPanelRows(loaded).length === 0 : undefined,
   });
 
   // Prefill Vault ID filter display with numeric ID (backend already defaults empty filter to current vault).

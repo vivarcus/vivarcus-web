@@ -38,4 +38,23 @@ describe("useAuditPanelLoader", () => {
       expect(result.current.panel?.object_rows).toHaveLength(1);
     });
   });
+
+  it("retries while login audit returns no rows", async () => {
+    const fetchPanel = vi
+      .fn()
+      .mockResolvedValueOnce({ login_rows: [] })
+      .mockResolvedValueOnce({ login_rows: [{ type: "User Login", status: "Success" }] });
+    const { result } = renderHook(() =>
+      useAuditPanelLoader({
+        fetchPanel,
+        retryWhenEmpty: (panel) => (panel.login_rows?.length ?? 0) === 0,
+        retryIntervalMs: 20,
+        maxEmptyRetries: 3,
+      }),
+    );
+    await waitFor(() => {
+      expect(fetchPanel).toHaveBeenCalledTimes(2);
+      expect(result.current.panel?.login_rows).toHaveLength(1);
+    });
+  });
 });
