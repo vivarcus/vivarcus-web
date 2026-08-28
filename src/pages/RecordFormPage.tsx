@@ -29,6 +29,9 @@ import {
   navTrailBreadcrumbItems,
   withNavTrail,
 } from "../lib/navTrail";
+import {
+  stashRelatedSectionSnapshot,
+} from "../lib/relatedCreate";
 import { useTabLabel } from "../lib/useTabLabel";
 import { recordListHref } from "../lib/recordListHref";
 import { prefillUserFieldsFromPerson } from "../lib/promotePersonForm";
@@ -445,12 +448,13 @@ export function RecordFormPage() {
     setError(null);
     try {
       if (isRelatedCreate && relatedSectionToken) {
-        await api.createRelatedSection(resolvedVaultId, {
+        const result = await api.createRelatedSection(resolvedVaultId, {
           section_context_token: relatedSectionToken,
           fields: values,
           form_guard: form.form_guard,
           object_type_name: searchParams.get("object_type") ?? form.object_type_api_name,
         });
+        stashRelatedSectionSnapshot(relatedSectionToken, result.section);
         if (createAnother) {
           message.success(displayText(chrome.record_created, defaultFormChrome.record_created.text));
           formValuesInitializedRef.current = false;

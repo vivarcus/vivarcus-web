@@ -209,7 +209,7 @@ export function useRecordLifecycleActions({
         recordIds?: string[];
       },
     ) => {
-      if (!vaultId || lifecyclePending) {
+      if (!vaultId) {
         return;
       }
       setLifecyclePending(true);
@@ -425,7 +425,7 @@ export function useRecordLifecycleActions({
       sdkAction?: SdkAction,
       runDirect?: () => Promise<void>,
     ) => {
-      if (!vaultId || lifecyclePending) {
+      if (!vaultId) {
         return;
       }
       setLifecyclePending(true);

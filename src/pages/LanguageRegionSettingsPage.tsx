@@ -28,6 +28,7 @@ import {
   displayTextTemplate,
   formatDateFormatRegionalPreviews,
 } from "../lib/i18n";
+import { formatTimezoneOptionLabel } from "../lib/timezoneLabel";
 import { downloadTextFile, importDetailsCsv } from "../lib/l10nImportDetails";
 import { TranslationAdminSection } from "./TranslationAdminSection";
 
@@ -42,7 +43,7 @@ function timezoneLabel(
   timezone: string,
 ): string {
   const option = model.timezone.options.find((o) => o.value === timezone);
-  return option ? displayText(option.label) : timezone;
+  return formatTimezoneOptionLabel(timezone, option?.label);
 }
 
 function dateFormatLabel(
@@ -450,7 +451,7 @@ export function LanguageRegionSettingsPage() {
                     loading={saving}
                     options={model.timezone.options.map((o) => ({
                       value: o.value,
-                      label: displayText(o.label),
+                      label: formatTimezoneOptionLabel(o.value, o.label),
                     }))}
                     onChange={(tz) => setEditDraft({ ...editDraft, timezone: tz })}
                   />

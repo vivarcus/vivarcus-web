@@ -16,7 +16,7 @@ type Props = {
   targetObjectApiName: string;
   modalCreateRecord: boolean;
   chrome?: typeof defaultRelatedChrome;
-  onCreated: (section?: RelatedSectionModel) => void;
+  onCreated: (section: RelatedSectionModel) => void;
   onError: (message: string) => void;
 };
 
