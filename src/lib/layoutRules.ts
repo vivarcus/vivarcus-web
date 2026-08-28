@@ -1,5 +1,37 @@
-import type { FormSection, LayoutRuleEffects } from "../api/types";
-import { displayText } from "./i18n";
+import type { FormElement, FormSection, LayoutRuleEffects } from "../api/types";
+
+/** Server page-build hides layout-ruled fields with a display renderer; live eval must restore edit. */
+function restoreUnhiddenFieldRender(el: FormElement, readonly: boolean): FormElement {
+  const render = el.field_render;
+  if (!render) {
+    return readonly ? { ...el, read_only: true } : el;
+  }
+  const layoutHidden = render.editability === "hidden" || render.visibility === "hidden";
+  if (!layoutHidden) {
+    if (!readonly) {
+      return el;
+    }
+    return {
+      ...el,
+      read_only: true,
+      field_render: { ...render, editability: "readonly" },
+    };
+  }
+  const nextRender = {
+    ...render,
+    visibility: "visible" as const,
+    editability: readonly ? ("readonly" as const) : ("editable" as const),
+  };
+  if ((render.renderer_kind ?? "").startsWith("display_")) {
+    nextRender.renderer_kind = "";
+  }
+  return {
+    ...el,
+    hidden: false,
+    read_only: readonly,
+    field_render: nextRender,
+  };
+}
 
 /** Applies server-evaluated layout rule effects to form sections (mirrors CAP-UI applyFormRuleEffects). */
 export function applyLayoutRuleEffects(
@@ -33,12 +65,10 @@ export function applyLayoutRuleEffects(
       if (hiddenFields.has(name)) {
         return { ...el, hidden: true, required: false };
       }
-      let next = { ...el, hidden: false };
+      const readonly = readonlyFields.has(name);
+      let next = restoreUnhiddenFieldRender({ ...el, hidden: false }, readonly);
       if (requiredFields.has(name)) {
         next = { ...next, required: true };
-      }
-      if (readonlyFields.has(name)) {
-        next = { ...next, read_only: true };
       }
       return next;
     });

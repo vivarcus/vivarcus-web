@@ -111,6 +111,7 @@ export function RecordAuditPanel({
   const { panel, pageToken, error, loading, load, auditChrome } = useAuditPanelLoader({
     fetchPanel,
     loadFailedMessage: displayText(defaultAuditChrome.load_records_failed),
+    retryWhenEmpty: (model) => auditPanelRows(model).length === 0,
   });
 
   useEffect(() => {
