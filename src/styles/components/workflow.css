@@ -1,6 +1,7 @@
 .workflow-task-banner-stack {
   display: flex;
   flex-direction: column;
+  flex-shrink: 0;
 }
 
 .workflow-task-banner {
