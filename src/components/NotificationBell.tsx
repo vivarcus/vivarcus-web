@@ -15,11 +15,26 @@ import {
 dayjs.extend(relativeTime);
 
 export const POLL_INTERVAL_MS = 30_000;
+/** Stop unread-count polls after this long with no pointer/keyboard input. */
+export const USER_IDLE_MS = 120_000;
 const MESSAGE_COLLAPSE_LEN = 160;
 
-/** Unread-count polling runs only while this tab is visible and focused. */
+const USER_ACTIVITY_EVENTS = [
+  "pointerdown",
+  "keydown",
+  "touchstart",
+  "wheel",
+  "scroll",
+] as const;
+
+/** Unread-count polling requires a visible, focused tab. */
 export function pageHasFocus(): boolean {
   return document.visibilityState === "visible" && document.hasFocus();
+}
+
+/** True while the tab is focused and the user has interacted recently. */
+export function pageAllowsPolling(lastActivityAt: number, now = Date.now()): boolean {
+  return pageHasFocus() && now - lastActivityAt < USER_IDLE_MS;
 }
 
 type Props = {
@@ -128,14 +143,30 @@ export function NotificationBell({ vaultId }: Props) {
 
   useEffect(() => {
     let timer: number | undefined;
+    let idleTimer: number | undefined;
     let polling = false;
+    let lastActivityAt = Date.now();
 
     const stop = () => {
       if (timer !== undefined) {
         window.clearInterval(timer);
         timer = undefined;
       }
+      if (idleTimer !== undefined) {
+        window.clearTimeout(idleTimer);
+        idleTimer = undefined;
+      }
       polling = false;
+    };
+
+    const armIdleTimer = () => {
+      if (idleTimer !== undefined) {
+        window.clearTimeout(idleTimer);
+      }
+      const remaining = USER_IDLE_MS - (Date.now() - lastActivityAt);
+      idleTimer = window.setTimeout(() => {
+        sync();
+      }, Math.max(remaining, 0));
     };
 
     const start = () => {
@@ -145,16 +176,27 @@ export function NotificationBell({ vaultId }: Props) {
       polling = true;
       void refreshCount();
       timer = window.setInterval(() => {
+        if (!pageAllowsPolling(lastActivityAt)) {
+          stop();
+          return;
+        }
         void refreshCount();
       }, POLL_INTERVAL_MS);
+      armIdleTimer();
     };
 
     const sync = () => {
-      if (pageHasFocus()) {
+      if (pageAllowsPolling(lastActivityAt)) {
         start();
+        armIdleTimer();
       } else {
         stop();
       }
+    };
+
+    const onUserActivity = () => {
+      lastActivityAt = Date.now();
+      sync();
     };
 
     sync();
@@ -162,12 +204,18 @@ export function NotificationBell({ vaultId }: Props) {
     window.addEventListener("blur", sync);
     window.addEventListener("pageshow", sync);
     document.addEventListener("visibilitychange", sync);
+    for (const event of USER_ACTIVITY_EVENTS) {
+      window.addEventListener(event, onUserActivity, { passive: true, capture: true });
+    }
     return () => {
       stop();
       window.removeEventListener("focus", sync);
       window.removeEventListener("blur", sync);
       window.removeEventListener("pageshow", sync);
       document.removeEventListener("visibilitychange", sync);
+      for (const event of USER_ACTIVITY_EVENTS) {
+        window.removeEventListener(event, onUserActivity, { capture: true });
+      }
     };
   }, [refreshCount]);
 

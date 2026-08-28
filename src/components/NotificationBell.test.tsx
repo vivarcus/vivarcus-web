@@ -3,7 +3,13 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { MemoryRouter } from "react-router-dom";
 import { api } from "../api/client";
 import { UiProvider } from "../context/UiContext";
-import { NotificationBell, POLL_INTERVAL_MS, pageHasFocus } from "./NotificationBell";
+import {
+  NotificationBell,
+  POLL_INTERVAL_MS,
+  USER_IDLE_MS,
+  pageAllowsPolling,
+  pageHasFocus,
+} from "./NotificationBell";
 
 vi.mock("../api/client", () => ({
   api: {
@@ -49,6 +55,22 @@ describe("pageHasFocus", () => {
 
     setPageFocus({ visible: false, focused: true });
     expect(pageHasFocus()).toBe(false);
+  });
+});
+
+describe("pageAllowsPolling", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("requires focus and recent user activity", () => {
+    setPageFocus({ visible: true, focused: true });
+    const now = 1_000_000;
+    expect(pageAllowsPolling(now - USER_IDLE_MS + 1, now)).toBe(true);
+    expect(pageAllowsPolling(now - USER_IDLE_MS, now)).toBe(false);
+
+    setPageFocus({ visible: true, focused: false });
+    expect(pageAllowsPolling(now, now)).toBe(false);
   });
 });
 
@@ -114,5 +136,54 @@ describe("NotificationBell unread-count polling", () => {
       await Promise.resolve();
     });
     expect(api.notificationUnreadCount).toHaveBeenCalledTimes(2);
+  });
+
+  it("stops polling after user idle while the tab stays focused", async () => {
+    renderBell();
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+    expect(api.notificationUnreadCount).toHaveBeenCalledTimes(1);
+
+    await act(async () => {
+      vi.advanceTimersByTime(POLL_INTERVAL_MS);
+    });
+    expect(api.notificationUnreadCount).toHaveBeenCalledTimes(2);
+
+    await act(async () => {
+      vi.advanceTimersByTime(USER_IDLE_MS - POLL_INTERVAL_MS);
+    });
+    const callsAfterIdle = vi.mocked(api.notificationUnreadCount).mock.calls.length;
+
+    await act(async () => {
+      vi.advanceTimersByTime(POLL_INTERVAL_MS * 3);
+    });
+    expect(api.notificationUnreadCount).toHaveBeenCalledTimes(callsAfterIdle);
+  });
+
+  it("resumes polling after idle when the user interacts again", async () => {
+    renderBell();
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+    expect(api.notificationUnreadCount).toHaveBeenCalledTimes(1);
+
+    await act(async () => {
+      vi.advanceTimersByTime(USER_IDLE_MS);
+    });
+    const callsAfterIdle = vi.mocked(api.notificationUnreadCount).mock.calls.length;
+
+    await act(async () => {
+      window.dispatchEvent(new Event("pointerdown"));
+      await Promise.resolve();
+    });
+    expect(api.notificationUnreadCount).toHaveBeenCalledTimes(callsAfterIdle + 1);
+
+    await act(async () => {
+      vi.advanceTimersByTime(POLL_INTERVAL_MS);
+    });
+    expect(api.notificationUnreadCount).toHaveBeenCalledTimes(callsAfterIdle + 2);
   });
 });
