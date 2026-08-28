@@ -10,7 +10,6 @@ import { FormMetaProvider } from "../context/FormMetaContext";
 import { useVaultAI } from "../context/VaultAIContext";
 import { handleStaleError } from "../lib/staleGuard";
 import { defaultFormChrome, defaultPageActionLabels, defaultPageMessages, displayText } from "../lib/i18n";
-import { recordHeaderStateLabel } from "../lib/recordHeaderStateLabel";
 import { downloadOutboundVpkArtifact } from "../lib/outboundExportDownload";
 import { LifecycleStagesChevron } from "../components/LifecycleStagesChevron";
 import { RecordPageHeader } from "../components/record/RecordPageHeader";
@@ -791,7 +790,10 @@ export function RecordDetailPage() {
   const recordTitle = isDocumentObject || isBinderTree
     ? `${recordDisplayNameValue}${documentHeader ? ` ${formatDocumentVersionLabel(documentHeader.major_version_number, documentHeader.minor_version_number)}` : ""}`
     : `${objectLabel}: ${recordDisplayNameValue}`;
-  const stateLabel = recordHeaderStateLabel(page);
+  const stateLabel =
+    page?.lifecycle_chevron?.stages?.find((stage) => stage.current)?.label ??
+    page?.state_label ??
+    (page?.state_api_name ? { text: page.state_api_name } : undefined);
 
   const listHref = recordListHref(tabApiName);
 
