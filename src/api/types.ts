@@ -881,6 +881,7 @@ export type ObjectListModel = {
   schema_fingerprint: string;
   ui_fingerprint: string;
   row_actions_allowed?: boolean;
+  start_workflow_allowed?: boolean;
 };
 
 export type LayoutRef = {

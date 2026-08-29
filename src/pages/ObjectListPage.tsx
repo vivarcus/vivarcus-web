@@ -176,7 +176,6 @@ function ObjectListPageInner({
   const [favoritePendingId, setFavoritePendingId] = useState<string | null>(null);
   const [favoriteOverrides, setFavoriteOverrides] = useState<Record<string, boolean>>({});
   const [deletingRecordId, setDeletingRecordId] = useState<string | null>(null);
-  const [selectedRowKeys, setSelectedRowKeys] = useState<string[]>([]);
   const [startablePicker, setStartablePicker] = useState<{
     actions: LifecycleAction[];
     recordIds: string[];
@@ -359,49 +358,43 @@ function ObjectListPageInner({
     onReload: reload,
     setError,
     onAfterSuccess: async () => {
-      setSelectedRowKeys([]);
       await reload();
     },
   });
 
-  const startSelectedWorkflow = useCallback(async () => {
-    if (!vaultId || !model || selectedRowKeys.length === 0 || startablePending) {
-      return;
-    }
-    if (selectedRowKeys.length > MAX_WORKFLOW_ENVELOPE_RECORDS) {
-      message.warning(displayText(defaultWorkflowChrome.start_workflow_limit));
-      return;
-    }
-    setStartablePending(true);
-    setError(null);
-    try {
-      const res = await api.listStartableWorkflows(vaultId, model.object_api_name, selectedRowKeys);
-      const actions = res.actions ?? [];
-      if (actions.length === 0) {
-        message.warning(displayText(defaultWorkflowChrome.start_workflow_none));
+  const startSelectedWorkflow = useCallback(
+    async (recordIds: string[]) => {
+      if (!vaultId || !model || recordIds.length === 0 || startablePending) {
         return;
       }
-      if (actions.length === 1) {
-        await handleRowLifecycleAction(model.object_api_name, selectedRowKeys[0], actions[0], {
-          recordIds: selectedRowKeys,
-        });
+      if (recordIds.length > MAX_WORKFLOW_ENVELOPE_RECORDS) {
+        message.warning(displayText(defaultWorkflowChrome.start_workflow_limit));
         return;
       }
-      setStartablePicker({ actions, recordIds: selectedRowKeys });
-    } catch (err) {
-      setError(err instanceof Error ? err.message : displayText(shell.action_failed));
-    } finally {
-      setStartablePending(false);
-    }
-  }, [
-    vaultId,
-    model,
-    selectedRowKeys,
-    startablePending,
-    setError,
-    shell.action_failed,
-    handleRowLifecycleAction,
-  ]);
+      setStartablePending(true);
+      setError(null);
+      try {
+        const res = await api.listStartableWorkflows(vaultId, model.object_api_name, recordIds);
+        const actions = res.actions ?? [];
+        if (actions.length === 0) {
+          message.warning(displayText(defaultWorkflowChrome.start_workflow_none));
+          return;
+        }
+        if (actions.length === 1) {
+          await handleRowLifecycleAction(model.object_api_name, recordIds[0], actions[0], {
+            recordIds,
+          });
+          return;
+        }
+        setStartablePicker({ actions, recordIds });
+      } catch (err) {
+        setError(err instanceof Error ? err.message : displayText(shell.action_failed));
+      } finally {
+        setStartablePending(false);
+      }
+    },
+    [vaultId, model, startablePending, setError, shell.action_failed, handleRowLifecycleAction],
+  );
 
   useEffect(() => {
     if (isBusinessAdmin) {
@@ -417,7 +410,6 @@ function ObjectListPageInner({
 
   useEffect(() => {
     setFavoriteOverrides({});
-    setSelectedRowKeys([]);
   }, [model?.list_context_fingerprint]);
 
   useEffect(() => {
@@ -536,6 +528,21 @@ function ObjectListPageInner({
   const hasRowActions =
     model?.row_actions_allowed ??
     displayRecords.some((row) => rowHasRecordActions(row.actions));
+  const showStartWorkflow = Boolean(model?.start_workflow_allowed);
+  const renderStartWorkflowMenuItem = (close: () => void) => (
+    <Button
+      type="text"
+      role="menuitem"
+      className="list-actions-menu__item"
+      disabled={loading || startablePending || displayRecords.length === 0}
+      onClick={() => {
+        close();
+        void startSelectedWorkflow(displayRecords.map((row) => row.record_id));
+      }}
+    >
+      {displayText(defaultWorkflowChrome.start_workflow)}
+    </Button>
+  );
   const facetSelections = useMemo(() => {
     if (!hasFacetFilters(facetFilters)) {
       return [];
@@ -1009,20 +1016,23 @@ function ObjectListPageInner({
                     disabled={loading}
                   >
                     {(close) => (
-                      <ListGridMenuItems
-                        chrome={chrome}
-                        columns={model.columns}
-                        recordLinkField={model.record_link_field}
-                        current={model.grid_preferences ?? {}}
-                        editColumnsAllowed={model.edit_columns_allowed}
-                        disabled={loading}
-                        pageSize={showPagination ? pageSize : undefined}
-                        pageSizeOptions={showPagination ? OBJECT_LIST_PAGE_SIZE_OPTIONS : undefined}
-                        onPageSizeChange={showPagination ? setPageSize : undefined}
-                        onEditColumns={() => setEditColumnsOpen(true)}
-                        onSave={saveGridPreferences}
-                        close={close}
-                      />
+                      <>
+                        {showStartWorkflow ? renderStartWorkflowMenuItem(close) : null}
+                        <ListGridMenuItems
+                          chrome={chrome}
+                          columns={model.columns}
+                          recordLinkField={model.record_link_field}
+                          current={model.grid_preferences ?? {}}
+                          editColumnsAllowed={model.edit_columns_allowed}
+                          disabled={loading}
+                          pageSize={showPagination ? pageSize : undefined}
+                          pageSizeOptions={showPagination ? OBJECT_LIST_PAGE_SIZE_OPTIONS : undefined}
+                          onPageSizeChange={showPagination ? setPageSize : undefined}
+                          onEditColumns={() => setEditColumnsOpen(true)}
+                          onSave={saveGridPreferences}
+                          close={close}
+                        />
+                      </>
                     )}
                   </ListActionsMenu>
                 }
@@ -1093,20 +1103,7 @@ function ObjectListPageInner({
               >
                 {(close) => (
                   <>
-                    {selectedRowKeys.length > 0 && (
-                      <Button
-                        type="text"
-                        role="menuitem"
-                        className="list-actions-menu__item"
-                        disabled={loading || startablePending}
-                        onClick={() => {
-                          close();
-                          void startSelectedWorkflow();
-                        }}
-                      >
-                        {displayText(defaultWorkflowChrome.start_workflow)}
-                      </Button>
-                    )}
+                    {showStartWorkflow ? renderStartWorkflowMenuItem(close) : null}
                     <ListGridMenuItems
                       chrome={chrome}
                       columns={model.columns}
@@ -1215,9 +1212,6 @@ function ObjectListPageInner({
                 columnWidths={columnWidths}
                 onColumnWidthChange={handleColumnWidthChange}
                 loading={loading}
-                selectable={!isAdminChrome}
-                selectedRowKeys={selectedRowKeys}
-                onSelectionChange={setSelectedRowKeys}
                 showFavoriteColumn
                 favoritePendingId={favoritePendingId}
                 onToggleFavorite={toggleFavorite}

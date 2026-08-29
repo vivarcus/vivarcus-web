@@ -327,6 +327,7 @@
 .approve-reject-modal .approve-reject-control.ant-input-affix-wrapper,
 .approve-reject-modal .approve-reject-control textarea.ant-input,
 .approve-reject-modal .approve-reject-control.ant-select .ant-select-selector {
+  width: 100%;
   background: var(--workflow-highlight-input);
 }
 
