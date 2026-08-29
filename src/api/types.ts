@@ -4142,7 +4142,6 @@ export type JobDefinitionDetail = {
 export type JobDefinitionWrite = {
   label: string;
   api_name?: string;
-  job_type?: string;
   schedule: string;
   timezone?: string;
   priority?: string;
@@ -4154,8 +4153,8 @@ export type JobDefinitionWrite = {
   month_repeat_type?: string;
   day_of_month?: number;
   week_number?: number;
-  action_type?: string;
-  object_name?: string;
+  action_type: string;
+  object_name: string;
   destination_state?: string;
   terminate_existing_workflows?: boolean;
   recipients?: string[];

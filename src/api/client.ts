@@ -167,6 +167,26 @@ export const api = {
     });
   },
 
+  peekInvite(token: string) {
+    const q = new URLSearchParams({ token });
+    return apiFetch<{
+      username: string;
+      needs_password: boolean;
+      vault_name?: string;
+      chrome?: import("./types").LoginResponse["chrome"];
+    }>(`/ui/auth/invite?${q.toString()}`);
+  },
+
+  completeInvite(token: string, password: string) {
+    return apiFetch<{
+      username: string;
+      needs_password: boolean;
+    }>("/ui/auth/invite", {
+      method: "POST",
+      body: JSON.stringify({ token, password }),
+    });
+  },
+
   startOAuth(domainId: string, providerId: string, username?: string) {
     return apiFetch<{ authorize_url: string }>("/ui/auth/oauth/start", {
       method: "POST",

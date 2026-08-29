@@ -10,6 +10,13 @@ import { VaultHomePage } from "./pages/VaultHomePage";
 const router = createBrowserRouter([
   { path: "/login", element: <LoginPage /> },
   {
+    path: "/invite",
+    lazy: async () => {
+      const { InvitePage } = await import("./pages/InvitePage");
+      return { Component: InvitePage };
+    },
+  },
+  {
     path: "/login/oauth",
     lazy: async () => {
       const { OAuthCompletePage } = await import("./pages/OAuthCompletePage");

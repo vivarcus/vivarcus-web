@@ -1058,8 +1058,6 @@ export type OperationsChrome = {
   schedule: DisplayText;
   date_based_object_operation: DisplayText;
   user_account_activation: DisplayText;
-  task_reminder_notification: DisplayText;
-  match_edl_items: DisplayText;
   status_active: DisplayText;
   status_inactive: DisplayText;
   schedule_hourly: DisplayText;
@@ -2005,6 +2003,12 @@ export type AuthChrome = {
   oauth_denied: DisplayText;
   oauth_unauthorized: DisplayText;
   oauth_no_linked_user: DisplayText;
+  set_password_title: DisplayText;
+  confirm_password: DisplayText;
+  set_password: DisplayText;
+  invite_invalid: DisplayText;
+  invite_password_set: DisplayText;
+  go_to_login: DisplayText;
 };
 
 export const defaultVaultAIChrome: VaultAIChrome = {
@@ -2938,11 +2942,6 @@ export const defaultOperationsChrome: OperationsChrome = {
     "operations.date_based_object_operation",
   ),
   user_account_activation: t("User Account Activation", "operations.user_account_activation"),
-  task_reminder_notification: t(
-    "Task Reminder Notification",
-    "operations.task_reminder_notification",
-  ),
-  match_edl_items: t("Match EDL Items to Documents", "operations.match_edl_items"),
   status_active: t("Active", "operations.status_active"),
   status_inactive: t("Inactive", "operations.status_inactive"),
   schedule_hourly: t("Hourly", "operations.schedule_hourly"),
@@ -4852,6 +4851,18 @@ export const defaultAuthChrome: AuthChrome = {
     "No linked user found. Contact your administrator.",
     "auth.oauth_no_linked_user",
   ),
+  set_password_title: t("Set your password", "auth.set_password_title"),
+  confirm_password: t("Confirm password", "auth.confirm_password"),
+  set_password: t("Set password", "auth.set_password"),
+  invite_invalid: t(
+    "This invitation link is invalid or has expired.",
+    "auth.invite_invalid",
+  ),
+  invite_password_set: t(
+    "Password saved. You can sign in.",
+    "auth.invite_password_set",
+  ),
+  go_to_login: t("Go to sign in", "auth.go_to_login"),
 };
 
 export const defaultPageActionLabels: PageActionLabels = {
