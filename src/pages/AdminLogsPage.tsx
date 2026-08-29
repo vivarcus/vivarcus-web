@@ -90,6 +90,9 @@ const LOGIN_TYPE_OPTIONS = [
 
 const LOGIN_STATUS_OPTIONS = [
   { value: "Success", label: "Success" },
+  { value: "Failure", label: "Failure" },
+  { value: "User Not Found", label: "User Not Found" },
+  { value: "Locked", label: "Locked" },
   { value: "Password Change Required", label: "Password Change Required" },
 ];
 
