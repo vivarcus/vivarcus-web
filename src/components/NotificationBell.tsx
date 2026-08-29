@@ -27,14 +27,18 @@ const USER_ACTIVITY_EVENTS = [
   "scroll",
 ] as const;
 
-/** Unread-count polling requires a visible, focused tab. */
-export function pageHasFocus(): boolean {
-  return document.visibilityState === "visible" && document.hasFocus();
+/** Unread-count polling requires a visible tab that is focused or under the pointer. */
+export function pageHasFocus(pointerOverPage = false): boolean {
+  return document.visibilityState === "visible" && (document.hasFocus() || pointerOverPage);
 }
 
-/** True while the tab is focused and the user has interacted recently. */
-export function pageAllowsPolling(lastActivityAt: number, now = Date.now()): boolean {
-  return pageHasFocus() && now - lastActivityAt < USER_IDLE_MS;
+/** True while the tab is present and the user has interacted recently. */
+export function pageAllowsPolling(
+  lastActivityAt: number,
+  now = Date.now(),
+  pointerOverPage = false,
+): boolean {
+  return pageHasFocus(pointerOverPage) && now - lastActivityAt < USER_IDLE_MS;
 }
 
 type Props = {
@@ -145,6 +149,7 @@ export function NotificationBell({ vaultId }: Props) {
     let timer: number | undefined;
     let idleTimer: number | undefined;
     let polling = false;
+    let pointerOverPage = false;
     let lastActivityAt = Date.now();
 
     const stop = () => {
@@ -176,7 +181,7 @@ export function NotificationBell({ vaultId }: Props) {
       polling = true;
       void refreshCount();
       timer = window.setInterval(() => {
-        if (!pageAllowsPolling(lastActivityAt)) {
+        if (!pageAllowsPolling(lastActivityAt, Date.now(), pointerOverPage)) {
           stop();
           return;
         }
@@ -186,7 +191,7 @@ export function NotificationBell({ vaultId }: Props) {
     };
 
     const sync = () => {
-      if (pageAllowsPolling(lastActivityAt)) {
+      if (pageAllowsPolling(lastActivityAt, Date.now(), pointerOverPage)) {
         start();
         armIdleTimer();
       } else {
@@ -199,11 +204,24 @@ export function NotificationBell({ vaultId }: Props) {
       sync();
     };
 
+    const onPointerEnter = () => {
+      pointerOverPage = true;
+      lastActivityAt = Date.now();
+      sync();
+    };
+
+    const onPointerLeave = () => {
+      pointerOverPage = false;
+      sync();
+    };
+
     sync();
     window.addEventListener("focus", sync);
     window.addEventListener("blur", sync);
     window.addEventListener("pageshow", sync);
     document.addEventListener("visibilitychange", sync);
+    document.documentElement.addEventListener("pointerenter", onPointerEnter);
+    document.documentElement.addEventListener("pointerleave", onPointerLeave);
     for (const event of USER_ACTIVITY_EVENTS) {
       window.addEventListener(event, onUserActivity, { passive: true, capture: true });
     }
@@ -213,6 +231,8 @@ export function NotificationBell({ vaultId }: Props) {
       window.removeEventListener("blur", sync);
       window.removeEventListener("pageshow", sync);
       document.removeEventListener("visibilitychange", sync);
+      document.documentElement.removeEventListener("pointerenter", onPointerEnter);
+      document.documentElement.removeEventListener("pointerleave", onPointerLeave);
       for (const event of USER_ACTIVITY_EVENTS) {
         window.removeEventListener(event, onUserActivity, { capture: true });
       }

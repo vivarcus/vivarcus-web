@@ -46,15 +46,17 @@ describe("pageHasFocus", () => {
     vi.restoreAllMocks();
   });
 
-  it("is true only when the tab is visible and the document has focus", () => {
+  it("is true when the tab is visible and focused, or the pointer is over the page", () => {
     setPageFocus({ visible: true, focused: true });
     expect(pageHasFocus()).toBe(true);
 
     setPageFocus({ visible: true, focused: false });
     expect(pageHasFocus()).toBe(false);
+    expect(pageHasFocus(true)).toBe(true);
 
     setPageFocus({ visible: false, focused: true });
     expect(pageHasFocus()).toBe(false);
+    expect(pageHasFocus(true)).toBe(false);
   });
 });
 
@@ -71,6 +73,7 @@ describe("pageAllowsPolling", () => {
 
     setPageFocus({ visible: true, focused: false });
     expect(pageAllowsPolling(now, now)).toBe(false);
+    expect(pageAllowsPolling(now, now, true)).toBe(true);
   });
 });
 
@@ -160,6 +163,45 @@ describe("NotificationBell unread-count polling", () => {
       vi.advanceTimersByTime(POLL_INTERVAL_MS * 3);
     });
     expect(api.notificationUnreadCount).toHaveBeenCalledTimes(callsAfterIdle);
+  });
+
+  it("fetches unread-count when the pointer re-enters an unfocused page", async () => {
+    renderBell();
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+    expect(api.notificationUnreadCount).toHaveBeenCalledTimes(1);
+
+    setPageFocus({ visible: true, focused: false });
+    await act(async () => {
+      window.dispatchEvent(new Event("blur"));
+    });
+
+    await act(async () => {
+      vi.advanceTimersByTime(POLL_INTERVAL_MS * 2);
+    });
+    expect(api.notificationUnreadCount).toHaveBeenCalledTimes(1);
+
+    await act(async () => {
+      document.documentElement.dispatchEvent(new Event("pointerenter"));
+      await Promise.resolve();
+    });
+    expect(api.notificationUnreadCount).toHaveBeenCalledTimes(2);
+
+    await act(async () => {
+      vi.advanceTimersByTime(POLL_INTERVAL_MS);
+    });
+    expect(api.notificationUnreadCount).toHaveBeenCalledTimes(3);
+
+    await act(async () => {
+      document.documentElement.dispatchEvent(new Event("pointerleave"));
+    });
+
+    await act(async () => {
+      vi.advanceTimersByTime(POLL_INTERVAL_MS * 2);
+    });
+    expect(api.notificationUnreadCount).toHaveBeenCalledTimes(3);
   });
 
   it("resumes polling after idle when the user interacts again", async () => {
