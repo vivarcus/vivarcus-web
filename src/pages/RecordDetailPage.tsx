@@ -25,7 +25,7 @@ import {
   RecordSectionNav,
   shouldShowRecordSectionNav,
 } from "../components/RecordSections";
-import { scrollToRecordSection, resolveExpandedSections, sectionExpandStorageKey, writeExpandedSections } from "../components/record/recordSectionUtils";
+import { scrollToRecordSection, defaultExpandedSections, retainExpandedSections } from "../components/record/recordSectionUtils";
 import { SummaryInfoPanel } from "../components/SummaryInfoPanel";
 import { useLayoutRuleEffects } from "../hooks/useLayoutRuleEffects";
 import { useLookupDisplays } from "../hooks/useLookupDisplays";
@@ -77,11 +77,14 @@ import { isBinderObjectType } from "../lib/recordPageShell";
 const RECORD_EDIT_FORM_ID = "record-edit-form";
 const EMPTY_FORM_SECTIONS: RecordFormModel["sections"] = [];
 
-function initialExpandedSections(
-  sections: RecordPageModel["sections"],
-  storageKey: string,
-): Set<string> {
-  return resolveExpandedSections(sections, storageKey);
+function recordSectionIdentityKey(
+  vaultId: string,
+  objectName: string,
+  recordId: string,
+  layout?: string,
+  pageApiName?: string,
+): string {
+  return `${vaultId}\0${objectName}\0${recordId}\0${layout ?? ""}\0${pageApiName ?? ""}`;
 }
 
 export function RecordDetailPage() {
@@ -98,7 +101,7 @@ export function RecordDetailPage() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const hasLoadedOnceRef = useRef(false);
-  const sectionStorageKeyRef = useRef("");
+  const appliedSectionIdentityKeyRef = useRef("");
   const loadGenerationRef = useRef(0);
   const editLoadIdRef = useRef(0);
   const valuesRef = useRef<Record<string, unknown>>({});
@@ -355,11 +358,22 @@ export function RecordDetailPage() {
       if (generation !== loadGenerationRef.current) {
         return;
       }
-      const storageKey = sectionExpandStorageKey(vaultId, objectName, recordId, layoutToUse);
-      sectionStorageKeyRef.current = storageKey;
+      const identityKey = recordSectionIdentityKey(
+        vaultId,
+        objectName,
+        recordId,
+        layoutToUse,
+        pageApiName,
+      );
+      const identityChanged = appliedSectionIdentityKeyRef.current !== identityKey;
+      appliedSectionIdentityKeyRef.current = identityKey;
       setPage(data);
       setSectionCounts(relatedSectionCountsFromPage(data.sections));
-      setExpandedSections(initialExpandedSections(data.sections, storageKey));
+      setExpandedSections((prev) =>
+        identityChanged
+          ? defaultExpandedSections(data.sections)
+          : retainExpandedSections(data.sections, prev),
+      );
       setCountPrefetchKey((key) => key + 1);
       hasLoadedOnceRef.current = true;
     } catch (err) {
@@ -383,12 +397,7 @@ export function RecordDetailPage() {
   // Hard-reset load cache when switching vault/object; record-to-record list nav soft-refreshes.
   useEffect(() => {
     hasLoadedOnceRef.current = false;
-    sectionStorageKeyRef.current = "";
   }, [vaultId, objectName]);
-
-  useEffect(() => {
-    sectionStorageKeyRef.current = "";
-  }, [recordId]);
 
   useEffect(() => {
     void load();
@@ -415,9 +424,6 @@ export function RecordDetailPage() {
       } else {
         next.add(sectionId);
       }
-      if (sectionStorageKeyRef.current) {
-        writeExpandedSections(sectionStorageKeyRef.current, next);
-      }
       return next;
     });
   }, []);
@@ -427,9 +433,6 @@ export function RecordDetailPage() {
       if (prev.has(sectionId)) return prev;
       const next = new Set(prev);
       next.add(sectionId);
-      if (sectionStorageKeyRef.current) {
-        writeExpandedSections(sectionStorageKeyRef.current, next);
-      }
       return next;
     });
     scrollToRecordSection(sectionId);

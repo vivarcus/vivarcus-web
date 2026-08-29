@@ -1,22 +1,12 @@
-import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
-  readExpandedSections,
-  resolveExpandedSections,
+  defaultExpandedSections,
+  retainExpandedSections,
   scrollToRecordSection,
   sectionDomId,
-  sectionExpandStorageKey,
-  writeExpandedSections,
 } from "./recordSectionUtils";
 
 describe("recordSectionUtils", () => {
-  beforeEach(() => {
-    localStorage.clear();
-  });
-
-  afterEach(() => {
-    localStorage.clear();
-  });
-
   it("builds stable section dom ids", () => {
     expect(sectionDomId({ label: { text: "General" }, name: "general__c" }, 0)).toBe(
       "section-general__c",
@@ -43,25 +33,28 @@ describe("recordSectionUtils", () => {
     node.remove();
   });
 
-  it("persists and restores expanded section ids", () => {
-    const key = sectionExpandStorageKey("v1", "study__v", "abc", "layout__v");
-    writeExpandedSections(key, new Set(["section-a", "section-b"]));
-    expect(readExpandedSections(key)).toEqual(new Set(["section-a", "section-b"]));
-  });
-
-  it("falls back to the first section when storage is empty", () => {
+  it("defaults to the first section", () => {
     const sections = [
       { label: { text: "General" }, name: "general__c" },
       { label: { text: "Details" }, name: "details__c" },
     ];
-    const key = sectionExpandStorageKey("v1", "study__v", "abc");
-    expect(resolveExpandedSections(sections, key)).toEqual(new Set(["section-general__c"]));
+    expect(defaultExpandedSections(sections)).toEqual(new Set(["section-general__c"]));
   });
 
-  it("ignores stale stored section ids after layout changes", () => {
+  it("keeps still-valid expanded sections on same-record refresh", () => {
+    const sections = [
+      { label: { text: "General" }, name: "general__c" },
+      { label: { text: "Details" }, name: "details__c" },
+    ];
+    expect(
+      retainExpandedSections(sections, new Set(["section-details__c", "section-gone__c"])),
+    ).toEqual(new Set(["section-details__c"]));
+  });
+
+  it("falls back to the first section when none of the previous ids remain", () => {
     const sections = [{ label: { text: "Only" }, name: "only__c" }];
-    const key = sectionExpandStorageKey("v1", "study__v", "abc");
-    writeExpandedSections(key, new Set(["section-removed__c"]));
-    expect(resolveExpandedSections(sections, key)).toEqual(new Set(["section-only__c"]));
+    expect(retainExpandedSections(sections, new Set(["section-removed__c"]))).toEqual(
+      new Set(["section-only__c"]),
+    );
   });
 });

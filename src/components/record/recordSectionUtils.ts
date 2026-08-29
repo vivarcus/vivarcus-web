@@ -30,47 +30,18 @@ export function scrollToRecordSection(sectionId: string) {
   });
 }
 
-export function sectionExpandStorageKey(
-  vaultId: string,
-  objectName: string,
-  recordId: string,
-  layout?: string,
-): string {
-  return `vivarcus.record-sections.${vaultId}.${objectName}.${recordId}.${layout ?? "__default__"}`;
+export function defaultExpandedSections(sections: SectionLike[]): Set<string> {
+  if (sections.length === 0) return new Set();
+  return new Set([sectionDomId(sections[0], 0)]);
 }
 
-export function readExpandedSections(storageKey: string): Set<string> | null {
-  try {
-    const raw = localStorage.getItem(storageKey);
-    if (!raw) return null;
-    const parsed: unknown = JSON.parse(raw);
-    if (!Array.isArray(parsed)) return null;
-    const ids = parsed.filter((id): id is string => typeof id === "string");
-    return ids.length > 0 ? new Set(ids) : null;
-  } catch {
-    return null;
-  }
-}
-
-export function writeExpandedSections(storageKey: string, expanded: Set<string>): void {
-  try {
-    localStorage.setItem(storageKey, JSON.stringify([...expanded]));
-  } catch {
-    // ignore quota / private mode errors
-  }
-}
-
-export function resolveExpandedSections(
+/** Keep currently expanded sections that still exist after a same-record refresh. */
+export function retainExpandedSections(
   sections: SectionLike[],
-  storageKey: string,
-  fallbackFirst = true,
+  previous: Set<string>,
 ): Set<string> {
   const validIds = new Set(sections.map((section, index) => sectionDomId(section, index)));
-  const stored = readExpandedSections(storageKey);
-  if (stored) {
-    const filtered = new Set([...stored].filter((id) => validIds.has(id)));
-    if (filtered.size > 0) return filtered;
-  }
-  if (!fallbackFirst || sections.length === 0) return new Set();
-  return new Set([sectionDomId(sections[0], 0)]);
+  const filtered = new Set([...previous].filter((id) => validIds.has(id)));
+  if (filtered.size > 0) return filtered;
+  return defaultExpandedSections(sections);
 }
