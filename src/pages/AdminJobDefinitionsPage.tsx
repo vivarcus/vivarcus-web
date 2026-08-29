@@ -20,6 +20,7 @@ import { AdminPageShell } from "../components/admin/AdminPageShell";
 import { useUi } from "../context/UiContext";
 import { useVaultId } from "../hooks/useVaultId";
 import { displayText } from "../lib/i18n";
+import type { OperationsChrome } from "../lib/i18n/chromeTypes";
 
 const WEEK_DAYS = [
   { value: "Sun", label: "Sunday" },
@@ -152,6 +153,36 @@ function parseOptionalNotifications(raw: unknown): OptionalNotifRow[] {
   });
 }
 
+function jobDefinitionLabel(label: string, operations: OperationsChrome): string {
+  switch (label) {
+    case "User Account Activation":
+      return displayText(operations.user_account_activation);
+    case "Task Reminder Notification":
+      return displayText(operations.task_reminder_notification);
+    case "Match EDL Items to Documents":
+      return displayText(operations.match_edl_items);
+    default:
+      return label;
+  }
+}
+
+function jobDefinitionType(type: string, operations: OperationsChrome): string {
+  switch (type) {
+    case "Date Based Object Operation":
+      return displayText(operations.date_based_object_operation);
+    case "Task Reminder Notification":
+      return displayText(operations.task_reminder_notification);
+    case "Match EDL Items to Documents":
+      return displayText(operations.match_edl_items);
+    default:
+      return type;
+  }
+}
+
+function isVaultScopedJobType(type: string): boolean {
+  return type === "Task Reminder Notification" || type === "Match EDL Items to Documents";
+}
+
 export function AdminJobDefinitionsPage() {
   const vaultId = useVaultId();
   const navigate = useNavigate();
@@ -207,19 +238,14 @@ export function AdminJobDefinitionsPage() {
               dataIndex: "label",
               render: (label: string, row) => (
                 <Link to={`/admin/operations/job_definitions/${encodeURIComponent(row.api_name)}`}>
-                  {label === "User Account Activation"
-                    ? displayText(operations.user_account_activation)
-                    : label}
+                  {jobDefinitionLabel(label, operations)}
                 </Link>
               ),
             },
             {
               title: displayText(operations.job_type),
               dataIndex: "type",
-              render: (type: string) =>
-                type === "Date Based Object Operation"
-                  ? displayText(operations.date_based_object_operation)
-                  : type,
+              render: (type: string) => jobDefinitionType(type, operations),
             },
             {
               title: displayText(shell.metadata_status),
@@ -279,6 +305,8 @@ export function AdminJobDefinitionDetailPage() {
   const [labelPreview, setLabelPreview] = useState("");
   const [conditions, setConditions] = useState<ConditionRow[]>([]);
   const [optionalNotifs, setOptionalNotifs] = useState<OptionalNotifRow[]>([]);
+
+  const vaultScoped = !isNew && isVaultScopedJobType(detailType);
 
   const initialValues = useMemo<FormValues>(
     () => ({
@@ -371,33 +399,38 @@ export function AdminJobDefinitionDetailPage() {
       priority: values.priority || "normal",
       owner: values.owner.trim() || "user:User.System",
       active: false,
-      action_type: values.action_type,
-      object_name: values.object_name.trim(),
+      job_type: vaultScoped ? detailType : undefined,
+      action_type: vaultScoped ? "vault" : values.action_type,
+      object_name: vaultScoped ? undefined : values.object_name.trim(),
       terminate_existing_workflows: Boolean(values.terminate_existing_workflows),
-      trigger_date_field: values.trigger_date_field.trim() || undefined,
+      trigger_date_field: vaultScoped ? undefined : values.trigger_date_field.trim() || undefined,
       date_boundary: values.date_boundary || "only_before",
-      conditions: conditions
-        .filter((c) => c.lhs.trim())
-        .map((c) => ({
-          lhs: c.lhs.trim(),
-          operator: c.operator,
-          rhs:
-            c.operator === "is blank" || c.operator === "is not blank"
-              ? []
-              : c.rhs
-                  .split(",")
-                  .map((s) => s.trim())
-                  .filter(Boolean),
-          type: "Expression",
-          expressionType: null,
-        })),
-      optional_notifications: optionalNotifs
-        .filter((n) => n.template.trim())
-        .map((n) => ({
-          template: n.template.trim(),
-          recipients: splitCSV(n.recipients),
-          send_date: Number.isFinite(n.send_date) ? n.send_date : 0,
-        })),
+      conditions: vaultScoped
+        ? undefined
+        : conditions
+            .filter((c) => c.lhs.trim())
+            .map((c) => ({
+              lhs: c.lhs.trim(),
+              operator: c.operator,
+              rhs:
+                c.operator === "is blank" || c.operator === "is not blank"
+                  ? []
+                  : c.rhs
+                      .split(",")
+                      .map((s) => s.trim())
+                      .filter(Boolean),
+              type: "Expression",
+              expressionType: null,
+            })),
+      optional_notifications: vaultScoped
+        ? undefined
+        : optionalNotifs
+            .filter((n) => n.template.trim())
+            .map((n) => ({
+              template: n.template.trim(),
+              recipients: splitCSV(n.recipients),
+              send_date: Number.isFinite(n.send_date) ? n.send_date : 0,
+            })),
     };
 
     if (values.schedule === "Hourly") {
@@ -564,7 +597,14 @@ export function AdminJobDefinitionDetailPage() {
             </Form.Item>
           )}
           <Form.Item label="Type">
-            <Input value="Date Based Object Operation" disabled />
+            <Input
+              value={
+                isNew
+                  ? displayText(operations.date_based_object_operation)
+                  : jobDefinitionType(detailType, operations)
+              }
+              disabled
+            />
           </Form.Item>
           <Form.Item
             name="owner"
@@ -649,6 +689,8 @@ export function AdminJobDefinitionDetailPage() {
             </>
           )}
 
+          {!vaultScoped && (
+            <>
           <h3>Action Configuration</h3>
           <Form.Item name="action_type" label="Action" rules={[{ required: true }]}>
             <Select
@@ -837,6 +879,8 @@ export function AdminJobDefinitionDetailPage() {
               Add Optional Notification
             </Button>
           </Space>
+            </>
+          )}
         </Form>
       </Spin>
     </AdminPageShell>
