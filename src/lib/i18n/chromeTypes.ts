@@ -1058,6 +1058,8 @@ export type OperationsChrome = {
   schedule: DisplayText;
   date_based_object_operation: DisplayText;
   user_account_activation: DisplayText;
+  task_reminder_notification: DisplayText;
+  match_edl_items: DisplayText;
   status_active: DisplayText;
   status_inactive: DisplayText;
   schedule_hourly: DisplayText;
@@ -2936,6 +2938,11 @@ export const defaultOperationsChrome: OperationsChrome = {
     "operations.date_based_object_operation",
   ),
   user_account_activation: t("User Account Activation", "operations.user_account_activation"),
+  task_reminder_notification: t(
+    "Task Reminder Notification",
+    "operations.task_reminder_notification",
+  ),
+  match_edl_items: t("Match EDL Items to Documents", "operations.match_edl_items"),
   status_active: t("Active", "operations.status_active"),
   status_inactive: t("Inactive", "operations.status_inactive"),
   schedule_hourly: t("Hourly", "operations.schedule_hourly"),
