@@ -285,6 +285,7 @@ export function AdminJobDefinitionDetailPage() {
   const vaultId = useVaultId();
   const navigate = useNavigate();
   const { shell } = useUi();
+  const operations = shell.operations;
   const apiName = decodeURIComponent(
     window.location.pathname.split("/admin/operations/job_definitions/")[1] ?? "",
   );
