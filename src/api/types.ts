@@ -2736,7 +2736,8 @@ export type SandboxVaultsPageChrome = {
   delete_confirm: DisplayText;
   delete_snapshots_option: DisplayText;
   status_active: DisplayText;
-  status_provisioning: DisplayText;
+  status_creating: DisplayText;
+  status_creation_failed: DisplayText;
   status_refresh_in_progress: DisplayText;
   status_upgrade_in_progress: DisplayText;
   size_small: DisplayText;

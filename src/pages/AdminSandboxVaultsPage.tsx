@@ -55,10 +55,9 @@ export function AdminSandboxVaultsPage() {
 
   const createEnabled = useMemo(() => {
     if (!model) return false;
-    // AC-PLT-ENV-03 场景五/七：Create 入口按 Small 余量门禁（出厂验收 Size）。
-    const smallAvailable =
-      model.entitlements.find((row) => row.size === "Small")?.available ?? 0;
-    return model.can_create && smallAvailable > 0;
+    // AC-PLT-ENV-03：Create 入口按任一 Size 余量（Small=0 但 Medium>0 仍可建）。
+    const anyAvailable = model.entitlements.some((row) => row.available > 0);
+    return model.can_create && anyAvailable;
   }, [model]);
 
   const createDisabledReason = useMemo(() => {
