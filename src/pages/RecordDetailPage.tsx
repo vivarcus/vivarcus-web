@@ -73,6 +73,7 @@ import {
   shouldShowRecordEditLoading,
 } from "../lib/recordEditFormLoad";
 import { isBinderObjectType } from "../lib/recordPageShell";
+import { isAbortError } from "../lib/abortError";
 
 const RECORD_EDIT_FORM_ID = "record-edit-form";
 const EMPTY_FORM_SECTIONS: RecordFormModel["sections"] = [];
@@ -103,6 +104,7 @@ export function RecordDetailPage() {
   const hasLoadedOnceRef = useRef(false);
   const appliedSectionIdentityKeyRef = useRef("");
   const loadGenerationRef = useRef(0);
+  const loadAbortRef = useRef<AbortController | null>(null);
   const editLoadIdRef = useRef(0);
   const valuesRef = useRef<Record<string, unknown>>({});
   const [deleting, setDeleting] = useState(false);
@@ -343,6 +345,9 @@ export function RecordDetailPage() {
       opts?.layoutOverride === null ? undefined : (opts?.layoutOverride ?? layout);
     const softRefresh = hasLoadedOnceRef.current;
     const generation = ++loadGenerationRef.current;
+    loadAbortRef.current?.abort();
+    const abort = new AbortController();
+    loadAbortRef.current = abort;
     if (softRefresh) {
       setRefreshing(true);
     } else {
@@ -354,8 +359,9 @@ export function RecordDetailPage() {
       const data = await api.recordPage(vaultId, objectName, recordId, {
         layout: layoutToUse,
         page: pageApiName,
+        signal: abort.signal,
       });
-      if (generation !== loadGenerationRef.current) {
+      if (generation !== loadGenerationRef.current || abort.signal.aborted) {
         return;
       }
       const identityKey = recordSectionIdentityKey(
@@ -377,7 +383,7 @@ export function RecordDetailPage() {
       setCountPrefetchKey((key) => key + 1);
       hasLoadedOnceRef.current = true;
     } catch (err) {
-      if (generation !== loadGenerationRef.current) {
+      if (generation !== loadGenerationRef.current || abort.signal.aborted || isAbortError(err)) {
         return;
       }
       setError(err instanceof Error ? err.message : displayText(defaultPageMessages.load_failed));
@@ -385,7 +391,7 @@ export function RecordDetailPage() {
         setPage(null);
       }
     } finally {
-      if (generation === loadGenerationRef.current) {
+      if (generation === loadGenerationRef.current && !abort.signal.aborted) {
         setLoading(false);
         setRefreshing(false);
       }
@@ -401,7 +407,10 @@ export function RecordDetailPage() {
 
   useEffect(() => {
     void load();
-  }, [vaultId, objectName, recordId, layout, pageApiName]);
+    return () => {
+      loadAbortRef.current?.abort();
+    };
+  }, [vaultId, objectName, recordId, layout, pageApiName, load]);
 
   useEffect(() => {
     if ((navState as RecordNavState).recordPageRefresh) {
