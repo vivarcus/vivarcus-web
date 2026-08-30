@@ -1145,7 +1145,7 @@ export const api = {
     );
   },
 
-  recordPage(vaultId: string, objectName: string, recordId: string, params: { layout?: string; page?: string; signal?: AbortSignal } = {}) {
+  recordPage(vaultId: string, objectName: string, recordId: string, params: { layout?: string; page?: string } = {}) {
     const q = new URLSearchParams();
     if (params.layout) q.set("layout", params.layout);
     if (params.page) q.set("page", params.page);
@@ -1153,7 +1153,6 @@ export const api = {
     return vaultFetch<import("./types").RecordPageModel>(
       vaultId,
       `/ui/objects/${encodeURIComponent(objectName)}/records/${encodeURIComponent(recordId)}/page${suffix}`,
-      params.signal ? { signal: params.signal } : {},
     );
   },
 
