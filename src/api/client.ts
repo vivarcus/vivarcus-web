@@ -2472,6 +2472,20 @@ export const api = {
     );
   },
 
+  licenseCapPreview(
+    vaultId: string,
+    params: { licenseType: string; securityProfileApiName: string },
+  ) {
+    const q = new URLSearchParams({
+      license_type: params.licenseType,
+      security_profile_api_name: params.securityProfileApiName,
+    });
+    return vaultFetch<import("./types").LicenseCapPreviewModel>(
+      vaultId,
+      `/api/v1/sec/license-cap-preview?${q}`,
+    );
+  },
+
   layoutProfileAssignment(vaultId: string, userId?: string) {
     const q = userId ? `?user_id=${encodeURIComponent(userId)}` : "";
     return vaultFetch<import("./types").LayoutProfileAssignmentModel>(

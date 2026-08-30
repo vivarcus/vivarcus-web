@@ -3936,6 +3936,19 @@ export type MetadataSecurityProfileUser = {
   active: boolean;
 };
 
+export type PermissionEntryRef = {
+  resource_path: string;
+  actions: string[];
+};
+
+export type LicenseCapPreviewModel = {
+  license_type: string;
+  security_profile_api_name: string;
+  granted: PermissionEntryRef[];
+  effective: PermissionEntryRef[];
+  suppressed_by_cap: PermissionEntryRef[];
+};
+
 export type MetadataSecurityProfileDetailModel = {
   model_type: string;
   vault_id: string;

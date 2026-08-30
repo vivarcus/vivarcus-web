@@ -15,6 +15,7 @@ import type { ShellChrome } from "../lib/i18n";
 import { sourceLabel } from "../lib/metadataFormat";
 import { AdminCompactTable, adminTableEmptyText } from "../components/admin/AdminCompactTable";
 import { AdminPageShell } from "../components/admin/AdminPageShell";
+import { SecurityProfileLicenseCapPreview } from "../components/admin/SecurityProfileLicenseCapPreview";
 
 type Shell = ShellChrome;
 
@@ -70,7 +71,7 @@ export function AdminMetadataSecurityProfileDetailPage() {
         <Spin description={displayText(shell.loading)} className="page-loading page__loading" />
       )}
 
-      {model && <SecurityProfileDetailBody model={model} shell={shell} />}
+      {model && <SecurityProfileDetailBody model={model} shell={shell} vaultId={vaultId} />}
     </AdminPageShell>
   );
 }
@@ -78,14 +79,17 @@ export function AdminMetadataSecurityProfileDetailPage() {
 function SecurityProfileDetailBody({
   model,
   shell,
+  vaultId,
 }: {
   model: MetadataSecurityProfileDetailModel;
   shell: Shell;
+  vaultId: string;
 }) {
   const idBase = `sp-${model.api_name}`;
   const sections = [
     { id: `${idBase}-details`, title: displayText(shell.metadata_details_tab) },
     { id: `${idBase}-permission-sets`, title: displayText(shell.metadata_permission_sets_title) },
+    { id: `${idBase}-license-cap`, title: "License Cap Preview" },
     { id: `${idBase}-users`, title: displayText(shell.metadata_security_profile_users_title) },
   ];
 
@@ -104,6 +108,15 @@ function SecurityProfileDetailBody({
 
         <section id={sections[2].id} className="security-profile-detail__section">
           <h2 className="security-profile-detail__section-title">{sections[2].title}</h2>
+          <SecurityProfileLicenseCapPreview
+            vaultId={vaultId}
+            securityProfileApiName={model.api_name}
+            shell={shell}
+          />
+        </section>
+
+        <section id={sections[3].id} className="security-profile-detail__section">
+          <h2 className="security-profile-detail__section-title">{sections[3].title}</h2>
           <UsersTable users={model.users ?? []} shell={shell} />
         </section>
       </div>
