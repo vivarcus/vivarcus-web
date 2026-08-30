@@ -30,6 +30,7 @@ describe("importDetailsCsv", () => {
   it("filters one outcome and quotes commas", () => {
     const csv = importDetailsCsv(rows, "error");
     expect(csv).toContain("bad");
+    expect(csv.split("\n")[0]).toContain("Line");
     expect(csv.split("\n")[1]).toContain('"unknown, ""resource"""');
     expect(csv).not.toContain("system:ui.save");
   });

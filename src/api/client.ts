@@ -2656,13 +2656,33 @@ export const api = {
   async exportLanguageRegionTranslations(
     vaultId: string,
     body: { language: string; categories: string[]; include_diagnostics?: boolean },
-  ): Promise<Blob> {
-    const res = await vaultFetchRaw(
+  ): Promise<import("./types").LanguageRegionBulkJobStart> {
+    return vaultFetch<import("./types").LanguageRegionBulkJobStart>(
       vaultId,
       `/ui/settings/language-region/bulk/export`,
       { method: "POST", body: JSON.stringify(body) },
     );
-    return res.blob();
+  },
+
+  getLanguageRegionBulkJob(vaultId: string, jobId: string) {
+    return vaultFetch<import("./types").LanguageRegionBulkJobStatus>(
+      vaultId,
+      `/ui/settings/language-region/bulk/jobs/${encodeURIComponent(jobId)}`,
+    );
+  },
+
+  fetchLanguageRegionBulkFile(vaultId: string, jobId: string) {
+    return vaultFetchBlob(
+      vaultId,
+      `/ui/settings/language-region/bulk/jobs/${encodeURIComponent(jobId)}/file`,
+    );
+  },
+
+  fetchLanguageRegionBulkErrors(vaultId: string, jobId: string) {
+    return vaultFetchBlob(
+      vaultId,
+      `/ui/settings/language-region/bulk/jobs/${encodeURIComponent(jobId)}/errors`,
+    );
   },
 
   importLanguageRegionTranslations(vaultId: string, files: File[]) {
@@ -2670,45 +2690,10 @@ export const api = {
     for (const file of files) {
       form.append("files", file);
     }
-    return vaultFetch<import("./types").LanguageRegionImportResult>(
+    return vaultFetch<import("./types").LanguageRegionBulkJobStart>(
       vaultId,
       `/ui/settings/language-region/bulk/import`,
       { method: "POST", body: form },
-    );
-  },
-
-  listLanguageRegionTranslations(
-    vaultId: string,
-    params: {
-      language: string;
-      category?: string;
-      q?: string;
-      stale?: boolean;
-      limit?: number;
-      offset?: number;
-    },
-  ) {
-    const query = new URLSearchParams();
-    query.set("language", params.language);
-    if (params.category) query.set("category", params.category);
-    if (params.q) query.set("q", params.q);
-    if (params.stale) query.set("stale", "true");
-    if (params.limit != null) query.set("limit", String(params.limit));
-    if (params.offset != null) query.set("offset", String(params.offset));
-    return vaultFetch<import("./types").LanguageRegionTranslationList>(
-      vaultId,
-      `/ui/settings/language-region/translations?${query.toString()}`,
-    );
-  },
-
-  patchLanguageRegionTranslation(
-    vaultId: string,
-    body: { key: string; language: string; translated_text: string },
-  ) {
-    return vaultFetch<import("./types").LanguageRegionTranslationRow>(
-      vaultId,
-      `/ui/settings/language-region/translations`,
-      { method: "PATCH", body: JSON.stringify(body) },
     );
   },
 

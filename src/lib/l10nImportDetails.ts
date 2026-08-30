@@ -4,6 +4,7 @@ export type { LanguageRegionImportRowDetail };
 
 const DETAIL_HEADER = [
   "File",
+  "Line",
   "Type",
   "Key",
   "Property",
@@ -30,6 +31,7 @@ export function importDetailsCsv(
     ...selected.map((row) =>
       [
         row.file ?? "",
+        row.line ? `line ${row.line}` : "",
         row.type ?? "",
         row.key,
         row.property ?? "",

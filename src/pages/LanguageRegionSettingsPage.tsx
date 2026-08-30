@@ -19,6 +19,7 @@ import { useVaultId } from "../hooks/useVaultId";
 import { useUi } from "../context/UiContext";
 import { api } from "../api/client";
 import type {
+  LanguageRegionBulkJobStatus,
   LanguageRegionPageChrome,
   LanguageRegionPatch,
   LanguageRegionSettingsModel,
@@ -30,7 +31,6 @@ import {
 } from "../lib/i18n";
 import { formatTimezoneOptionLabel } from "../lib/timezoneLabel";
 import { downloadTextFile, importDetailsCsv } from "../lib/l10nImportDetails";
-import { TranslationAdminSection } from "./TranslationAdminSection";
 
 function statusLabel(chrome: LanguageRegionPageChrome, status: string): string {
   return status === "Active"
@@ -98,6 +98,7 @@ export function LanguageRegionSettingsPage() {
   const [languagesReordering, setLanguagesReordering] = useState(false);
   const [pendingLanguageOrder, setPendingLanguageOrder] = useState<string[]>([]);
   const [dragLanguageCode, setDragLanguageCode] = useState<string | null>(null);
+  const [exporting, setExporting] = useState(false);
 
   const chrome = model?.chrome;
 
@@ -317,20 +318,28 @@ export function LanguageRegionSettingsPage() {
       message.warning(displayText(pageChrome.export_select_warning));
       return;
     }
+    setExporting(true);
     try {
-      const blob = await api.exportLanguageRegionTranslations(vaultId, {
+      const started = await api.exportLanguageRegionTranslations(vaultId, {
         language: exportLanguage,
         categories: exportCategories,
         include_diagnostics: exportIncludeDiagnostics,
       });
+      const finished = await waitForBulkJob(vaultId, started.job_id);
+      if (!isBulkJobSuccess(finished.status)) {
+        throw new Error(finished.error || displayText(pageChrome.export_failed));
+      }
+      const blob = await api.fetchLanguageRegionBulkFile(vaultId, started.job_id);
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `translations_${exportLanguage}.csv`;
+      a.download = finished.filename || `translations_${exportLanguage}.csv`;
       a.click();
       URL.revokeObjectURL(url);
     } catch (err) {
       message.error(err instanceof Error ? err.message : displayText(pageChrome.export_failed));
+    } finally {
+      setExporting(false);
     }
   }
 
@@ -341,8 +350,15 @@ export function LanguageRegionSettingsPage() {
     }
     setSaving(true);
     try {
-      const result = await api.importLanguageRegionTranslations(vaultId, importFiles);
-      setImportResult(result);
+      const started = await api.importLanguageRegionTranslations(vaultId, importFiles);
+      const finished = await waitForBulkJob(vaultId, started.job_id);
+      if (!isBulkJobSuccess(finished.status) && finished.status !== "Errors_Encountered") {
+        throw new Error(finished.error || displayText(pageChrome.import_failed));
+      }
+      if (!finished.result) {
+        throw new Error(displayText(pageChrome.import_failed));
+      }
+      setImportResult(finished.result);
       message.success(displayText(pageChrome.import_completed));
       setImportFiles([]);
     } catch (err) {
@@ -715,6 +731,7 @@ export function LanguageRegionSettingsPage() {
                 </Checkbox>
                 <Button
                   type="primary"
+                  loading={exporting}
                   disabled={!model.bulk.can_export || pageEditing}
                   onClick={() => void handleExport()}
                 >
@@ -847,13 +864,6 @@ export function LanguageRegionSettingsPage() {
             </div>
           </div>
         </AdminPageSection>
-
-        <TranslationAdminSection
-          vaultId={vaultId}
-          model={settingsModel}
-          chrome={pageChrome}
-          disabled={pageEditing}
-        />
       </div>
 
       <Modal
@@ -922,4 +932,24 @@ export function LanguageRegionSettingsPage() {
       </Modal>
     </AdminPageShell>
   );
+}
+
+const BULK_JOB_POLL_MS = 400;
+const BULK_JOB_MAX_POLLS = 300;
+
+const BULK_JOB_ACTIVE = new Set(["Scheduled", "Queueing", "Queued", "Running"]);
+
+function isBulkJobSuccess(status: string): boolean {
+  return status === "Success";
+}
+
+async function waitForBulkJob(vaultId: string, jobId: string): Promise<LanguageRegionBulkJobStatus> {
+  for (let i = 0; i < BULK_JOB_MAX_POLLS; i++) {
+    const job = await api.getLanguageRegionBulkJob(vaultId, jobId);
+    if (!BULK_JOB_ACTIVE.has(job.status)) {
+      return job;
+    }
+    await new Promise((resolve) => setTimeout(resolve, BULK_JOB_POLL_MS));
+  }
+  throw new Error("job timeout");
 }

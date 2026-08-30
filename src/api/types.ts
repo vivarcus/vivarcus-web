@@ -2435,22 +2435,7 @@ export type LanguageRegionPageChrome = {
   cannot_deactivate_language: DisplayText;
   category_system_messages: DisplayText;
   category_field_labels: DisplayText;
-  translation_admin_title: DisplayText;
-  translation_admin_search_placeholder: DisplayText;
-  translation_type_column: DisplayText;
-  translation_key_column: DisplayText;
-  translation_property_column: DisplayText;
-  translation_base_column: DisplayText;
-  translation_translated_column: DisplayText;
-  translation_stale_column: DisplayText;
-  translation_stale_yes: DisplayText;
-  translation_stale_no: DisplayText;
-  translation_base_updated_column: DisplayText;
-  translation_updated_column: DisplayText;
-  translation_stale_only: DisplayText;
   export_include_diagnostics: DisplayText;
-  translation_empty: DisplayText;
-  translation_saved: DisplayText;
 };
 
 export type LanguageRegionSettingsModel = {
@@ -2532,6 +2517,7 @@ export type LanguageRegionImportRowDetail = {
   outcome: "success" | "ignored" | "error" | "unauthorized";
   reason?: string;
   file?: string;
+  line?: number;
   type?: string;
   key: string;
   property?: string;
@@ -2548,27 +2534,18 @@ export type LanguageRegionImportResult = {
   details?: LanguageRegionImportRowDetail[];
 };
 
-export type LanguageRegionTranslationRow = {
-  type: string;
-  key: string;
-  property: string;
-  base_label: string;
-  translated_label: string;
-  language: string;
-  stale?: boolean;
-  base_updated_at?: string;
-  translation_updated_at?: string;
+export type LanguageRegionBulkJobStart = {
+  job_id: string;
 };
 
-export type LanguageRegionTranslationList = {
-  language: string;
-  category?: string;
-  q?: string;
-  limit: number;
-  offset: number;
-  total: number;
-  can_edit: boolean;
-  rows: LanguageRegionTranslationRow[];
+export type LanguageRegionBulkJobStatus = {
+  job_id: string;
+  job_code: string;
+  status: string;
+  kind: "import" | "export";
+  filename?: string;
+  error?: string;
+  result?: LanguageRegionImportResult;
 };
 
 export type BrandingAssetSlot =
