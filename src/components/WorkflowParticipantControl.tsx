@@ -160,6 +160,18 @@ export function WorkflowParticipantControl({
           const merged = [...new Set([...locked, ...next])];
           onChange(merged);
         }}
+        tagRender={(props) => {
+          const lockedTag = locked.includes(String(props.value));
+          return (
+            <Tag
+              closable={props.closable && !lockedTag}
+              onClose={lockedTag ? undefined : props.onClose}
+              style={{ marginInlineEnd: 4 }}
+            >
+              {props.label}
+            </Tag>
+          );
+        }}
         onBlur={() => {
           if (search) {
             setSearch("");
