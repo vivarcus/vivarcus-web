@@ -462,6 +462,17 @@
   word-break: break-word;
 }
 
+.notification-dropdown__message a,
+.notification-dropdown__html a {
+  color: #0b6fd4;
+  font-weight: 500;
+}
+
+.notification-dropdown__message a:hover,
+.notification-dropdown__html a:hover {
+  text-decoration: underline;
+}
+
 .notification-dropdown__inline-link {
   color: #0b6fd4;
   font-weight: 500;

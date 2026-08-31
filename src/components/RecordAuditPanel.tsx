@@ -339,7 +339,7 @@ export function RecordAuditPanel({
                 }}
                 trigger={["click"]}
               >
-                <Button type="text" className="record-audit-panel__actions" aria-label="Actions">
+                <Button type="text" className="record-audit-panel__actions" aria-label={displayText(auditChrome.actions)}>
                   ⋯
                 </Button>
               </Dropdown>

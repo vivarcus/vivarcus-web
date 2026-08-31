@@ -82,16 +82,25 @@ function formatAuditRecordCell(row: Record<string, unknown>): string {
   if (existing != null && String(existing).trim()) {
     return String(existing);
   }
-  const item = row.item;
-  if (typeof item === "string" && item.trim() && !looksLikeObjectApiItem(item, row)) {
+  const label = String(row.object_label ?? "").trim();
+  const item = typeof row.item === "string" ? row.item.trim() : "";
+  if (label && item && !looksLikeObjectApiItem(item, row)) {
+    const parts = item.split(" : ").map((part) => part.trim()).filter(Boolean);
+    const recordName = parts[parts.length - 1];
+    if (recordName && recordName !== label) {
+      return `${label} : ${recordName}`;
+    }
     return item;
   }
-  const label = String(row.object_label ?? row.object_name ?? "").trim();
-  const recordId = String(row.record_id ?? "").trim();
-  if (label && recordId) {
-    return `${label} : ${recordId}`;
+  if (item && !looksLikeObjectApiItem(item, row)) {
+    return item;
   }
-  return label || recordId;
+  const fallbackLabel = label || String(row.object_name ?? "").trim();
+  const recordId = String(row.record_id ?? "").trim();
+  if (fallbackLabel && recordId) {
+    return `${fallbackLabel} : ${recordId}`;
+  }
+  return fallbackLabel || recordId;
 }
 
 function looksLikeObjectApiItem(item: string, row: Record<string, unknown>): boolean {

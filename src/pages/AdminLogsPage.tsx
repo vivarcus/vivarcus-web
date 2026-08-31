@@ -16,7 +16,7 @@ import {
   localDateInputToRFC3339,
   localDateTimeInputToRFC3339,
 } from "../lib/auditExport";
-import { displayText } from "../lib/i18n";
+import { displayText, type AuditChrome } from "../lib/i18n";
 
 function resolvePanel(routePanel: string | undefined, queryPanel: string | null): AuditPanelKind {
   return parseAuditPanelKind(routePanel) ?? parseAuditPanelKind(queryPanel) ?? "system";
@@ -81,20 +81,27 @@ function buildDefaultDraft(panel: AuditPanelKind, objectFromUrl: string): Filter
   };
 }
 
-const LOGIN_TYPE_OPTIONS = [
-  { value: "User Login", label: "User Login" },
-  { value: "User Logout", label: "User Logout" },
-  { value: "Change Password", label: "Change Password" },
-  { value: "Password Changed", label: "Password Changed" },
-];
+function loginTypeOptions(chrome: AuditChrome) {
+  return [
+    { value: "User Login", label: displayText(chrome.login_type_user_login) },
+    { value: "User Logout", label: displayText(chrome.login_type_user_logout) },
+    { value: "Change Password", label: displayText(chrome.login_type_change_password) },
+    { value: "Password Changed", label: displayText(chrome.login_type_password_changed) },
+  ];
+}
 
-const LOGIN_STATUS_OPTIONS = [
-  { value: "Success", label: "Success" },
-  { value: "Failure", label: "Failure" },
-  { value: "User Not Found", label: "User Not Found" },
-  { value: "Locked", label: "Locked" },
-  { value: "Password Change Required", label: "Password Change Required" },
-];
+function loginStatusOptions(chrome: AuditChrome) {
+  return [
+    { value: "Success", label: displayText(chrome.login_status_success) },
+    { value: "Failure", label: displayText(chrome.login_status_failure) },
+    { value: "User Not Found", label: displayText(chrome.login_status_user_not_found) },
+    { value: "Locked", label: displayText(chrome.login_status_locked) },
+    {
+      value: "Password Change Required",
+      label: displayText(chrome.login_status_password_change_required),
+    },
+  ];
+}
 
 export function AdminLogsPage() {
   const vaultId = useVaultId();
@@ -350,7 +357,7 @@ export function AdminLogsPage() {
                   allowClear
                   className="filter-bar__min-160"
                   value={draft.loginType || undefined}
-                  options={LOGIN_TYPE_OPTIONS}
+                  options={loginTypeOptions(auditChrome)}
                   placeholder={displayText(auditChrome.filter_type)}
                   onChange={(value) => setDraft((prev) => ({ ...prev, loginType: value ?? "" }))}
                 />
@@ -360,7 +367,7 @@ export function AdminLogsPage() {
                   allowClear
                   className="filter-bar__min-160"
                   value={draft.status || undefined}
-                  options={LOGIN_STATUS_OPTIONS}
+                  options={loginStatusOptions(auditChrome)}
                   placeholder={displayText(auditChrome.filter_status)}
                   onChange={(value) => setDraft((prev) => ({ ...prev, status: value ?? "" }))}
                 />
@@ -378,7 +385,7 @@ export function AdminLogsPage() {
             <Form.Item label={displayText(auditChrome.filter_object)}>
               <Input
                 value={draft.object}
-                placeholder="Study Site or site__v"
+                placeholder={displayText(auditChrome.filter_object_placeholder)}
                 onChange={(e) => setDraft((prev) => ({ ...prev, object: e.target.value }))}
               />
             </Form.Item>

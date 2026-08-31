@@ -616,6 +616,13 @@ export type ShellChrome = {
   global_search_advanced: DisplayText;
   global_search_submit: DisplayText;
   notifications_aria: DisplayText;
+  notifications_view_all: DisplayText;
+  notifications_unread_only: DisplayText;
+  notifications_show_more: DisplayText;
+  notifications_show_less: DisplayText;
+  notifications_empty: DisplayText;
+  notifications_download_started: DisplayText;
+  notifications_download_failed: DisplayText;
   tab_collections_aria: DisplayText;
   tab_collections_label: DisplayText;
   tab_more_label: DisplayText;
@@ -1088,6 +1095,7 @@ export type OperationsChrome = {
   missed_schedule: DisplayText;
   failed_to_run: DisplayText;
   completed_due_to_inactivity: DisplayText;
+  timeout: DisplayText;
   max_concurrent_jobs: DisplayText;
   description: DisplayText;
   saved: DisplayText;
@@ -1496,6 +1504,62 @@ export type AuditChrome = {
   trigger_entry_action: DisplayText;
   trigger_event_action: DisplayText;
   close: DisplayText;
+  actions: DisplayText;
+  workflow_started: DisplayText;
+  workflow_completed: DisplayText;
+  workflow_cancelled: DisplayText;
+  workflow_failed: DisplayText;
+  entry_action_begin: DisplayText;
+  entry_action_complete: DisplayText;
+  event_action_complete: DisplayText;
+  task_assigned: DisplayText;
+  task_completed: DisplayText;
+  task_completed_outcome: DisplayText;
+  esignature: DisplayText;
+  esignature_outcome: DisplayText;
+  task_due_date: DisplayText;
+  workflow_date_set: DisplayText;
+  login_type_user_login: DisplayText;
+  login_type_user_logout: DisplayText;
+  login_type_change_password: DisplayText;
+  login_type_password_changed: DisplayText;
+  login_status_success: DisplayText;
+  login_status_failure: DisplayText;
+  login_status_user_not_found: DisplayText;
+  login_status_locked: DisplayText;
+  login_status_password_change_required: DisplayText;
+  filter_object_placeholder: DisplayText;
+  component_object: DisplayText;
+  component_workflow: DisplayText;
+  component_object_lifecycle: DisplayText;
+  component_permission_set: DisplayText;
+  component_pagelayout: DisplayText;
+  component_field: DisplayText;
+  component_job: DisplayText;
+  component_picklist: DisplayText;
+  component_configuration: DisplayText;
+  component_was_created: DisplayText;
+  component_was_modified: DisplayText;
+  component_was_deleted: DisplayText;
+  component_was_activated: DisplayText;
+  field_cleared: DisplayText;
+  label_changed: DisplayText;
+  picklist_label_changed: DisplayText;
+  picklist_value_label_changed: DisplayText;
+  workflow_task_label_changed: DisplayText;
+  section_modified: DisplayText;
+  item_pagelayout: DisplayText;
+  domain_field_changed: DisplayText;
+  domain_setting_changed: DisplayText;
+  domain_feature_changed: DisplayText;
+  reason_suffix: DisplayText;
+  domain_field_first_name: DisplayText;
+  domain_field_last_name: DisplayText;
+  domain_field_user_name: DisplayText;
+  domain_field_email: DisplayText;
+  domain_field_language: DisplayText;
+  domain_field_locale: DisplayText;
+  domain_field_timezone: DisplayText;
 };
 
 export type SharingChrome = {
@@ -2980,6 +3044,7 @@ export const defaultOperationsChrome: OperationsChrome = {
     "Completed due to Inactivity",
     "operations.completed_due_to_inactivity",
   ),
+  timeout: t("Timeout", "operations.timeout"),
   max_concurrent_jobs: t("Max Concurrent Jobs", "operations.max_concurrent_jobs"),
   description: t("Description", "operations.description"),
   saved: t("Saved", "operations.saved"),
@@ -4787,6 +4852,13 @@ export const defaultShellChrome: ShellChrome = {
   global_search_advanced: t("Advanced search", "ui.global_search_advanced"),
   global_search_submit: t("Search", "ui.global_search_submit"),
   notifications_aria: t("Notifications", "ui.notifications_aria"),
+  notifications_view_all: t("View all", "ui.notifications_view_all"),
+  notifications_unread_only: t("Unread only", "ui.notifications_unread_only"),
+  notifications_show_more: t("Show more", "ui.notifications_show_more"),
+  notifications_show_less: t("Show less", "ui.notifications_show_less"),
+  notifications_empty: t("No notifications", "ui.notifications_empty"),
+  notifications_download_started: t("Download started", "ui.notifications_download_started"),
+  notifications_download_failed: t("Download failed", "ui.notifications_download_failed"),
   tab_collections_aria: t("Tab collections", "nav.tab_collections_aria"),
   tab_collections_label: t("Tab Collections", "nav.tab_collections_label"),
   tab_more_label: t("More Tabs", "nav.tab_more_label"),
@@ -5278,6 +5350,155 @@ export const defaultAuditChrome: AuditChrome = {
   trigger_entry_action: t("entry action", "audit.trigger_entry_action"),
   trigger_event_action: t("event action", "audit.trigger_event_action"),
   close: t("Close", "audit.close"),
+  actions: t("Actions", "audit.actions"),
+  workflow_started: t(
+    `"{workflow}" workflow started`,
+    "audit.workflow_started",
+  ),
+  workflow_completed: t(
+    `"{workflow}" workflow completed`,
+    "audit.workflow_completed",
+  ),
+  workflow_cancelled: t(
+    `"{workflow}" workflow cancelled`,
+    "audit.workflow_cancelled",
+  ),
+  workflow_failed: t(
+    `"{workflow}" workflow failed: {error}`,
+    "audit.workflow_failed",
+  ),
+  entry_action_begin: t(
+    `Begin entry action execution for lifecycle state "{state}"`,
+    "audit.entry_action_begin",
+  ),
+  entry_action_complete: t(
+    `Completed entry action execution for lifecycle state "{state}"`,
+    "audit.entry_action_complete",
+  ),
+  event_action_complete: t(
+    "Completed event action execution for {name}",
+    "audit.event_action_complete",
+  ),
+  task_assigned: t(
+    `"{workflow}" workflow "{task}" task assigned to "{assignee}"`,
+    "audit.task_assigned",
+  ),
+  task_completed: t(
+    `Workflow: "{workflow}"; Task: "{task}" completed`,
+    "audit.task_completed",
+  ),
+  task_completed_outcome: t(
+    `Workflow: "{workflow}"; Task: "{task}" completed with outcome "{outcome}"`,
+    "audit.task_completed_outcome",
+  ),
+  esignature: t(
+    `Workflow: "{workflow}"; Task: "{task}"; eSignature`,
+    "audit.esignature",
+  ),
+  esignature_outcome: t(
+    `Workflow: "{workflow}"; Task: "{task}"; eSignature for verdict: "{outcome}"`,
+    "audit.esignature_outcome",
+  ),
+  task_due_date: t(
+    `"{workflow}" workflow "{task}" task due date set to {due}`,
+    "audit.task_due_date",
+  ),
+  workflow_date_set: t(
+    `"{workflow}" "{field}" set to {due}`,
+    "audit.workflow_date_set",
+  ),
+  login_type_user_login: t("User Login", "audit.login_type_user_login"),
+  login_type_user_logout: t("User Logout", "audit.login_type_user_logout"),
+  login_type_change_password: t(
+    "Change Password",
+    "audit.login_type_change_password",
+  ),
+  login_type_password_changed: t(
+    "Password Changed",
+    "audit.login_type_password_changed",
+  ),
+  login_status_success: t("Success", "audit.login_status_success"),
+  login_status_failure: t("Failure", "audit.login_status_failure"),
+  login_status_user_not_found: t(
+    "User Not Found",
+    "audit.login_status_user_not_found",
+  ),
+  login_status_locked: t("Locked", "audit.login_status_locked"),
+  login_status_password_change_required: t(
+    "Password Change Required",
+    "audit.login_status_password_change_required",
+  ),
+  filter_object_placeholder: t(
+    "Study Site or site__v",
+    "audit.filter_object_placeholder",
+  ),
+  component_object: t("Object", "audit.component_object"),
+  component_workflow: t("Workflow", "audit.component_workflow"),
+  component_object_lifecycle: t(
+    "Object Lifecycle",
+    "audit.component_object_lifecycle",
+  ),
+  component_permission_set: t("Permission Set", "audit.component_permission_set"),
+  component_pagelayout: t("Pagelayout", "audit.component_pagelayout"),
+  component_field: t("Field", "audit.component_field"),
+  component_job: t("Job", "audit.component_job"),
+  component_picklist: t("Picklist", "audit.component_picklist"),
+  component_configuration: t("Configuration", "audit.component_configuration"),
+  component_was_created: t(
+    `{type} "{name}" was created`,
+    "audit.component_was_created",
+  ),
+  component_was_modified: t(
+    `{type} "{name}" was modified`,
+    "audit.component_was_modified",
+  ),
+  component_was_deleted: t(
+    `{type} "{name}" was deleted`,
+    "audit.component_was_deleted",
+  ),
+  component_was_activated: t(
+    `{type} "{name}" was activated`,
+    "audit.component_was_activated",
+  ),
+  field_cleared: t(`"{field}" cleared (was "{old}")`, "audit.field_cleared"),
+  label_changed: t(
+    `Label changed from "{old}" to "{new}"`,
+    "audit.label_changed",
+  ),
+  picklist_label_changed: t(
+    `Picklist label changed from "{old}" to "{new}"`,
+    "audit.picklist_label_changed",
+  ),
+  picklist_value_label_changed: t(
+    `Picklist value label changed from "{old}" to "{new}"`,
+    "audit.picklist_value_label_changed",
+  ),
+  workflow_task_label_changed: t(
+    `Workflow task label changed from "{old}" to "{new}"`,
+    "audit.workflow_task_label_changed",
+  ),
+  section_modified: t("Section {name} modified.", "audit.section_modified"),
+  item_pagelayout: t("Pagelayout: {name}", "audit.item_pagelayout"),
+  domain_field_changed: t(
+    `Field "{field}" changed from "{old}" to "{new}"`,
+    "audit.domain_field_changed",
+  ),
+  domain_setting_changed: t(
+    `Domain Setting "{setting}" field "{field}" changed from "{old}" to "{new}"`,
+    "audit.domain_setting_changed",
+  ),
+  domain_feature_changed: t(
+    `Domain Feature "{feature}" changed from "{old}" to "{new}"`,
+    "audit.domain_feature_changed",
+  ),
+  reason_suffix: t(" (reason: {reason})", "audit.reason_suffix"),
+  domain_field_first_name: t("First name", "domain_user.first_name_label"),
+  domain_field_last_name: t("Last name", "domain_user.last_name_label"),
+  domain_field_user_name: t("User Name", "domain_user.user_name_label"),
+  domain_field_email: t("Email", "domain_user.email_label"),
+  domain_field_language: t("Language", "domain_user.language_label"),
+  domain_field_locale: t("Locale", "domain_user.locale_label"),
+  domain_field_timezone: t("Timezone", "domain_user.timezone_label"),
 };
 
 export const defaultSharingChrome: SharingChrome = {

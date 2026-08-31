@@ -11,6 +11,14 @@ import {
   downloadOutboundVpkArtifact,
   parseOutboundVpkDownloadTarget,
 } from "../lib/outboundExportDownload";
+import {
+  notificationBodyText,
+  notificationContainsHtml,
+  notificationPlainText,
+  resolveInAppHref,
+  sanitizeNotificationHtml,
+  splitTaskInlineLink,
+} from "./notificationMessage";
 
 dayjs.extend(relativeTime);
 
@@ -45,39 +53,76 @@ type Props = {
   vaultId: string;
 };
 
-function primaryMessage(item: NotificationItem): string {
-  const body = item.body?.trim() ?? "";
-  const subject = item.subject?.trim() ?? "";
-  if (!body) {
-    return subject;
-  }
-  if (!subject || subject === "Task:" || body.startsWith(subject)) {
-    return body;
-  }
-  return `${subject} ${body}`.trim();
-}
-
 type NotificationRowProps = {
   item: NotificationItem;
+  onNavigate: (target: string) => void;
   onSelect: (item: NotificationItem) => void;
+  showLessLabel: string;
+  showMoreLabel: string;
 };
 
-function NotificationRow({ item, onSelect }: NotificationRowProps) {
+function NotificationRow({
+  item,
+  onNavigate,
+  onSelect,
+  showLessLabel,
+  showMoreLabel,
+}: NotificationRowProps) {
   const [expanded, setExpanded] = useState(false);
-  const message = primaryMessage(item);
-  const collapsible = message.length > MESSAGE_COLLAPSE_LEN;
+  const rawMessage = notificationBodyText(item);
+  const { message, linkLabel } = splitTaskInlineLink(rawMessage, item.target_url);
+  const htmlMessage = notificationContainsHtml(message) ? sanitizeNotificationHtml(message) : "";
+  const plainMessage = htmlMessage ? notificationPlainText(message) : message;
+  const collapsible = plainMessage.length > MESSAGE_COLLAPSE_LEN;
   const collapsedText = collapsible
-    ? `${message.slice(0, MESSAGE_COLLAPSE_LEN - 1).trimEnd()}…`
-    : message;
+    ? `${plainMessage.slice(0, MESSAGE_COLLAPSE_LEN - 1).trimEnd()}…`
+    : plainMessage;
+
+  function handleContentClick(event: React.MouseEvent<HTMLElement>) {
+    const anchor = (event.target as HTMLElement).closest("a");
+    if (!anchor) {
+      return;
+    }
+    event.preventDefault();
+    event.stopPropagation();
+    const target = resolveInAppHref(anchor.getAttribute("href"));
+    if (target) {
+      onNavigate(target);
+    }
+  }
 
   return (
-    <button
-      type="button"
+    <div
+      role="button"
+      tabIndex={0}
       className={`notification-dropdown__item${item.read ? "" : " notification-dropdown__item--unread"}`}
       onClick={() => onSelect(item)}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          onSelect(item);
+        }
+      }}
     >
-      <div className="notification-dropdown__message">
-        <span>{expanded || !collapsible ? message : collapsedText}</span>
+      <div className="notification-dropdown__message" onClick={handleContentClick}>
+        {htmlMessage ? (
+          expanded || !collapsible ? (
+            <div
+              className="notification-dropdown__html"
+              dangerouslySetInnerHTML={{ __html: htmlMessage }}
+            />
+          ) : (
+            <span>{collapsedText}</span>
+          )
+        ) : (
+          <span>{expanded || !collapsible ? message : collapsedText}</span>
+        )}
+        {linkLabel ? (
+          <>
+            {": "}
+            <span className="notification-dropdown__inline-link">{linkLabel}</span>
+          </>
+        ) : null}
         {collapsible ? (
           <button
             type="button"
@@ -87,14 +132,14 @@ function NotificationRow({ item, onSelect }: NotificationRowProps) {
               setExpanded((value) => !value);
             }}
           >
-            {expanded ? "Show less" : "Show more"}
+            {expanded ? showLessLabel : showMoreLabel}
           </button>
         ) : null}
       </div>
       <div className="notification-dropdown__time" title={item.created_at}>
         {dayjs(item.created_at).fromNow()}
       </div>
-    </button>
+    </div>
   );
 }
 
@@ -246,20 +291,29 @@ export function NotificationBell({ vaultId }: Props) {
     void refreshList();
   }, [open, refreshList]);
 
-  async function handleSelect(item: NotificationItem) {
+  async function navigateTarget(target: string) {
     setOpen(false);
-    const download = parseOutboundVpkDownloadTarget(item.target_url);
+    const download = parseOutboundVpkDownloadTarget(target);
     if (download) {
       try {
         await downloadOutboundVpkArtifact(vaultId, download.artifactId, "package.vpk");
-        message.success("Download started");
+        message.success(displayText(shell.notifications_download_started, "Download started"));
       } catch (err) {
-        message.error(err instanceof Error ? err.message : "Download failed");
+        message.error(
+          err instanceof Error
+            ? err.message
+            : displayText(shell.notifications_download_failed, "Download failed"),
+        );
       }
       return;
     }
-    if (item.target_url?.trim()) {
-      navigate(item.target_url);
+    navigate(target);
+  }
+
+  async function handleSelect(item: NotificationItem) {
+    const target = item.target_url?.trim();
+    if (target) {
+      await navigateTarget(target);
     }
   }
 
@@ -274,7 +328,9 @@ export function NotificationBell({ vaultId }: Props) {
       <div className="notification-dropdown__header">
         <strong>{displayText(shell.notifications_aria, "Notifications")}</strong>
         <button type="button" className="notification-dropdown__view-all" onClick={handleViewAllToggle}>
-          {view === "unread" ? "View all" : "Unread only"}
+          {view === "unread"
+            ? displayText(shell.notifications_view_all, "View all")
+            : displayText(shell.notifications_unread_only, "Unread only")}
         </button>
       </div>
       {loading ? (
@@ -284,13 +340,25 @@ export function NotificationBell({ vaultId }: Props) {
       ) : null}
       {!loading && items.length === 0 ? (
         <div className="notification-dropdown__empty">
-          <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="No notifications" />
+          <Empty
+            image={Empty.PRESENTED_IMAGE_SIMPLE}
+            description={displayText(shell.notifications_empty, "No notifications")}
+          />
         </div>
       ) : null}
       {!loading && items.length > 0 ? (
         <div className="notification-dropdown__list">
           {items.map((item) => (
-            <NotificationRow key={item.id} item={item} onSelect={handleSelect} />
+            <NotificationRow
+              key={item.id}
+              item={item}
+              onNavigate={(target) => {
+                void navigateTarget(target);
+              }}
+              onSelect={handleSelect}
+              showLessLabel={displayText(shell.notifications_show_less, "Show less")}
+              showMoreLabel={displayText(shell.notifications_show_more, "Show more")}
+            />
           ))}
         </div>
       ) : null}

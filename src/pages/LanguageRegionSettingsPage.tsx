@@ -9,7 +9,7 @@ import {
   Upload,
   message,
 } from "antd";
-import { EditOutlined, HolderOutlined, InfoCircleOutlined, InboxOutlined } from "@ant-design/icons";
+import { EditOutlined, HolderOutlined, InfoCircleOutlined, QuestionCircleOutlined, UploadOutlined } from "@ant-design/icons";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import "../styles/pages/language-region-settings.css";
 import { AdminPageLoading } from "../components/admin/AdminPageLoading";
@@ -84,7 +84,7 @@ export function LanguageRegionSettingsPage() {
   const [confirmDeactivate, setConfirmDeactivate] = useState(false);
   const [affectedUsers, setAffectedUsers] = useState(0);
 
-  const [exportCategories, setExportCategories] = useState<string[]>([]);
+  const [exportCategory, setExportCategory] = useState<string>("field_labels");
   const [exportLanguage, setExportLanguage] = useState<string>("");
   const [exportIncludeDiagnostics, setExportIncludeDiagnostics] = useState(false);
   const [importFiles, setImportFiles] = useState<File[]>([]);
@@ -109,16 +109,13 @@ export function LanguageRegionSettingsPage() {
     try {
       const data = await api.languageRegionSettings(vaultId);
       setModel(data);
-      if (!exportLanguage && data.bulk.active_languages.length > 0) {
-        setExportLanguage(data.bulk.active_languages[0].value);
-      }
     } catch (err) {
       setError(err instanceof Error ? err.message : displayText(shell.load_failed));
       setModel(null);
     } finally {
       setLoading(false);
     }
-  }, [vaultId, exportLanguage, shell.load_failed]);
+  }, [vaultId, shell.load_failed]);
 
   useEffect(() => {
     void load();
@@ -314,7 +311,7 @@ export function LanguageRegionSettingsPage() {
   }
 
   async function handleExport() {
-    if (!vaultId || exportCategories.length === 0 || !exportLanguage) {
+    if (!vaultId || !exportCategory || !exportLanguage) {
       message.warning(displayText(pageChrome.export_select_warning));
       return;
     }
@@ -322,7 +319,7 @@ export function LanguageRegionSettingsPage() {
     try {
       const started = await api.exportLanguageRegionTranslations(vaultId, {
         language: exportLanguage,
-        categories: exportCategories,
+        categories: [exportCategory],
         include_diagnostics: exportIncludeDiagnostics,
       });
       const finished = await waitForBulkJob(vaultId, started.job_id);
@@ -687,23 +684,46 @@ export function LanguageRegionSettingsPage() {
           </ul>
         </AdminPageSection>
 
-        <AdminPageSection title={displayText(chrome.bulk_translation_title)}>
+        <AdminPageSection
+          title={
+            <span className="language-region-settings__bulk-title">
+              {displayText(chrome.bulk_translation_title)}
+              <Tooltip
+                overlayClassName="language-region-settings__bulk-help-overlay"
+                title={
+                  <div className="language-region-settings__bulk-help">
+                    <p>{displayText(chrome.bulk_translation_intro)}</p>
+                    <p>{displayText(chrome.bulk_translation_help)}</p>
+                  </div>
+                }
+              >
+                <QuestionCircleOutlined
+                  className="language-region-settings__bulk-help-icon"
+                  aria-label={displayText(chrome.bulk_translation_intro)}
+                />
+              </Tooltip>
+            </span>
+          }
+        >
           <div className="language-region-settings__bulk-stack">
             <div className="admin-settings-form__row">
               <span className="admin-settings-form__label">
-                {displayText(chrome.select_items_to_translate_label)}
+                <Tooltip title={displayText(chrome.select_items_help)}>
+                  <span className="language-region-settings__help-label">
+                    {displayText(chrome.select_items_to_translate_label)}
+                  </span>
+                </Tooltip>
               </span>
               <div className="admin-settings-form__control">
                 <Select
-                  mode="multiple"
-                  placeholder={displayText(chrome.select_categories_placeholder)}
-                  value={exportCategories}
+                  className="language-region-settings__bulk-select"
+                  value={exportCategory}
                   disabled={!model.bulk.can_export || pageEditing}
                   options={model.bulk.resource_categories.map((c) => ({
                     value: c.value,
                     label: displayText(c.label),
                   }))}
-                  onChange={setExportCategories}
+                  onChange={setExportCategory}
                 />
               </div>
             </div>
@@ -712,9 +732,11 @@ export function LanguageRegionSettingsPage() {
               <span className="admin-settings-form__label">
                 {displayText(chrome.export_translation_file_label)}
               </span>
-              <div className="language-region-settings__bulk-inline">
+              <div className="language-region-settings__bulk-export">
                 <Select
-                  value={exportLanguage}
+                  className="language-region-settings__bulk-select"
+                  value={exportLanguage || undefined}
+                  placeholder={displayText(chrome.please_select)}
                   disabled={!model.bulk.can_export || pageEditing}
                   options={model.bulk.active_languages.map((l) => ({
                     value: l.value,
@@ -722,6 +744,13 @@ export function LanguageRegionSettingsPage() {
                   }))}
                   onChange={setExportLanguage}
                 />
+                <Button
+                  loading={exporting}
+                  disabled={!model.bulk.can_export || pageEditing}
+                  onClick={() => void handleExport()}
+                >
+                  {displayText(chrome.export_button)}
+                </Button>
                 <Checkbox
                   checked={exportIncludeDiagnostics}
                   disabled={!model.bulk.can_export || pageEditing}
@@ -729,40 +758,41 @@ export function LanguageRegionSettingsPage() {
                 >
                   {displayText(chrome.export_include_diagnostics)}
                 </Checkbox>
-                <Button
-                  type="primary"
-                  loading={exporting}
-                  disabled={!model.bulk.can_export || pageEditing}
-                  onClick={() => void handleExport()}
-                >
-                  {displayText(chrome.export_button)}
-                </Button>
               </div>
             </div>
 
-            <div className="admin-settings-form__row">
+            <div className="admin-settings-form__row admin-settings-form__row--start">
               <span className="admin-settings-form__label">
                 {displayText(chrome.import_translation_file_label)}
               </span>
               <div className="language-region-settings__bulk-import">
-                <Upload.Dragger
-                  className="language-region-settings__upload-dragger"
-                  multiple
-                  accept=".csv,text/csv"
-                  disabled={!model.bulk.can_import || pageEditing}
-                  showUploadList={false}
-                  beforeUpload={(file) => {
-                    onFileSelect([file]);
-                    return false;
-                  }}
-                >
-                  <p className="language-region-settings__upload-icon">
-                    <InboxOutlined aria-hidden />
-                  </p>
-                  <p className="language-region-settings__upload-hint">
-                    {displayText(chrome.import_drop_hint)}
-                  </p>
-                </Upload.Dragger>
+                <div className="language-region-settings__bulk-import-row">
+                  <Upload.Dragger
+                    className="language-region-settings__upload-dragger"
+                    multiple
+                    accept=".csv,text/csv"
+                    disabled={!model.bulk.can_import || pageEditing}
+                    showUploadList={false}
+                    beforeUpload={(file) => {
+                      onFileSelect([file]);
+                      return false;
+                    }}
+                  >
+                    <span className="language-region-settings__upload-hint">
+                      {displayText(chrome.import_drop_hint)}
+                    </span>
+                    <UploadOutlined className="language-region-settings__upload-icon" aria-hidden />
+                  </Upload.Dragger>
+                  <div className="language-region-settings__bulk-actions">
+                    <Button
+                      loading={saving}
+                      disabled={!model.bulk.can_import || importFiles.length === 0 || pageEditing}
+                      onClick={() => void handleImport()}
+                    >
+                      {displayText(chrome.import_button)}
+                    </Button>
+                  </div>
+                </div>
                 {importFiles.length > 0 ? (
                   <ul className="language-region-settings__file-list">
                     {importFiles.map((f) => (
@@ -788,16 +818,6 @@ export function LanguageRegionSettingsPage() {
                     </li>
                   </ul>
                 ) : null}
-                <div className="language-region-settings__bulk-actions">
-                  <Button
-                    type="primary"
-                    loading={saving}
-                    disabled={!model.bulk.can_import || importFiles.length === 0 || pageEditing}
-                    onClick={() => void handleImport()}
-                  >
-                    {displayText(chrome.import_button)}
-                  </Button>
-                </div>
                 {importResult ? (
                   <div className="language-region-settings__import-result">
                     <p>

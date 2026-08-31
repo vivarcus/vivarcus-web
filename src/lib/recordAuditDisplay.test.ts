@@ -74,6 +74,21 @@ describe("enrichRecordAuditRows", () => {
     expect(row.item).toBe("产品 : NVC-301 (Novitinib) 250mg Tablet");
   });
 
+  it("uses object label plus record name from item when no fixed cell", () => {
+    const [row] = enrichRecordAuditRows([
+      {
+        object_label: "研究",
+        object_name: "study__v",
+        record_id: "0ST000000000001",
+        item: "研究 : 基本研究 : CCB-2401-PSO-201",
+        event_description: "研究 : 基本研究 : CCB-2401-PSO-201 已创建",
+        action: "Create",
+      },
+    ]);
+    expect(row.record).toBe("研究 : CCB-2401-PSO-201");
+    expect(row.event_description).toBe("研究 : 基本研究 : CCB-2401-PSO-201 已创建");
+  });
+
   it("adds record column from item when no fixed cell", () => {
     const [row] = enrichRecordAuditRows([
       {

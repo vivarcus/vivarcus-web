@@ -2385,9 +2385,11 @@ export type LanguageRegionPageChrome = {
   preview_label: DisplayText;
   default_value_suffix: DisplayText;
   select_items_to_translate_label: DisplayText;
+  select_items_help: DisplayText;
   export_translation_file_label: DisplayText;
   import_translation_file_label: DisplayText;
   import_drop_hint: DisplayText;
+  please_select: DisplayText;
   languages_section_title: DisplayText;
   reorder_button: DisplayText;
   reorder_hint: DisplayText;
@@ -2397,6 +2399,8 @@ export type LanguageRegionPageChrome = {
   active_users_column: DisplayText;
   edit_language_button: DisplayText;
   bulk_translation_title: DisplayText;
+  bulk_translation_intro: DisplayText;
+  bulk_translation_help: DisplayText;
   export_tab: DisplayText;
   import_tab: DisplayText;
   resource_categories_label: DisplayText;
@@ -2435,6 +2439,8 @@ export type LanguageRegionPageChrome = {
   cannot_deactivate_language: DisplayText;
   category_system_messages: DisplayText;
   category_field_labels: DisplayText;
+  category_notification_messages: DisplayText;
+  category_user_account_emails: DisplayText;
   export_include_diagnostics: DisplayText;
 };
 

@@ -37,7 +37,7 @@ function jobInstanceStatusLabel(label: string, operations: OperationsChrome): st
     "Missed Schedule": displayText(operations.missed_schedule),
     "Failed to Run": displayText(operations.failed_to_run),
     "Completed due to Inactivity": displayText(operations.completed_due_to_inactivity),
-    Timeout: "Timeout",
+    Timeout: displayText(operations.timeout),
   };
   return map[label] ?? label;
 }
