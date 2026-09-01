@@ -1,5 +1,5 @@
 import { Alert, Button, Modal, Select, Table } from "antd";
-import { CloudDownloadOutlined } from "@ant-design/icons";
+import { CloudDownloadOutlined, ExclamationCircleFilled } from "@ant-design/icons";
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { api } from "../api/client";
@@ -17,6 +17,23 @@ function saveBlob(blob: Blob, filename: string) {
   a.download = filename;
   a.click();
   URL.revokeObjectURL(url);
+}
+
+const TRACE_MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+function formatTraceCreatedAt(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return iso;
+  const dd = d.getDate();
+  const mon = TRACE_MONTHS[d.getMonth()];
+  const yyyy = d.getFullYear();
+  let hours = d.getHours();
+  const minutes = String(d.getMinutes()).padStart(2, "0");
+  const ampm = hours >= 12 ? "PM" : "AM";
+  hours = hours % 12 || 12;
+  const tz =
+    d.toLocaleTimeString("en-US", { timeZoneName: "short" }).split(" ").pop() ?? "";
+  return `${dd} ${mon} ${yyyy} ${hours}:${minutes} ${ampm} ${tz}`.trim();
 }
 
 export function AdminAgentTraceDetailPage() {
@@ -112,7 +129,7 @@ export function AdminAgentTraceDetailPage() {
             </div>
             <div>
               <dt>{displayText(chrome.created_date)}</dt>
-              <dd>{new Date(session.created_at).toLocaleString()}</dd>
+              <dd>{formatTraceCreatedAt(session.created_at)}</dd>
             </div>
           </dl>
         </RecordSectionBlock>
@@ -192,7 +209,10 @@ export function AdminAgentTraceDetailPage() {
           </>
         }
       >
-        <p>{displayText(chrome.reset_body)}</p>
+        <div className="admin-trace-reset">
+          <ExclamationCircleFilled className="admin-trace-reset__icon" />
+          <p>{displayText(chrome.reset_body)}</p>
+        </div>
       </Modal>
     </AdminPageShell>
   );

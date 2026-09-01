@@ -107,15 +107,22 @@ function VaultAITitleIcon() {
 function VaultAITraceWaveformIcon() {
   return (
     <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden focusable="false">
-      <path
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.4"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M1 8h1.2l1-4.2 1.4 8.4 1.3-6.4 1.2 4.6 1.1-2.4H15"
-      />
+      <g fill="currentColor">
+        <rect x="1" y="6" width="2" height="4" rx="1" />
+        <rect x="4" y="3.5" width="2" height="9" rx="1" />
+        <rect x="7" y="1.5" width="2" height="13" rx="1" />
+        <rect x="10" y="3.5" width="2" height="9" rx="1" />
+        <rect x="13" y="6" width="2" height="4" rx="1" />
+      </g>
     </svg>
+  );
+}
+
+function VaultAITraceStopIcon() {
+  return (
+    <span className="vault-ai-chat__tracing-stop" aria-hidden>
+      <span />
+    </span>
   );
 }
 
@@ -1168,8 +1175,9 @@ export function VaultAIChatPanel({
                       aria-label={displayTextTemplate(chrome.stop_trace, { count: traceActionCount })}
                     >
                       <span className="vault-ai-chat__tracing-dot" aria-hidden />
+                      <VaultAITraceWaveformIcon />
                       <span>{displayText(chrome.tracing_label)}</span>
-                      <StopOutlined />
+                      <VaultAITraceStopIcon />
                     </button>
                   ) : (
                     <Button

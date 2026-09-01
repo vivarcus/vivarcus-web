@@ -8,20 +8,7 @@ import { AdminPageShell } from "../components/admin/AdminPageShell";
 import { useUi } from "../context/UiContext";
 import { useVaultId } from "../hooks/useVaultId";
 import { displayText, displayTextTemplate } from "../lib/i18n";
-
-const GMT_MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-
-function formatGmt(iso: string | undefined): string {
-  if (!iso) return "";
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return iso;
-  const dd = d.getUTCDate();
-  const mon = GMT_MONTHS[d.getUTCMonth()];
-  const yyyy = d.getUTCFullYear();
-  const hh = String(d.getUTCHours()).padStart(2, "0");
-  const mm = String(d.getUTCMinutes()).padStart(2, "0");
-  return `${dd} ${mon} ${yyyy} ${hh}:${mm} GMT`;
-}
+import { formatTokenUsageGmt } from "../lib/vaultAITokenUsage";
 
 function formatMillions(n: number | undefined): string {
   return (n ?? 0).toLocaleString(undefined, {
@@ -195,6 +182,8 @@ export function VaultAISettingsPage() {
             <div className="admin-settings-form__control admin-token-usage__limit">
               <InputNumber
                 min={0}
+                precision={0}
+                step={1}
                 value={alertLimit ?? undefined}
                 disabled={disabled}
                 onChange={(v) => setAlertLimit(typeof v === "number" ? v : null)}
@@ -217,7 +206,7 @@ export function VaultAISettingsPage() {
           </div>
           <p className="admin-token-usage__as-of">
             {displayTextTemplate(chrome.usage_as_of_label, {
-              datetime: formatGmt(model.token_usage?.as_of),
+              datetime: formatTokenUsageGmt(model.token_usage?.as_of),
             })}
           </p>
           <dl className="admin-token-usage__dl">
@@ -236,8 +225,8 @@ export function VaultAISettingsPage() {
           </dl>
           <p className="admin-token-usage__as-of">
             {displayTextTemplate(chrome.hourly_usage_label, {
-              from: formatGmt(model.token_usage?.hourly_from),
-              to: formatGmt(model.token_usage?.hourly_to),
+              from: formatTokenUsageGmt(model.token_usage?.hourly_from),
+              to: formatTokenUsageGmt(model.token_usage?.hourly_to),
             })}
           </p>
           <dl className="admin-token-usage__dl">

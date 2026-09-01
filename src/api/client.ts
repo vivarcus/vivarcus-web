@@ -4180,13 +4180,7 @@ export const api = {
   },
 
   vaultAIChatGetTrace(vaultId: string, conversationId: string) {
-    return vaultFetch<{
-      conversation_id: string;
-      status: string;
-      max_actions: number;
-      action_count: number;
-      actions: unknown[];
-    }>(vaultId, `/ui/vault-ai/chat/conversations/${conversationId}/trace`);
+    return vaultFetch<Record<string, unknown>>(vaultId, `/ui/vault-ai/chat/conversations/${conversationId}/trace`);
   },
 
   async vaultAIChatSendMessageStream(

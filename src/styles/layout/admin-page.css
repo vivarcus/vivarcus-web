@@ -693,6 +693,23 @@
   font-weight: 600;
 }
 
+.admin-trace-reset {
+  display: flex;
+  gap: 0.85rem;
+  align-items: flex-start;
+}
+
+.admin-trace-reset__icon {
+  color: #d48806;
+  font-size: 1.35rem;
+  margin-top: 0.1rem;
+}
+
+.admin-trace-reset p {
+  margin: 0;
+  line-height: 1.5;
+}
+
 @media (max-width: 900px) {
   .admin-settings-form__row {
     grid-template-columns: 1fr;

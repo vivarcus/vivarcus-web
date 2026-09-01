@@ -672,6 +672,28 @@ html.vault-ai-chat-docked .app-main {
   box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.25);
 }
 
+.vault-ai-chat__tracing-pill svg {
+  display: block;
+  flex: 0 0 auto;
+}
+
+.vault-ai-chat__tracing-stop {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border: 1.5px solid currentColor;
+  border-radius: 50%;
+  flex: 0 0 auto;
+}
+
+.vault-ai-chat__tracing-stop > span {
+  width: 6px;
+  height: 6px;
+  background: currentColor;
+}
+
 .vault-ai-chat__trace-icon-btn.ant-btn {
   color: #4b5563 !important;
 }
