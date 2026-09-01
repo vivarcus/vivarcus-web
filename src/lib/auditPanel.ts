@@ -3,9 +3,6 @@ import { defaultAuditChrome, displayText, type AuditChrome } from "./i18n";
 
 export type AuditPanelKind = "login" | "system" | "object_records" | "domain";
 
-/** One-shot object-audit load cap (backend maxPageSize). UI scrolls; overflow prompts export. */
-export const OBJECT_AUDIT_DISPLAY_LIMIT = 500;
-
 const PANEL_KINDS: AuditPanelKind[] = ["login", "system", "domain", "object_records"];
 
 export function parseAuditPanelKind(value: string | null | undefined): AuditPanelKind | null {

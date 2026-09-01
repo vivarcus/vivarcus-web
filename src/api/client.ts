@@ -187,20 +187,6 @@ export const api = {
     });
   },
 
-  requestLoginHelp(email: string) {
-    return apiFetch<{ ok: boolean }>("/ui/auth/login-help", {
-      method: "POST",
-      body: JSON.stringify({ email }),
-    });
-  },
-
-  requestPasswordReset(username: string) {
-    return apiFetch<{ ok: boolean }>("/ui/auth/password-reset", {
-      method: "POST",
-      body: JSON.stringify({ username }),
-    });
-  },
-
   startOAuth(domainId: string, providerId: string, username?: string) {
     return apiFetch<{ authorize_url: string }>("/ui/auth/oauth/start", {
       method: "POST",

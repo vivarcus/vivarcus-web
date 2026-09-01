@@ -541,8 +541,6 @@ export type ShellChrome = {
   admin_language_region_settings: DisplayText;
   admin_branding_settings: DisplayText;
   admin_search_settings: DisplayText;
-  admin_application_settings: DisplayText;
-  admin_vault_ai_settings: DisplayText;
   admin_security_settings: DisplayText;
   admin_domain_settings: DisplayText;
   admin_vault_settings_group: DisplayText;
@@ -553,9 +551,6 @@ export type ShellChrome = {
   admin_domain_settings_network_access_label: DisplayText;
   admin_domain_settings_saml_profiles_label: DisplayText;
   admin_domain_settings_oauth_profiles_label: DisplayText;
-  admin_vault_information: DisplayText;
-  admin_domain_information: DisplayText;
-  admin_sandbox_snapshots: DisplayText;
   admin_layout_profile: DisplayText;
   layout_preview_subtitle: DisplayText;
   object_label: DisplayText;
@@ -1489,7 +1484,6 @@ export type AuditChrome = {
   include_related_help: DisplayText;
   include_related_placeholder: DisplayText;
   include_related_truncated: DisplayText;
-  results_too_large: DisplayText;
   filter_timestamp: DisplayText;
   filter_all: DisplayText;
   filter_in_range: DisplayText;
@@ -2071,11 +2065,6 @@ export type AuthChrome = {
   username: DisplayText;
   password: DisplayText;
   login_help: DisplayText;
-  login_help_modal_title: DisplayText;
-  login_help_email_label: DisplayText;
-  login_help_sent: DisplayText;
-  forgot_password: DisplayText;
-  forgot_password_sent: DisplayText;
   privacy_policy: DisplayText;
   log_in_title: DisplayText;
   welcome_title: DisplayText;
@@ -4708,11 +4697,6 @@ export const defaultShellChrome: ShellChrome = {
     "branding_settings.page_title",
   ),
   admin_search_settings: t("Search Settings", "search_settings.page_title"),
-  admin_application_settings: t(
-    "Application Settings",
-    "application_settings.page_title",
-  ),
-  admin_vault_ai_settings: t("Vault AI Settings", "vault_ai_settings.page_title"),
   admin_security_settings: t(
     "Security Settings",
     "security_settings.page_title",
@@ -4740,12 +4724,6 @@ export const defaultShellChrome: ShellChrome = {
   admin_domain_settings_oauth_profiles_label: t(
     "OAuth 2.0 / OIDC Profiles",
     "domain_settings.oauth_profiles_label",
-  ),
-  admin_vault_information: t("Vault Information", "vault_information.page_title"),
-  admin_domain_information: t("Domain Information", "domain_information.page_title"),
-  admin_sandbox_snapshots: t(
-    "Sandbox Snapshots",
-    "navigation.admin.deployment.sandbox_snapshots",
   ),
   admin_layout_profile: t("Layout Profile", "admin.layout_profile"),
   layout_preview_subtitle: t(
@@ -4953,17 +4931,6 @@ export const defaultAuthChrome: AuthChrome = {
   username: t("User Name", "auth.username"),
   password: t("Password", "auth.password"),
   login_help: t("Having trouble logging in?", "auth.login_help"),
-  login_help_modal_title: t("Login help", "auth.login_help_modal_title"),
-  login_help_email_label: t("Email", "auth.login_help_email_label"),
-  login_help_sent: t(
-    "If an account exists for that email, we sent login help.",
-    "auth.login_help_sent",
-  ),
-  forgot_password: t("Forgot password?", "auth.forgot_password"),
-  forgot_password_sent: t(
-    "If an account exists for that user name, we sent password reset instructions.",
-    "auth.forgot_password_sent",
-  ),
   privacy_policy: t("Privacy Policy", "auth.privacy_policy"),
   log_in_title: t("Log in", "auth.log_in_title"),
   welcome_title: t("Welcome", "auth.welcome_title"),
@@ -5361,10 +5328,6 @@ export const defaultAuditChrome: AuditChrome = {
   include_related_truncated: t(
     "Export the audit trail to view the full audit history for the selected related objects.",
     "audit.include_related_truncated",
-  ),
-  results_too_large: t(
-    "The results are too large to display. Export the log to see the full results.",
-    "audit.results_too_large",
   ),
   filter_timestamp: t("Timestamp", "audit.filter_timestamp"),
   filter_all: t("all", "audit.filter_all"),

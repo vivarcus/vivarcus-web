@@ -62,10 +62,10 @@ export function InvitePage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [username, setUsername] = useState("");
+  const [needsPassword, setNeedsPassword] = useState(false);
   const [done, setDone] = useState(false);
 
-  const token =
-    searchParams.get("token")?.trim() || searchParams.get("utp")?.trim() || "";
+  const token = searchParams.get("token")?.trim() ?? "";
   const labels = useMemo(
     () => (lang === "zh" ? ZH_LABELS : labelsFromChrome(authChrome)),
     [lang, authChrome],
@@ -84,6 +84,7 @@ export function InvitePage() {
         const view = await api.peekInvite(token);
         if (cancelled) return;
         setUsername(view.username);
+        setNeedsPassword(view.needs_password);
         setError(null);
       } catch (err) {
         if (cancelled) return;
@@ -107,6 +108,7 @@ export function InvitePage() {
     try {
       await api.completeInvite(token, values.password);
       setDone(true);
+      setNeedsPassword(false);
     } catch (err) {
       if (err instanceof HttpError) {
         setError(err.message === "invite_invalid" ? labels.inviteInvalid : err.message);
@@ -143,7 +145,7 @@ export function InvitePage() {
             {done ? (
               <Alert type="success" title={labels.invitePasswordSet} showIcon />
             ) : null}
-            {username && !done ? (
+            {needsPassword && !done ? (
               <Form
                 form={form}
                 layout="vertical"

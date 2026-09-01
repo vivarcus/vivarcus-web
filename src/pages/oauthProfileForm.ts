@@ -1,10 +1,9 @@
 /** OAuth / OIDC profile form helpers. */
 
-import type { DomainOAuthProfile, DomainSettingsPageChrome } from "../api/types";
-import { displayText } from "../lib/i18n";
-import { STATUS_OPTIONS, formatPolicyStatus, statusOptions } from "./securityPolicyForm";
+import type { DomainOAuthProfile } from "../api/types";
+import { STATUS_OPTIONS, formatPolicyStatus } from "./securityPolicyForm";
 
-export { STATUS_OPTIONS, formatPolicyStatus, statusOptions };
+export { STATUS_OPTIONS, formatPolicyStatus };
 
 export const FEISHU_DEFAULTS = {
   authorization_endpoint: "https://accounts.feishu.cn/open-apis/authen/v1/authorize",
@@ -20,22 +19,7 @@ export const PROFILE_LIST_FILTER_OPTIONS = [
   { value: "inactive", label: "Inactive Profiles" },
 ];
 
-export function providerTypeOptions(chrome: DomainSettingsPageChrome) {
-  return [{ value: "feishu", label: displayText(chrome.provider_feishu, "Feishu") }];
-}
-
-export function profileListFilterOptions(chrome: DomainSettingsPageChrome) {
-  return [
-    { value: "all", label: displayText(chrome.all_profiles, "All Profiles") },
-    { value: "active", label: displayText(chrome.active_profiles, "Active Profiles") },
-    { value: "inactive", label: displayText(chrome.inactive_profiles, "Inactive Profiles") },
-  ];
-}
-
-export function formatProviderType(value: string, chrome?: DomainSettingsPageChrome): string {
-  if (value === "feishu") {
-    return chrome ? displayText(chrome.provider_feishu) : "Feishu";
-  }
+export function formatProviderType(value: string): string {
   const match = PROVIDER_TYPE_OPTIONS.find((o) => o.value === value);
   return match?.label ?? value;
 }

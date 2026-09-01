@@ -51,7 +51,7 @@ export function VaultInformationPage() {
 
   if (error && !model) {
     return (
-      <AdminPageShell title={displayText(shell.admin_vault_information)}>
+      <AdminPageShell title="Vault Information">
         <Alert type="error" showIcon message={error} />
       </AdminPageShell>
     );

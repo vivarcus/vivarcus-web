@@ -174,11 +174,7 @@ export function SearchSettingsPage() {
   }
 
   if (error && !model) {
-    return (
-      <AdminPageShell title={displayText(shell.admin_search_settings)}>
-        <Alert type="error" title={error} showIcon />
-      </AdminPageShell>
-    );
+    return <Alert type="error" title={error} showIcon />;
   }
 
   if (!model || !draft) return null;

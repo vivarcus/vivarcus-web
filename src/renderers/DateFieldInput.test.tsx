@@ -2,11 +2,10 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useState } from "react";
 import { describe, expect, it, vi } from "vitest";
-import { displayText, defaultFormChrome } from "../lib/i18n";
 import { DateFieldInput } from "./DateFieldInput";
 
 const zhCtx = { locale: "zh-CN", timezone: "Asia/Shanghai", language: "zh" };
-const calendarAria = displayText(defaultFormChrome.open_calendar);
+const calendarAria = "打开日历";
 
 function getEditInput(container: HTMLElement): HTMLInputElement {
   const input = container.querySelector(

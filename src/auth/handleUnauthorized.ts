@@ -10,8 +10,6 @@ function isCredentialChallengePath(path: string): boolean {
     p === "/ui/auth/login" ||
     p === "/ui/auth/resolve" ||
     p === "/ui/auth/invite" ||
-    p === "/ui/auth/login-help" ||
-    p === "/ui/auth/password-reset" ||
     p === "/ui/auth/stepup" ||
     p === "/ui/auth/stepup/verify" ||
     p.startsWith("/ui/auth/oauth/") ||

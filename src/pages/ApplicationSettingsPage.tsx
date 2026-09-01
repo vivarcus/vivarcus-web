@@ -73,7 +73,7 @@ export function ApplicationSettingsPage() {
   }
   if (error && !model) {
     return (
-      <AdminPageShell title={displayText(shell.admin_application_settings)}>
+      <AdminPageShell title="Application Settings">
         <Alert type="error" title={error} showIcon />
       </AdminPageShell>
     );

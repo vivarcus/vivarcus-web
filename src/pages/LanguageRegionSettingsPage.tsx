@@ -99,7 +99,6 @@ export function LanguageRegionSettingsPage() {
   const [pendingLanguageOrder, setPendingLanguageOrder] = useState<string[]>([]);
   const [dragLanguageCode, setDragLanguageCode] = useState<string | null>(null);
   const [exporting, setExporting] = useState(false);
-  const [changeRequestOpen, setChangeRequestOpen] = useState(false);
 
   const chrome = model?.chrome;
 
@@ -186,7 +185,7 @@ export function LanguageRegionSettingsPage() {
 
   if (error && !model) {
     return (
-      <AdminPageShell title={displayText(shell.admin_language_region_settings)}>
+      <AdminPageShell title="Language & Region">
         <Alert type="error" title={error} />
       </AdminPageShell>
     );
@@ -441,36 +440,16 @@ export function LanguageRegionSettingsPage() {
               <span className="admin-settings-form__label">
                 {displayText(chrome.base_language_label)}
               </span>
-              <span className="language-region-settings__readonly-value">
-                <span className="language-region-settings__field-value">
-                  {model.base.base_language.label}
-                </span>
-                <Button
-                  type="link"
-                  size="small"
-                  className="language-region-settings__change-request"
-                  onClick={() => setChangeRequestOpen(true)}
-                >
-                  {displayText(chrome.change_request_button)}
-                </Button>
+              <span className="language-region-settings__field-value">
+                {model.base.base_language.label}
               </span>
             </div>
             <div className="admin-settings-form__row">
               <span className="admin-settings-form__label">
                 {displayText(chrome.base_locale_label)}
               </span>
-              <span className="language-region-settings__readonly-value">
-                <span className="language-region-settings__field-value">
-                  {model.base.base_locale.label}
-                </span>
-                <Button
-                  type="link"
-                  size="small"
-                  className="language-region-settings__change-request"
-                  onClick={() => setChangeRequestOpen(true)}
-                >
-                  {displayText(chrome.change_request_button)}
-                </Button>
+              <span className="language-region-settings__field-value">
+                {model.base.base_locale.label}
               </span>
             </div>
             <div className="admin-settings-form__row">
@@ -906,17 +885,6 @@ export function LanguageRegionSettingsPage() {
           </div>
         </AdminPageSection>
       </div>
-
-      <Modal
-        title={displayText(chrome.change_request_modal_title)}
-        open={changeRequestOpen}
-        onCancel={() => setChangeRequestOpen(false)}
-        onOk={() => setChangeRequestOpen(false)}
-        okText={displayText(chrome.ok_button)}
-        cancelButtonProps={{ style: { display: "none" } }}
-      >
-        <p>{displayText(model.base.change_request_help)}</p>
-      </Modal>
 
       <Modal
         title={displayText(chrome.edit_language_modal_title)}

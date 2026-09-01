@@ -5,11 +5,9 @@ import type { Dayjs } from "dayjs";
 import type { CSSProperties } from "react";
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { flushSync } from "react-dom";
-import { useFormChrome } from "../context/FormChromeContext";
 import {
   dateFieldPlaceholder,
   datePickerFormat,
-  displayText,
   normalizeDateInputText,
   type DisplayContext,
 } from "../lib/i18n";
@@ -53,6 +51,14 @@ function isInsideOwnDatePopup(node: Node | null, popupClass: string): boolean {
   return Boolean(node.closest(`.${popupClass}`));
 }
 
+function openCalendarAriaLabel(displayContext?: DisplayContext): string {
+  const language = (displayContext?.language ?? "").toLowerCase();
+  if (language.startsWith("zh")) {
+    return "打开日历";
+  }
+  return "Open calendar";
+}
+
 function calendarDisplayContext(
   displayContext: DisplayContext | undefined,
   calendarLanguage: string | undefined,
@@ -86,7 +92,6 @@ export function DateFieldInput({
   style,
   "aria-label": ariaLabel,
 }: DateFieldInputProps) {
-  const formChrome = useFormChrome();
   const pickerId = useId();
   const popupClass = `date-field-input__popup-${cssSafeId(pickerId)}`;
   const rootRef = useRef<HTMLSpanElement>(null);
@@ -177,7 +182,7 @@ export function DateFieldInput({
     [calendarContext],
   );
   const calendarAria =
-    calendarAriaLabel?.trim() || displayText(formChrome.open_calendar);
+    calendarAriaLabel?.trim() || openCalendarAriaLabel(calendarContext);
 
   useEffect(() => {
     applyDayjsLocale(calendarContext);

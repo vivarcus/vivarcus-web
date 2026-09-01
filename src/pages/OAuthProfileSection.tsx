@@ -9,14 +9,14 @@ import type {
   DomainSettingsModel,
   DomainSettingsPageChrome,
 } from "../api/types";
-import { displayText, displayTextTemplate } from "../lib/i18n";
+import { displayText } from "../lib/i18n";
 import {
   FEISHU_DEFAULTS,
+  PROFILE_LIST_FILTER_OPTIONS,
+  PROVIDER_TYPE_OPTIONS,
+  STATUS_OPTIONS,
   formatPolicyStatus,
   formatProviderType,
-  profileListFilterOptions,
-  providerTypeOptions,
-  statusOptions,
 } from "./oauthProfileForm";
 
 type ProfileDraft = Partial<DomainOAuthProfile> & { client_secret?: string };
@@ -64,7 +64,7 @@ export function OAuthProfileList({
         <Space wrap>
           <Select
             value={listFilter}
-            options={profileListFilterOptions(chrome)}
+            options={PROFILE_LIST_FILTER_OPTIONS}
             onChange={setListFilter}
             className="filter-bar__w-180"
           />
@@ -79,7 +79,7 @@ export function OAuthProfileList({
         dataSource={profiles}
         columns={[
           {
-            title: displayText(chrome.name_label),
+            title: "Name",
             dataIndex: "name",
             render: (name: string, row: DomainOAuthProfile) => (
               <Button type="link" className="admin-table__link-btn" onClick={() => onOpenProfile(row.id)}>
@@ -88,14 +88,14 @@ export function OAuthProfileList({
             ),
           },
           {
-            title: displayText(chrome.provider_label),
+            title: "Provider",
             dataIndex: "provider_type",
-            render: (value: string) => formatProviderType(value, chrome),
+            render: (value: string) => formatProviderType(value),
           },
           {
-            title: displayText(chrome.status_label),
+            title: "Status",
             dataIndex: "status",
-            render: (value: string) => formatPolicyStatus(value, chrome),
+            render: (value: string) => formatPolicyStatus(value),
           },
         ]}
       />
@@ -130,16 +130,12 @@ export function OAuthProfileDetail({
   onResetSecret,
   onBindFederatedId,
 }: OAuthProfileDetailProps) {
-  const pageTitle = isProfileCreate
-    ? displayText(chrome.new_profile_title)
-    : profileDraft.name || displayText(chrome.profile_fallback_title);
+  const pageTitle = isProfileCreate ? "New Profile" : profileDraft.name || "Profile";
 
   const confirmDelete = () => {
     Modal.confirm({
       title: displayText(chrome.delete_label),
-      content: displayTextTemplate(chrome.delete_oauth_confirm, {
-        name: profileDraft.name ?? "",
-      }),
+      content: `Delete OAuth profile "${profileDraft.name}"?`,
       okButtonProps: { danger: true },
       onOk: onDelete,
     });
@@ -158,7 +154,7 @@ export function OAuthProfileDetail({
         actions={
           <div className="page-header__actions">
             <Button disabled={saving} onClick={onBack}>
-              {displayText(chrome.cancel_label)}
+              Cancel
             </Button>
             <Button
               type="primary"
@@ -177,44 +173,46 @@ export function OAuthProfileDetail({
         }
       />
 
-      <RecordSectionBlock title={displayText(chrome.details_section)}>
+      <RecordSectionBlock title="Details">
         <div className="admin-settings-form__fields">
           {isProfileCreate ? (
-            <ProfileFieldRow label={displayText(chrome.profile_key_label)}>
+            <ProfileFieldRow label="Profile Key">
               <Input
                 value={profileDraft.profile_key}
-                onChange={(e) => setProfileDraft((p) => ({ ...p, profile_key: e.target.value }))}
+                onChange={(e) =>
+                  setProfileDraft((p) => ({ ...p, profile_key: e.target.value }))
+                }
                 disabled={!model.can_edit || saving}
               />
             </ProfileFieldRow>
           ) : null}
-          <ProfileFieldRow label={displayText(chrome.name_label)}>
+          <ProfileFieldRow label="Name">
             <Input
               value={profileDraft.name}
               onChange={(e) => setProfileDraft((p) => ({ ...p, name: e.target.value }))}
               disabled={!model.can_edit || saving}
             />
           </ProfileFieldRow>
-          <ProfileFieldRow label={displayText(chrome.description_label)}>
+          <ProfileFieldRow label="Description">
             <Input
               value={profileDraft.description}
               onChange={(e) => setProfileDraft((p) => ({ ...p, description: e.target.value }))}
               disabled={!model.can_edit || saving}
             />
           </ProfileFieldRow>
-          <ProfileFieldRow label={displayText(chrome.status_label)}>
+          <ProfileFieldRow label="Status">
             <Select
               value={profileDraft.status}
-              options={statusOptions(chrome)}
+              options={STATUS_OPTIONS}
               onChange={(value) => setProfileDraft((p) => ({ ...p, status: value }))}
               disabled={!model.can_edit || saving}
             />
           </ProfileFieldRow>
           {isProfileCreate ? (
-            <ProfileFieldRow label={displayText(chrome.provider_type_label)}>
+            <ProfileFieldRow label="Provider Type">
               <Select
                 value={profileDraft.provider_type}
-                options={providerTypeOptions(chrome)}
+                options={PROVIDER_TYPE_OPTIONS}
                 onChange={(value) => {
                   setProfileDraft((p) => ({
                     ...p,
@@ -226,16 +224,16 @@ export function OAuthProfileDetail({
               />
             </ProfileFieldRow>
           ) : (
-            <ProfileFieldRow label={displayText(chrome.provider_type_label)}>
-              <Input value={formatProviderType(profileDraft.provider_type ?? "", chrome)} readOnly />
+            <ProfileFieldRow label="Provider Type">
+              <Input value={formatProviderType(profileDraft.provider_type ?? "")} readOnly />
             </ProfileFieldRow>
           )}
         </div>
       </RecordSectionBlock>
 
-      <RecordSectionBlock title={displayText(chrome.client_credentials_section)}>
+      <RecordSectionBlock title="Client Credentials">
         <div className="admin-settings-form__fields">
-          <ProfileFieldRow label={displayText(chrome.client_id_label)}>
+          <ProfileFieldRow label="Client ID">
             <Input
               value={profileDraft.client_id}
               onChange={(e) => setProfileDraft((p) => ({ ...p, client_id: e.target.value }))}
@@ -243,7 +241,7 @@ export function OAuthProfileDetail({
             />
           </ProfileFieldRow>
           {isProfileCreate ? (
-            <ProfileFieldRow label={displayText(chrome.client_secret_label)}>
+            <ProfileFieldRow label="Client Secret">
               <Input.Password
                 value={profileDraft.client_secret}
                 onChange={(e) =>
@@ -253,7 +251,7 @@ export function OAuthProfileDetail({
               />
             </ProfileFieldRow>
           ) : (
-            <ProfileFieldRow label={displayText(chrome.client_secret_label)}>
+            <ProfileFieldRow label="Client Secret">
               <Space wrap>
                 <Input value={profileDraft.client_secret_masked || "—"} readOnly />
                 <Button disabled={!model.can_edit || saving} onClick={onResetSecret}>
@@ -265,9 +263,9 @@ export function OAuthProfileDetail({
         </div>
       </RecordSectionBlock>
 
-      <RecordSectionBlock title={displayText(chrome.endpoints_section)}>
+      <RecordSectionBlock title="OAuth / OIDC Endpoints">
         <div className="admin-settings-form__fields">
-          <ProfileFieldRow label={displayText(chrome.authorization_endpoint_label)}>
+          <ProfileFieldRow label="Authorization Endpoint">
             <Input
               value={profileDraft.authorization_endpoint}
               onChange={(e) =>
@@ -276,14 +274,14 @@ export function OAuthProfileDetail({
               disabled={!model.can_edit || saving}
             />
           </ProfileFieldRow>
-          <ProfileFieldRow label={displayText(chrome.token_endpoint_label)}>
+          <ProfileFieldRow label="Token Endpoint">
             <Input
               value={profileDraft.token_endpoint}
               onChange={(e) => setProfileDraft((p) => ({ ...p, token_endpoint: e.target.value }))}
               disabled={!model.can_edit || saving}
             />
           </ProfileFieldRow>
-          <ProfileFieldRow label={displayText(chrome.userinfo_endpoint_label)}>
+          <ProfileFieldRow label="Userinfo Endpoint">
             <Input
               value={profileDraft.userinfo_endpoint}
               onChange={(e) =>
@@ -292,7 +290,7 @@ export function OAuthProfileDetail({
               disabled={!model.can_edit || saving}
             />
           </ProfileFieldRow>
-          <ProfileFieldRow label={displayText(chrome.jwks_uri_label)}>
+          <ProfileFieldRow label="JWKS URI">
             <Input
               value={profileDraft.jwks_uri}
               onChange={(e) => setProfileDraft((p) => ({ ...p, jwks_uri: e.target.value }))}
@@ -302,9 +300,9 @@ export function OAuthProfileDetail({
         </div>
       </RecordSectionBlock>
 
-      <RecordSectionBlock title={displayText(chrome.login_settings_section)}>
+      <RecordSectionBlock title="Login Settings">
         <div className="admin-settings-form__fields">
-          <ProfileFieldRow label={displayText(chrome.scopes_label)}>
+          <ProfileFieldRow label="Scopes">
             <Input
               value={(profileDraft.scopes ?? []).join(", ")}
               onChange={(e) =>
@@ -319,7 +317,7 @@ export function OAuthProfileDetail({
               disabled={!model.can_edit || saving}
             />
           </ProfileFieldRow>
-          <ProfileFieldRow label={displayText(chrome.login_button_label_field)}>
+          <ProfileFieldRow label="Login Button Label">
             <Input
               value={profileDraft.login_button_label}
               onChange={(e) =>
@@ -328,7 +326,7 @@ export function OAuthProfileDetail({
               disabled={!model.can_edit || saving}
             />
           </ProfileFieldRow>
-          <ProfileFieldRow label={displayText(chrome.enable_auth_label)}>
+          <ProfileFieldRow label="Enable Auth">
             <Switch
               checked={profileDraft.enable_auth ?? false}
               onChange={(checked) => setProfileDraft((p) => ({ ...p, enable_auth: checked }))}
@@ -336,7 +334,7 @@ export function OAuthProfileDetail({
             />
           </ProfileFieldRow>
           {!isProfileCreate && profileDraft.redirect_uri ? (
-            <ProfileFieldRow label={displayText(chrome.redirect_uri_label)}>
+            <ProfileFieldRow label="Redirect URI">
               <Input value={profileDraft.redirect_uri} readOnly />
             </ProfileFieldRow>
           ) : null}
@@ -348,15 +346,15 @@ export function OAuthProfileDetail({
               }
               disabled={!model.can_edit || saving}
             >
-              {displayText(chrome.pkce_required_label)}
+              PKCE Required
             </Checkbox>
           </ProfileFieldRow>
         </div>
       </RecordSectionBlock>
 
-      <RecordSectionBlock title={displayText(chrome.file_import_section)}>
+      <RecordSectionBlock title="File Import">
         <div className="admin-settings-form__fields">
-          <ProfileFieldRow label={displayText(chrome.enable_file_import_label)}>
+          <ProfileFieldRow label="Enable File Import">
             <Switch
               checked={profileDraft.enable_file_import ?? false}
               onChange={(checked) =>
@@ -365,7 +363,7 @@ export function OAuthProfileDetail({
               disabled={!model.can_edit || saving}
             />
           </ProfileFieldRow>
-          <ProfileFieldRow label={displayText(chrome.file_import_scopes_label)}>
+          <ProfileFieldRow label="File Import Scopes">
             <Input
               value={(profileDraft.file_import_scopes ?? []).join(", ")}
               onChange={(e) =>
@@ -384,13 +382,16 @@ export function OAuthProfileDetail({
       </RecordSectionBlock>
 
       {!isProfileCreate ? (
-        <RecordSectionBlock title={displayText(chrome.federated_identity_section)}>
+        <RecordSectionBlock title="Federated Identity">
           <div className="admin-settings-form__fields">
-            <ProfileFieldRow label={displayText(chrome.bind_federated_id_label)}>
+            <ProfileFieldRow label="Bind Federated ID">
               <Space orientation="vertical" className="admin-form__stack" size={8}>
-                <p className="admin-page__hint">{displayText(chrome.bind_federated_help)}</p>
+                <p className="admin-page__hint">
+                  The user must also be assigned an SSO Security Policy that references this OAuth
+                  profile.
+                </p>
                 <Button disabled={!model.can_edit || saving} onClick={onBindFederatedId}>
-                  {displayText(chrome.bind_federated_id_label)}
+                  Bind Federated ID
                 </Button>
               </Space>
             </ProfileFieldRow>

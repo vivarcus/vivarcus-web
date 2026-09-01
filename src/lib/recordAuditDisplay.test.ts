@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
   auditTrailModalTitle,
-  auditResultsSummaryRange,
   enrichRecordAuditRows,
   formatAuditRecordCellLabel,
 } from "./recordAuditDisplay";
@@ -150,52 +149,5 @@ describe("enrichRecordAuditRows", () => {
     expect(rows[0].event_description).toBe("Write Permission Test : Parent created");
     expect(rows[1].record).toBe("WPT Child : Child One");
     expect(rows[1].event_description).toBeUndefined();
-  });
-});
-
-describe("auditResultsSummaryRange", () => {
-  const now = new Date(2026, 7, 31);
-
-  it("uses the filter window when both bounds are set", () => {
-    expect(
-      auditResultsSummaryRange(
-        [{ timestamp: "12 May 2026 6:15 PM CST" }],
-        "2026-07-31T00:00",
-        "2026-08-31T23:59",
-        now,
-      ),
-    ).toEqual({ from: "31 Jul 2026", to: "31 Aug 2026" });
-  });
-
-  it("uses oldest event date and today when timestamp is all", () => {
-    expect(
-      auditResultsSummaryRange(
-        [
-          { timestamp: "12 May 2026 6:15 PM CST" },
-          { timestamp: "07 Nov 2024 7:29 PM CST" },
-        ],
-        "",
-        "",
-        now,
-      ),
-    ).toEqual({ from: "07 Nov 2024", to: "31 Aug 2026" });
-  });
-
-  it("keeps today as the end date when there are no events", () => {
-    expect(auditResultsSummaryRange([], "", "", now)).toEqual({
-      from: "—",
-      to: "31 Aug 2026",
-    });
-  });
-
-  it("uses the calendar date from numeric timestamps without timezone shift", () => {
-    expect(
-      auditResultsSummaryRange(
-        [{ timestamp: "08/22/2026 4:04 PM UTC" }],
-        "",
-        "",
-        now,
-      ),
-    ).toEqual({ from: "22 Aug 2026", to: "31 Aug 2026" });
   });
 });

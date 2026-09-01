@@ -77,7 +77,7 @@ export function VaultAISettingsPage() {
   }
   if (error && !model) {
     return (
-      <AdminPageShell title={displayText(shell.admin_vault_ai_settings)}>
+      <AdminPageShell title="Vault AI Settings">
         <Alert type="error" title={error} showIcon />
       </AdminPageShell>
     );

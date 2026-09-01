@@ -10,7 +10,6 @@ type Props = {
   scrollable?: boolean;
   wrapDescription?: boolean;
   veevaHeader?: boolean;
-  listWindow?: boolean;
   emptyText?: string;
 };
 
@@ -21,7 +20,6 @@ export function AuditGrid({
   scrollable = false,
   wrapDescription = false,
   veevaHeader = false,
-  listWindow = false,
   emptyText,
 }: Props) {
   if (columns.length === 0) {
@@ -35,7 +33,6 @@ export function AuditGrid({
     scrollable ? "table-wrap--audit-scroll" : "",
     wrapDescription ? "table-wrap--wrap-cells" : "",
     veevaHeader ? "table-wrap--veeva-audit" : "",
-    listWindow ? "table-wrap--audit-list-window" : "",
   ]
     .filter(Boolean)
     .join(" ");

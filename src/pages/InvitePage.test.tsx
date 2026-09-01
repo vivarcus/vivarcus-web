@@ -68,28 +68,6 @@ describe("InvitePage", () => {
     expect(await screen.findByText("Password saved. You can sign in.")).toBeInTheDocument();
   });
 
-  it("lets a password-reset invite set a new password", async () => {
-    peekInvite.mockResolvedValue({
-      username: "ada@example.com",
-      needs_password: false,
-    });
-    completeInvite.mockResolvedValue({
-      username: "ada@example.com",
-      needs_password: false,
-    });
-    const user = userEvent.setup();
-    renderInvite();
-    await waitFor(() => {
-      expect(screen.getByText("ada@example.com")).toBeInTheDocument();
-    });
-    await user.type(screen.getByLabelText("Password"), "Demo-Password1!");
-    await user.type(screen.getByLabelText("Confirm password"), "Demo-Password1!");
-    await user.click(screen.getByRole("button", { name: "Set password" }));
-    await waitFor(() => {
-      expect(completeInvite).toHaveBeenCalledWith("tok", "Demo-Password1!");
-    });
-  });
-
   it("shows an invalid-link error", async () => {
     peekInvite.mockRejectedValue(new Error("invite_invalid"));
     renderInvite();
