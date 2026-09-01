@@ -2276,7 +2276,7 @@ export const api = {
     vaultId: string,
     body: { challenge_id: string; step_up_token: string; signature_meaning?: string },
   ) {
-    return vaultFetch<{ signature_event_id: number; post_hook_failed?: boolean }>(
+    return vaultFetch<{ signature_record_id?: string; post_hook_failed?: boolean }>(
       vaultId,
       "/ui/sec/signature/complete",
       { method: "POST", body: JSON.stringify(body) },
