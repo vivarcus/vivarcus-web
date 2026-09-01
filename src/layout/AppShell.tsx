@@ -1,4 +1,4 @@
-import { Suspense, useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { Link, Navigate, Outlet, useLocation, useMatch, useNavigate, useSearchParams } from "react-router-dom";
 import { RouteFallback } from "./RouteFallback";
 import { useAuth } from "../auth/AuthProvider";
@@ -12,7 +12,8 @@ import {
   isPendingDefaultLanding,
   shouldHoldDefaultLandingOutlet,
 } from "../lib/defaultLanding";
-import { displayText } from "../lib/i18n";
+import { vaultSelectLabelsFromChrome } from "../lib/i18n/preAuthLabels";
+import { loadLoginLang } from "../auth/rememberedUser";
 import { getLastTab } from "../lib/vaultNav";
 import { RequireLoginHost } from "../lib/RequireLoginHost";
 import { LoginHostSessionGate } from "../lib/LoginHostSessionGate";
@@ -86,9 +87,14 @@ function AppShellBody() {
     return <RequireLoginHost />;
   }
 
+  const vaultSelectLabels = useMemo(
+    () => vaultSelectLabelsFromChrome(authChrome, loadLoginLang()),
+    [authChrome],
+  );
+
   const vaultLabel = vaultId
     ? selectedVault?.name?.trim() || selectedVault?.domain_id || vaultId
-    : displayText(authChrome.select_vault);
+    : vaultSelectLabels.selectVault;
 
   if (!vaultId) {
     return (
@@ -105,12 +111,12 @@ function AppShellBody() {
           <div className="page vault-select-prompt">
             {session.vaults.length === 0 ? (
               <>
-                <h2 className="vault-select-prompt__title">{displayText(authChrome.no_vaults)}</h2>
-                <p className="vault-select-prompt__subtitle">{displayText(authChrome.no_vaults_admin)}</p>
+                <h2 className="vault-select-prompt__title">{vaultSelectLabels.noVaults}</h2>
+                <p className="vault-select-prompt__subtitle">{vaultSelectLabels.noVaultsAdmin}</p>
               </>
             ) : (
               <p className="vault-select-prompt__subtitle">
-                {displayText(authChrome.select_vault_subtitle)}
+                {vaultSelectLabels.selectVaultSubtitle}
               </p>
             )}
           </div>

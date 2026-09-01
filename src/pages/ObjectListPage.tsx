@@ -949,7 +949,7 @@ function ObjectListPageInner({
               <div>
                 {isBusinessAdmin && (
                   <p className="page-header__breadcrumb">
-                    <Link to="/business-admin/objects">All Objects</Link>
+                    <Link to="/business-admin/objects">{displayText(chrome.all_objects)}</Link>
                     <span aria-hidden="true"> / </span>
                     <span>{tabLabel}</span>
                   </p>

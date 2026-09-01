@@ -8,6 +8,9 @@ import { useVaultAI } from "../context/VaultAIContext";
 import { useHeaderUserIdentity } from "../hooks/useHeaderUserIdentity";
 import { shouldShowHeaderUserEmail } from "../lib/headerUserIdentity";
 import { displayText } from "../lib/i18n";
+import { helpSiteHomeUrl } from "../lib/i18n/helpSite";
+import { resolvePreAuthText } from "../lib/i18n/preAuthLabels";
+import { loadLoginLang } from "../auth/rememberedUser";
 import { NotificationBell } from "../components/NotificationBell";
 import { UserAvatar } from "../components/UserAvatar";
 
@@ -36,11 +39,14 @@ export function HeaderMenus({ vaultLabel, vaultId, canViewUserProfile = false }:
   const location = useLocation();
   const navigate = useNavigate();
   const { session, logout, selectVault, authChrome } = useAuth();
-  const { shell } = useUi();
+  const { shell, displayContext } = useUi();
   const { open: vaultAIOpen, toggle: toggleVaultAI } = useVaultAI();
   const { displayName, email, avatarUrl, loading } = useHeaderUserIdentity(vaultId, session?.username);
   const [vaultOpen, setVaultOpen] = useState(false);
   const [userOpen, setUserOpen] = useState(false);
+  const loginLang = loadLoginLang();
+  const noVaultsLabel = resolvePreAuthText(authChrome.no_vaults, loginLang);
+  const helpUrl = helpSiteHomeUrl(vaultId ? displayContext.language : undefined, loginLang);
   const vaultAILabel = displayText(shell.vault_ai.title);
 
   useEffect(() => {
@@ -72,7 +78,7 @@ export function HeaderMenus({ vaultLabel, vaultId, canViewUserProfile = false }:
 
   const vaultMenuItems: MenuProps["items"] =
     session.vaults.length === 0
-      ? [{ key: "empty", label: displayText(authChrome.no_vaults), disabled: true }]
+      ? [{ key: "empty", label: noVaultsLabel, disabled: true }]
       : session.vaults.map((vault) => {
           const title = vaultMenuTitle(vault);
           const isCurrent = vault.vault_id === vaultId;
@@ -124,7 +130,7 @@ export function HeaderMenus({ vaultLabel, vaultId, canViewUserProfile = false }:
       label: displayText(shell.help_menu),
       onClick: () => {
         setUserOpen(false);
-        window.open("https://vivarcus.com/help/zh/", "_blank", "noopener,noreferrer");
+        window.open(helpUrl, "_blank", "noopener,noreferrer");
       },
     },
     {

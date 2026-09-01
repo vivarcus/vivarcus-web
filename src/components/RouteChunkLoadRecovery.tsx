@@ -1,11 +1,14 @@
 import { Button, Result } from "antd";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouteError } from "react-router-dom";
+import { loadLoginLang } from "../auth/rememberedUser";
 import { isChunkLoadError, tryReloadForStaleChunk } from "../lib/chunkLoadRecovery";
+import { chunkLoadLabels } from "../lib/i18n/preAuthLabels";
 
 export function RouteChunkLoadRecovery() {
   const error = useRouteError();
   const [reloading, setReloading] = useState(false);
+  const labels = useMemo(() => chunkLoadLabels(loadLoginLang()), []);
 
   useEffect(() => {
     if (tryReloadForStaleChunk(error)) {
@@ -17,8 +20,8 @@ export function RouteChunkLoadRecovery() {
     return (
       <Result
         status="info"
-        title="页面已更新"
-        subTitle="正在刷新以加载最新版本…"
+        title={labels.page_updated}
+        subTitle={labels.reloading}
       />
     );
   }
@@ -28,16 +31,16 @@ export function RouteChunkLoadRecovery() {
       ? error.message
       : typeof error === "string"
         ? error
-        : "未知错误";
+        : labels.unknown_error;
 
   return (
     <Result
       status="error"
-      title={isChunkLoadError(error) ? "页面资源加载失败" : "页面加载失败"}
+      title={isChunkLoadError(error) ? labels.chunk_failed : labels.page_failed}
       subTitle={message}
       extra={
         <Button type="primary" onClick={() => window.location.reload()}>
-          刷新页面
+          {labels.reload}
         </Button>
       }
     />

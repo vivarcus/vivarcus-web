@@ -99,4 +99,16 @@ describe("InvitePage", () => {
       ).toBeInTheDocument();
     });
   });
+
+  it("shows Chinese invite chrome when the login language is Chinese", async () => {
+    saveLoginLang("zh");
+    peekInvite.mockResolvedValue({
+      username: "ada@example.com",
+      needs_password: true,
+    });
+    renderInvite();
+    expect(await screen.findByText("设置密码")).toBeInTheDocument();
+    expect(screen.getByLabelText("密码")).toBeInTheDocument();
+    expect(screen.getByLabelText("确认密码")).toBeInTheDocument();
+  });
 });

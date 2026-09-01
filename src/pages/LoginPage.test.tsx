@@ -111,6 +111,16 @@ describe("LoginPage", () => {
     expect(screen.getByRole("button", { name: /中\s*文/ })).toBeInTheDocument();
   });
 
+  it("switches login chrome to English", async () => {
+    const user = userEvent.setup();
+    renderLoginRoutes();
+    await user.click(screen.getByRole("button", { name: /中\s*文/ }));
+    await user.click(await screen.findByText("English"));
+    expect(screen.getByRole("button", { name: /English/ })).toBeInTheDocument();
+    expect(screen.getByLabelText("User Name")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Continue/ })).toBeInTheDocument();
+  });
+
   it("writes session and enters default vault on successful login", async () => {
     const vaults = [
       {

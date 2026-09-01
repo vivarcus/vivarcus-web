@@ -1,5 +1,5 @@
-import { DownOutlined, LockOutlined, UserOutlined } from "@ant-design/icons";
-import { Alert, Button, Dropdown, Form, Input, Modal } from "antd";
+import { LockOutlined, UserOutlined } from "@ant-design/icons";
+import { Alert, Button, ConfigProvider, Form, Input, Modal } from "antd";
 import { useEffect, useMemo, useState } from "react";
 import { Navigate, useNavigate, useSearchParams } from "react-router-dom";
 import { api, HttpError } from "../api/client";
@@ -16,7 +16,9 @@ import {
   markPendingDefaultLanding,
   resolveDefaultLandingRoute,
 } from "../lib/defaultLanding";
-import { displayText, type AuthChrome } from "../lib/i18n";
+import { AuthLangSwitcher } from "../components/AuthLangSwitcher";
+import { antdLocaleForDisplay } from "../lib/i18n/antdLocale";
+import { displayContextForLoginLang, loginLabelsFromChrome } from "../lib/i18n/preAuthLabels";
 import { redirectToVaultHostIfConfigured } from "../lib/vaultHostNav";
 import { loadSession } from "../auth/session";
 
@@ -24,68 +26,6 @@ type LoginFormValues = {
   username: string;
   password?: string;
 };
-
-type LoginLabels = {
-  login: string;
-  continue: string;
-  username: string;
-  password: string;
-  loginHelp: string;
-  loginHelpModalTitle: string;
-  loginHelpEmail: string;
-  loginHelpSent: string;
-  forgotPassword: string;
-  forgotPasswordSent: string;
-  privacyPolicy: string;
-  logInTitle: string;
-  welcomeTitle: string;
-  switchUser: string;
-  loginFailed: string;
-};
-
-const ZH_LABELS: LoginLabels = {
-  login: "登录",
-  continue: "继续",
-  username: "用户名",
-  password: "密码",
-  loginHelp: "登录遇到问题？",
-  loginHelpModalTitle: "登录帮助",
-  loginHelpEmail: "电子邮件",
-  loginHelpSent: "如果该电子邮件有对应账户，我们已发送登录帮助。",
-  forgotPassword: "忘记密码？",
-  forgotPasswordSent: "如果该用户名有对应账户，我们已发送密码重置说明。",
-  privacyPolicy: "隐私政策",
-  logInTitle: "登录",
-  welcomeTitle: "欢迎",
-  switchUser: "切换用户",
-  loginFailed: "登录失败",
-};
-
-function labelsFromChrome(chrome: AuthChrome): LoginLabels {
-  return {
-    login: displayText(chrome.login, "Log In"),
-    continue: displayText(chrome.continue, "Continue"),
-    username: displayText(chrome.username, "User Name"),
-    password: displayText(chrome.password, "Password"),
-    loginHelp: displayText(chrome.login_help, "Having trouble logging in?"),
-    loginHelpModalTitle: displayText(chrome.login_help_modal_title, "Login help"),
-    loginHelpEmail: displayText(chrome.login_help_email_label, "Email"),
-    loginHelpSent: displayText(
-      chrome.login_help_sent,
-      "If an account exists for that email, we sent login help.",
-    ),
-    forgotPassword: displayText(chrome.forgot_password, "Forgot password?"),
-    forgotPasswordSent: displayText(
-      chrome.forgot_password_sent,
-      "If an account exists for that user name, we sent password reset instructions.",
-    ),
-    privacyPolicy: displayText(chrome.privacy_policy, "Privacy Policy"),
-    logInTitle: displayText(chrome.log_in_title, "Log in"),
-    welcomeTitle: displayText(chrome.welcome_title, "Welcome"),
-    switchUser: displayText(chrome.switch_user, "Switch user"),
-    loginFailed: displayText(chrome.login_failed, "Log in failed"),
-  };
-}
 
 type LoginStep = "username" | "password" | "sso";
 
@@ -145,8 +85,12 @@ export function LoginPage() {
   const [helpMessage, setHelpMessage] = useState<string | null>(null);
 
   const labels = useMemo(
-    () => (lang === "zh" ? ZH_LABELS : labelsFromChrome(authChrome)),
+    () => loginLabelsFromChrome(authChrome, lang),
     [lang, authChrome],
+  );
+  const antdLocale = useMemo(
+    () => antdLocaleForDisplay(displayContextForLoginLang(lang)),
+    [lang],
   );
 
   useEffect(() => {
@@ -335,19 +279,6 @@ export function LoginPage() {
     void onLogin(values);
   }
 
-  const langMenuItems = [
-    {
-      key: "en",
-      label: "English",
-      onClick: () => setLang("en"),
-    },
-    {
-      key: "zh",
-      label: "中文",
-      onClick: () => setLang("zh"),
-    },
-  ];
-
   const showUserStep =
     step === "password" ||
     step === "sso" ||
@@ -355,6 +286,7 @@ export function LoginPage() {
   const ssoPrimaryLabel = providers[0]?.label || providers[0]?.name || labels.login;
 
   return (
+    <ConfigProvider locale={antdLocale}>
     <div className="auth-page">
       <Form
         form={form}
@@ -471,12 +403,7 @@ export function LoginPage() {
           <span className="auth-footer__sep" aria-hidden="true">
             |
           </span>
-          <Dropdown menu={{ items: langMenuItems, selectable: true, selectedKeys: [lang] }}>
-            <button type="button" className="auth-footer__lang">
-              {lang === "zh" ? "中文" : "English"}
-              <DownOutlined aria-hidden="true" />
-            </button>
-          </Dropdown>
+          <AuthLangSwitcher lang={lang} onChange={setLang} />
         </div>
         <p className="auth-footer__copy">Copyright 2010–2026 Vivarcus</p>
       </footer>
@@ -531,5 +458,6 @@ export function LoginPage() {
         ) : null}
       </Modal>
     </div>
+    </ConfigProvider>
   );
 }

@@ -1146,6 +1146,66 @@ export type OperationsChrome = {
   email_status_pending: DisplayText;
   email_status_summary: DisplayText;
   email_status_sent_unknown: DisplayText;
+  create_job: DisplayText;
+  details: DisplayText;
+  job_owner: DisplayText;
+  job_owner_help: DisplayText;
+  timezone: DisplayText;
+  timezone_help: DisplayText;
+  priority: DisplayText;
+  priority_normal: DisplayText;
+  priority_high: DisplayText;
+  hourly_interval: DisplayText;
+  every_n_hours: DisplayText;
+  vault_time: DisplayText;
+  vault_time_help: DisplayText;
+  week_day: DisplayText;
+  weekday_sun: DisplayText;
+  weekday_mon: DisplayText;
+  weekday_tue: DisplayText;
+  weekday_wed: DisplayText;
+  weekday_thu: DisplayText;
+  weekday_fri: DisplayText;
+  weekday_sat: DisplayText;
+  month_repeat_type: DisplayText;
+  day_of_the_month: DisplayText;
+  day_of_the_week: DisplayText;
+  day_of_month: DisplayText;
+  week_number: DisplayText;
+  week_n: DisplayText;
+  last_week_of_month: DisplayText;
+  action_configuration: DisplayText;
+  action: DisplayText;
+  action_state_change: DisplayText;
+  action_send_notification: DisplayText;
+  action_noop: DisplayText;
+  change_state_to: DisplayText;
+  change_state_to_help: DisplayText;
+  terminate_existing_workflows: DisplayText;
+  notification_template: DisplayText;
+  recipients: DisplayText;
+  recipients_help: DisplayText;
+  additional_conditions: DisplayText;
+  add_condition: DisplayText;
+  condition_value: DisplayText;
+  op_contains: DisplayText;
+  op_starts_with: DisplayText;
+  op_is_blank: DisplayText;
+  op_is_not_blank: DisplayText;
+  trigger_date_field: DisplayText;
+  trigger_date_field_help: DisplayText;
+  trigger_date_boundary: DisplayText;
+  boundary_only_before: DisplayText;
+  boundary_before_and_on: DisplayText;
+  optional_notifications: DisplayText;
+  add_optional_notification: DisplayText;
+  send_date_days_before: DisplayText;
+  send_date_zero_warning: DisplayText;
+  edit_before_change: DisplayText;
+  activate: DisplayText;
+  deactivate: DisplayText;
+  deleted: DisplayText;
+  status_set: DisplayText;
 };
 
 export type DeploymentChrome = {
@@ -1206,6 +1266,7 @@ export type ListChrome = {
   config_error_list: DisplayText;
   sort_fallback_notice: DisplayText;
   create: DisplayText;
+  all_objects: DisplayText;
   select_object_type: DisplayText;
   edit_columns: DisplayText;
   edit_columns_title: DisplayText;
@@ -2097,6 +2158,7 @@ export type AuthChrome = {
   invite_invalid: DisplayText;
   invite_password_set: DisplayText;
   go_to_login: DisplayText;
+  password_mismatch: DisplayText;
 };
 
 export const defaultVaultAIChrome: VaultAIChrome = {
@@ -3122,6 +3184,96 @@ export const defaultOperationsChrome: OperationsChrome = {
   email_status_pending: t("Pending", "operations.email_status_pending"),
   email_status_summary: t("Summary", "operations.email_status_summary"),
   email_status_sent_unknown: t("Sent - Unknown", "operations.email_status_sent_unknown"),
+  create_job: t("Create Job", "operations.create_job"),
+  details: t("Details", "operations.details"),
+  job_owner: t("Job Owner", "operations.job_owner"),
+  job_owner_help: t(
+    "MDL ref, e.g. user:User.System or group:Group.clinical_app_system_administrators__c",
+    "operations.job_owner_help",
+  ),
+  timezone: t("Timezone", "operations.timezone"),
+  timezone_help: t("Empty = Vault Time Zone", "operations.timezone_help"),
+  priority: t("Priority", "operations.priority"),
+  priority_normal: t("Normal", "operations.priority_normal"),
+  priority_high: t("High", "operations.priority_high"),
+  hourly_interval: t("Hourly Interval", "operations.hourly_interval"),
+  every_n_hours: t("Every {n} hour(s)", "operations.every_n_hours"),
+  vault_time: t("Vault Time", "operations.vault_time"),
+  vault_time_help: t(
+    "24h local Vault time, e.g. 02:00 or 14:30",
+    "operations.vault_time_help",
+  ),
+  week_day: t("Week Day", "operations.week_day"),
+  weekday_sun: t("Sunday", "operations.weekday_sun"),
+  weekday_mon: t("Monday", "operations.weekday_mon"),
+  weekday_tue: t("Tuesday", "operations.weekday_tue"),
+  weekday_wed: t("Wednesday", "operations.weekday_wed"),
+  weekday_thu: t("Thursday", "operations.weekday_thu"),
+  weekday_fri: t("Friday", "operations.weekday_fri"),
+  weekday_sat: t("Saturday", "operations.weekday_sat"),
+  month_repeat_type: t("Month Repeat Type", "operations.month_repeat_type"),
+  day_of_the_month: t("Day of the month", "operations.day_of_the_month"),
+  day_of_the_week: t("Day of the week", "operations.day_of_the_week"),
+  day_of_month: t("Day of Month", "operations.day_of_month"),
+  week_number: t("Week Number", "operations.week_number"),
+  week_n: t("Week {n}", "operations.week_n"),
+  last_week_of_month: t("Last week of month", "operations.last_week_of_month"),
+  action_configuration: t("Action Configuration", "operations.action_configuration"),
+  action: t("Action", "operations.action"),
+  action_state_change: t("State Change", "operations.action_state_change"),
+  action_send_notification: t("Send a Notification", "operations.action_send_notification"),
+  action_noop: t("No Operation", "operations.action_noop"),
+  change_state_to: t("Change State To", "operations.change_state_to"),
+  change_state_to_help: t(
+    "Lifecycle state API name, e.g. milestone__v.milestone_lifecycle__v.complete_state__v",
+    "operations.change_state_to_help",
+  ),
+  terminate_existing_workflows: t(
+    "Terminate existing workflows to perform action",
+    "operations.terminate_existing_workflows",
+  ),
+  notification_template: t("Notification Template", "operations.notification_template"),
+  recipients: t("Recipients", "operations.recipients"),
+  recipients_help: t(
+    "Comma-separated role/user refs, e.g. owner__v",
+    "operations.recipients_help",
+  ),
+  additional_conditions: t("Additional Conditions", "operations.additional_conditions"),
+  add_condition: t("Add Condition", "operations.add_condition"),
+  condition_value: t("value", "operations.condition_value"),
+  op_contains: t("contains", "operations.op_contains"),
+  op_starts_with: t("starts with", "operations.op_starts_with"),
+  op_is_blank: t("is blank", "operations.op_is_blank"),
+  op_is_not_blank: t("is not blank", "operations.op_is_not_blank"),
+  trigger_date_field: t("Trigger Date Field", "operations.trigger_date_field"),
+  trigger_date_field_help: t(
+    "Object date/datetime field path, e.g. milestone__v.actual_finish_date__v",
+    "operations.trigger_date_field_help",
+  ),
+  trigger_date_boundary: t("Trigger Date Boundary", "operations.trigger_date_boundary"),
+  boundary_only_before: t("Only before the job date", "operations.boundary_only_before"),
+  boundary_before_and_on: t("Before and on the job date", "operations.boundary_before_and_on"),
+  optional_notifications: t("Optional Notifications", "operations.optional_notifications"),
+  add_optional_notification: t(
+    "Add Optional Notification",
+    "operations.add_optional_notification",
+  ),
+  send_date_days_before: t(
+    "Send Date (days before trigger)",
+    "operations.send_date_days_before",
+  ),
+  send_date_zero_warning: t(
+    "Send Date = 0 requires Trigger Date Boundary = Before and on the job date",
+    "operations.send_date_zero_warning",
+  ),
+  edit_before_change: t(
+    "Click Edit to set Status to Inactive before changing this job definition.",
+    "operations.edit_before_change",
+  ),
+  activate: t("Activate", "operations.activate"),
+  deactivate: t("Deactivate", "operations.deactivate"),
+  deleted: t("Deleted", "operations.deleted"),
+  status_set: t("Status: {status}", "operations.status_set"),
 };
 
 export const defaultDeploymentChrome: DeploymentChrome = {
@@ -5000,6 +5152,7 @@ export const defaultAuthChrome: AuthChrome = {
     "auth.invite_password_set",
   ),
   go_to_login: t("Go to sign in", "auth.go_to_login"),
+  password_mismatch: t("Passwords do not match", "auth.password_mismatch"),
 };
 
 export const defaultPageActionLabels: PageActionLabels = {
@@ -5635,6 +5788,7 @@ export const defaultListChrome: ListChrome = {
     "list.sort_fallback",
   ),
   create: t("Create", "list.create"),
+  all_objects: t("All Objects", "business_admin_objects.title"),
   select_object_type: t("Select object type", "list.select_object_type"),
   edit_columns: t("Edit Columns", "list.edit_columns"),
   edit_columns_title: t("Select Columns to Display", "list.edit_columns_title"),

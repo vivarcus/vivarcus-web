@@ -188,7 +188,7 @@ export function InlineReferenceCreateModal({
       const message =
         errorCount === 1 && validation.firstErrorMessage
           ? validation.firstErrorMessage
-          : displayText(formChrome.validation_fix_fields ?? defaultFormChrome.validation_form_fields);
+          : displayText(formChrome.validation_fix_fields ?? defaultFormChrome.validation_fix_fields);
       setError(message);
       scrollToFirstFieldError(displaySections, validation.fieldErrors);
       return;

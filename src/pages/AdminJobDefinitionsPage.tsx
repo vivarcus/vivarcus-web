@@ -19,18 +19,20 @@ import { AdminCompactTable, adminTableEmptyText } from "../components/admin/Admi
 import { AdminPageShell } from "../components/admin/AdminPageShell";
 import { useUi } from "../context/UiContext";
 import { useVaultId } from "../hooks/useVaultId";
-import { displayText } from "../lib/i18n";
+import { displayText, displayTextTemplate } from "../lib/i18n";
 import type { OperationsChrome } from "../lib/i18n/chromeTypes";
 
-const WEEK_DAYS = [
-  { value: "Sun", label: "Sunday" },
-  { value: "Mon", label: "Monday" },
-  { value: "Tue", label: "Tuesday" },
-  { value: "Wed", label: "Wednesday" },
-  { value: "Thu", label: "Thursday" },
-  { value: "Fri", label: "Friday" },
-  { value: "Sat", label: "Saturday" },
-];
+function weekDays(operations: OperationsChrome) {
+  return [
+    { value: "Sun", label: displayText(operations.weekday_sun) },
+    { value: "Mon", label: displayText(operations.weekday_mon) },
+    { value: "Tue", label: displayText(operations.weekday_tue) },
+    { value: "Wed", label: displayText(operations.weekday_wed) },
+    { value: "Thu", label: displayText(operations.weekday_thu) },
+    { value: "Fri", label: displayText(operations.weekday_fri) },
+    { value: "Sat", label: displayText(operations.weekday_sat) },
+  ];
+}
 
 function catalogWeekDay(value: string | undefined): string {
   const map: Record<string, string> = {
@@ -58,19 +60,21 @@ function catalogWeekDay(value: string | undefined): string {
 
 const HOURLY_INTERVALS = [1, 2, 3, 4, 6, 12];
 
-const CONDITION_OPS = [
-  "=",
-  "≠",
-  "!=",
-  ">",
-  "<",
-  ">=",
-  "<=",
-  "contains",
-  "starts with",
-  "is blank",
-  "is not blank",
-];
+function conditionOps(operations: OperationsChrome) {
+  return [
+    { value: "=", label: "=" },
+    { value: "≠", label: "≠" },
+    { value: "!=", label: "!=" },
+    { value: ">", label: ">" },
+    { value: "<", label: "<" },
+    { value: ">=", label: ">=" },
+    { value: "<=", label: "<=" },
+    { value: "contains", label: displayText(operations.op_contains) },
+    { value: "starts with", label: displayText(operations.op_starts_with) },
+    { value: "is blank", label: displayText(operations.op_is_blank) },
+    { value: "is not blank", label: displayText(operations.op_is_not_blank) },
+  ];
+}
 
 type ConditionRow = {
   key: string;
@@ -469,11 +473,11 @@ export function AdminJobDefinitionDetailPage() {
       const body = buildWriteBody(values);
       if (isNew) {
         const created = await api.createJobDefinition(vaultId, body);
-        message.success("Created");
+        message.success(displayText(operations.saved));
         navigate(`/admin/operations/job_definitions/${encodeURIComponent(created.api_name)}`);
       } else {
         await api.updateJobDefinition(vaultId, apiName, body);
-        message.success("Saved (status remains Inactive)");
+        message.success(displayText(operations.saved));
         await load();
       }
     } catch (err) {
@@ -489,7 +493,11 @@ export function AdminJobDefinitionDetailPage() {
     if (!vaultId || isNew) return;
     try {
       await api.beginEditJobDefinition(vaultId, apiName);
-      message.success("Status set to Inactive");
+      message.success(
+        displayTextTemplate(operations.status_set, {
+          status: displayText(operations.status_inactive),
+        }),
+      );
       await load();
     } catch (err) {
       message.error(err instanceof Error ? err.message : displayText(shell.load_failed));
@@ -501,7 +509,13 @@ export function AdminJobDefinitionDetailPage() {
     const next = status === "Active" ? "Inactive" : "Active";
     try {
       await api.setJobDefinitionStatus(vaultId, apiName, next);
-      message.success(`Status: ${next}`);
+      message.success(
+        displayTextTemplate(operations.status_set, {
+          status: displayText(
+            next === "Active" ? operations.status_active : operations.status_inactive,
+          ),
+        }),
+      );
       await load();
     } catch (err) {
       message.error(err instanceof Error ? err.message : displayText(shell.load_failed));
@@ -512,7 +526,7 @@ export function AdminJobDefinitionDetailPage() {
     if (!vaultId || isNew) return;
     try {
       await api.deleteJobDefinition(vaultId, apiName);
-      message.success("Deleted");
+      message.success(displayText(operations.deleted));
       navigate("/admin/operations/job_definitions");
     } catch (err) {
       message.error(err instanceof Error ? err.message : displayText(shell.load_failed));
@@ -527,30 +541,39 @@ export function AdminJobDefinitionDetailPage() {
     <AdminPageShell
       breadcrumb={
         <p className="page-header__breadcrumb">
-          <Link to="/admin/operations/job_definitions">Job Definitions</Link>
+          <Link to="/admin/operations/job_definitions">
+            {displayText(operations.job_definitions_title)}
+          </Link>
         </p>
       }
-      title={isNew ? "Create Job" : labelPreview || apiName}
+      title={isNew ? displayText(operations.create_job) : labelPreview || apiName}
       meta={
         !isNew ? (
           <p className="page-header__meta">
-            {detailType} · {status}
+            {jobDefinitionType(detailType, operations)} ·{" "}
+            {displayText(
+              status === "Active" ? operations.status_active : operations.status_inactive,
+            )}
           </p>
         ) : undefined
       }
       actions={
         <Space wrap>
           {!isNew && canEdit && status === "Active" && (
-            <Button onClick={() => void beginEdit()}>Edit</Button>
+            <Button onClick={() => void beginEdit()}>
+              {displayText(shell.metadata_permission_action_edit)}
+            </Button>
           )}
           {!isNew && canActivate && (
             <Button onClick={() => void toggleStatus()}>
-              {status === "Active" ? "Deactivate" : "Activate"}
+              {status === "Active"
+                ? displayText(operations.deactivate)
+                : displayText(operations.activate)}
             </Button>
           )}
           {!isNew && canDelete && (
             <Button danger onClick={() => void remove()}>
-              Delete
+              {displayText(operations.delete_action)}
             </Button>
           )}
           <Button
@@ -569,7 +592,7 @@ export function AdminJobDefinitionDetailPage() {
         <Alert
           type="info"
           showIcon className="admin-page__banner"
-          title="Click Edit to set Status to Inactive before changing this job definition."
+          title={displayText(operations.edit_before_change)}
         />
       )}
       <Spin spinning={loading}>
@@ -580,11 +603,11 @@ export function AdminJobDefinitionDetailPage() {
           disabled={editingLocked}
           className="admin-form--wide"
         >
-          <h3>Details</h3>
+          <h3>{displayText(operations.details)}</h3>
           <Form.Item
             name="label"
-            label="Title"
-            rules={[{ required: true, message: "Title is required" }]}
+            label={displayText(operations.job_title)}
+            rules={[{ required: true }]}
           >
             <Input
               onChange={(e) => {
@@ -597,7 +620,7 @@ export function AdminJobDefinitionDetailPage() {
               <Input value={apiName} disabled />
             </Form.Item>
           )}
-          <Form.Item label="Type">
+          <Form.Item label={displayText(operations.job_type)}>
             <Input
               value={
                 isNew
@@ -609,81 +632,109 @@ export function AdminJobDefinitionDetailPage() {
           </Form.Item>
           <Form.Item
             name="owner"
-            label="Job Owner"
-            rules={[{ required: true, message: "Owner is required" }]}
-            extra="MDL ref, e.g. user:User.System or group:Group.clinical_app_system_administrators__c"
+            label={displayText(operations.job_owner)}
+            rules={[{ required: true }]}
+            extra={displayText(operations.job_owner_help)}
           >
             <Input placeholder="user:User.System" />
           </Form.Item>
-          <Form.Item name="timezone" label="Timezone" extra="Empty = Vault Time Zone">
+          <Form.Item
+            name="timezone"
+            label={displayText(operations.timezone)}
+            extra={displayText(operations.timezone_help)}
+          >
             <Input placeholder="Asia/Shanghai" />
           </Form.Item>
-          <Form.Item name="priority" label="Priority">
+          <Form.Item name="priority" label={displayText(operations.priority)}>
             <Select
               options={[
-                { value: "normal", label: "Normal" },
-                { value: "high", label: "High" },
+                { value: "normal", label: displayText(operations.priority_normal) },
+                { value: "high", label: displayText(operations.priority_high) },
               ]}
             />
           </Form.Item>
 
-          <h3>Schedule</h3>
-          <Form.Item name="schedule" label="Schedule" rules={[{ required: true }]}>
+          <h3>{displayText(operations.schedule)}</h3>
+          <Form.Item name="schedule" label={displayText(operations.schedule)} rules={[{ required: true }]}>
             <Select
               options={[
-                { value: "Hourly", label: "Hourly" },
-                { value: "Daily", label: "Daily" },
-                { value: "Weekly", label: "Weekly" },
-                { value: "Monthly", label: "Monthly" },
+                { value: "Hourly", label: displayText(operations.schedule_hourly) },
+                { value: "Daily", label: displayText(operations.schedule_daily) },
+                { value: "Weekly", label: displayText(operations.schedule_weekly) },
+                { value: "Monthly", label: displayText(operations.schedule_monthly) },
               ]}
             />
           </Form.Item>
           {schedule === "Hourly" && (
-            <Form.Item name="hourly_interval" label="Hourly Interval" rules={[{ required: true }]}>
-              <Select options={HOURLY_INTERVALS.map((n) => ({ value: n, label: `Every ${n} hour(s)` }))} />
+            <Form.Item
+              name="hourly_interval"
+              label={displayText(operations.hourly_interval)}
+              rules={[{ required: true }]}
+            >
+              <Select
+                options={HOURLY_INTERVALS.map((n) => ({
+                  value: n,
+                  label: displayTextTemplate(operations.every_n_hours, { n }),
+                }))}
+              />
             </Form.Item>
           )}
           {schedule !== "Hourly" && (
             <Form.Item
               name="time"
-              label="Vault Time"
-              rules={[{ required: true, message: "Time is required" }]}
-              extra="24h local Vault time, e.g. 02:00 or 14:30"
+              label={displayText(operations.vault_time)}
+              rules={[{ required: true }]}
+              extra={displayText(operations.vault_time_help)}
             >
               <Input placeholder="02:00" />
             </Form.Item>
           )}
           {schedule === "Weekly" && (
-            <Form.Item name="week_day" label="Week Day" rules={[{ required: true }]}>
-              <Select options={WEEK_DAYS} />
+            <Form.Item name="week_day" label={displayText(operations.week_day)} rules={[{ required: true }]}>
+              <Select options={weekDays(operations)} />
             </Form.Item>
           )}
           {schedule === "Monthly" && (
             <>
-              <Form.Item name="month_repeat_type" label="Month Repeat Type" rules={[{ required: true }]}>
+              <Form.Item
+                name="month_repeat_type"
+                label={displayText(operations.month_repeat_type)}
+                rules={[{ required: true }]}
+              >
                 <Select
                   options={[
-                    { value: "dayOfTheMonth", label: "Day of the month" },
-                    { value: "dayOfTheWeek", label: "Day of the week" },
+                    { value: "dayOfTheMonth", label: displayText(operations.day_of_the_month) },
+                    { value: "dayOfTheWeek", label: displayText(operations.day_of_the_week) },
                   ]}
                 />
               </Form.Item>
               {monthRepeatType === "dayOfTheMonth" ? (
-                <Form.Item name="day_of_month" label="Day of Month" rules={[{ required: true }]}>
+                <Form.Item
+                  name="day_of_month"
+                  label={displayText(operations.day_of_month)}
+                  rules={[{ required: true }]}
+                >
                   <InputNumber min={1} max={31} />
                 </Form.Item>
               ) : (
                 <>
-                  <Form.Item name="week_number" label="Week Number" rules={[{ required: true }]}>
+                  <Form.Item
+                    name="week_number"
+                    label={displayText(operations.week_number)}
+                    rules={[{ required: true }]}
+                  >
                     <Select
                       options={[1, 2, 3, 4, 5].map((n) => ({
                         value: n,
-                        label: n === 5 ? "Last week of month" : `Week ${n}`,
+                        label:
+                          n === 5
+                            ? displayText(operations.last_week_of_month)
+                            : displayTextTemplate(operations.week_n, { n }),
                       }))}
                     />
                   </Form.Item>
-                  <Form.Item name="week_day" label="Week Day" rules={[{ required: true }]}>
-                    <Select options={WEEK_DAYS} />
+                  <Form.Item name="week_day" label={displayText(operations.week_day)} rules={[{ required: true }]}>
+                    <Select options={weekDays(operations)} />
                   </Form.Item>
                 </>
               )}
@@ -692,20 +743,20 @@ export function AdminJobDefinitionDetailPage() {
 
           {!vaultScoped && (
             <>
-          <h3>Action Configuration</h3>
-          <Form.Item name="action_type" label="Action" rules={[{ required: true }]}>
+          <h3>{displayText(operations.action_configuration)}</h3>
+          <Form.Item name="action_type" label={displayText(operations.action)} rules={[{ required: true }]}>
             <Select
               options={[
-                { value: "state_change", label: "State Change" },
-                { value: "send_notification", label: "Send a Notification" },
-                { value: "noop", label: "No Operation" },
+                { value: "state_change", label: displayText(operations.action_state_change) },
+                { value: "send_notification", label: displayText(operations.action_send_notification) },
+                { value: "noop", label: displayText(operations.action_noop) },
               ]}
             />
           </Form.Item>
           <Form.Item
             name="object_name"
-            label="Object"
-            rules={[{ required: true, message: "Object is required" }]}
+            label={displayText(shell.object_label)}
+            rules={[{ required: true }]}
           >
             <Input placeholder="milestone__v" />
           </Form.Item>
@@ -713,14 +764,14 @@ export function AdminJobDefinitionDetailPage() {
             <>
               <Form.Item
                 name="destination_state"
-                label="Change State To"
-                rules={[{ required: true, message: "Destination state is required" }]}
-                extra="Lifecycle state API name, e.g. milestone__v.milestone_lifecycle__v.complete_state__v"
+                label={displayText(operations.change_state_to)}
+                rules={[{ required: true }]}
+                extra={displayText(operations.change_state_to_help)}
               >
                 <Input />
               </Form.Item>
               <Form.Item name="terminate_existing_workflows" valuePropName="checked">
-                <Checkbox>Terminate existing workflows to perform action</Checkbox>
+                <Checkbox>{displayText(operations.terminate_existing_workflows)}</Checkbox>
               </Form.Item>
             </>
           )}
@@ -728,22 +779,22 @@ export function AdminJobDefinitionDetailPage() {
             <>
               <Form.Item
                 name="template"
-                label="Notification Template"
-                rules={[{ required: true, message: "Template is required" }]}
+                label={displayText(operations.notification_template)}
+                rules={[{ required: true }]}
               >
                 <Input placeholder="template_api_name__c" />
               </Form.Item>
               <Form.Item
                 name="recipients"
-                label="Recipients"
-                extra="Comma-separated role/user refs, e.g. owner__v"
+                label={displayText(operations.recipients)}
+                extra={displayText(operations.recipients_help)}
               >
                 <Input placeholder="owner__v" />
               </Form.Item>
             </>
           )}
 
-          <Form.Item label="Additional Conditions">
+          <Form.Item label={displayText(operations.additional_conditions)}>
             <Space orientation="vertical" className="admin-form__stack" size="small">
               {conditions.map((row, idx) => (
                 <Space key={row.key} wrap align="start">
@@ -760,7 +811,7 @@ export function AdminJobDefinitionDetailPage() {
                   <Select
                     value={row.operator}
                     className="admin-form__condition-op"
-                    options={CONDITION_OPS.map((op) => ({ value: op, label: op }))}
+                    options={conditionOps(operations)}
                     onChange={(op) => {
                       const next = [...conditions];
                       next[idx] = { ...row, operator: op };
@@ -768,7 +819,7 @@ export function AdminJobDefinitionDetailPage() {
                     }}
                   />
                   <Input
-                    placeholder="value"
+                    placeholder={displayText(operations.condition_value)}
                     value={row.rhs}
                     className="admin-form__condition-rhs"
                     disabled={row.operator === "is blank" || row.operator === "is not blank"}
@@ -782,7 +833,7 @@ export function AdminJobDefinitionDetailPage() {
                     danger
                     onClick={() => setConditions(conditions.filter((c) => c.key !== row.key))}
                   >
-                    Remove
+                    {displayText(operations.delete_action)}
                   </Button>
                 </Space>
               ))}
@@ -794,35 +845,39 @@ export function AdminJobDefinitionDetailPage() {
                   ])
                 }
               >
-                Add Condition
+                {displayText(operations.add_condition)}
               </Button>
             </Space>
           </Form.Item>
 
           <Form.Item
             name="trigger_date_field"
-            label="Trigger Date Field"
-            rules={[{ required: true, message: "Trigger date field is required" }]}
-            extra="Object date/datetime field path, e.g. milestone__v.actual_finish_date__v"
+            label={displayText(operations.trigger_date_field)}
+            rules={[{ required: true }]}
+            extra={displayText(operations.trigger_date_field_help)}
           >
             <Input />
           </Form.Item>
-          <Form.Item name="date_boundary" label="Trigger Date Boundary" rules={[{ required: true }]}>
+          <Form.Item
+            name="date_boundary"
+            label={displayText(operations.trigger_date_boundary)}
+            rules={[{ required: true }]}
+          >
             <Select
               options={[
-                { value: "only_before", label: "Only before the job date" },
-                { value: "before_and_on", label: "Before and on the job date" },
+                { value: "only_before", label: displayText(operations.boundary_only_before) },
+                { value: "before_and_on", label: displayText(operations.boundary_before_and_on) },
               ]}
             />
           </Form.Item>
 
-          <h3>Optional Notifications</h3>
+          <h3>{displayText(operations.optional_notifications)}</h3>
           <Space orientation="vertical" className="admin-form__stack admin-form__stack--spaced" size="medium">
             {optionalNotifs.map((row, idx) => (
               <div key={row.key} className="admin-form__panel">
                 <Space orientation="vertical" className="admin-form__stack">
                   <Input
-                    placeholder="Notification template"
+                    placeholder={displayText(operations.notification_template)}
                     value={row.template}
                     onChange={(e) => {
                       const next = [...optionalNotifs];
@@ -831,7 +886,7 @@ export function AdminJobDefinitionDetailPage() {
                     }}
                   />
                   <Input
-                    placeholder="Recipients (comma-separated)"
+                    placeholder={displayText(operations.recipients_help)}
                     value={row.recipients}
                     onChange={(e) => {
                       const next = [...optionalNotifs];
@@ -840,7 +895,7 @@ export function AdminJobDefinitionDetailPage() {
                     }}
                   />
                   <Space>
-                    <span>Send Date (days before trigger)</span>
+                    <span>{displayText(operations.send_date_days_before)}</span>
                     <InputNumber
                       min={0}
                       value={row.send_date}
@@ -856,14 +911,14 @@ export function AdminJobDefinitionDetailPage() {
                         setOptionalNotifs(optionalNotifs.filter((n) => n.key !== row.key))
                       }
                     >
-                      Remove
+                      {displayText(operations.delete_action)}
                     </Button>
                   </Space>
                   {row.send_date === 0 && (
                     <Alert
                       type="warning"
                       showIcon
-                      title="Send Date = 0 requires Trigger Date Boundary = Before and on the job date"
+                      title={displayText(operations.send_date_zero_warning)}
                     />
                   )}
                 </Space>
@@ -877,7 +932,7 @@ export function AdminJobDefinitionDetailPage() {
                 ])
               }
             >
-              Add Optional Notification
+              {displayText(operations.add_optional_notification)}
             </Button>
           </Space>
             </>
