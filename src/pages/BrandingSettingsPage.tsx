@@ -12,6 +12,7 @@ import { AdminPageLoading } from "../components/admin/AdminPageLoading";
 import { AdminPageSection } from "../components/admin/AdminPageSection";
 import { AdminPageShell } from "../components/admin/AdminPageShell";
 import { useVaultId } from "../hooks/useVaultId";
+import { useUi } from "../context/UiContext";
 import { api } from "../api/client";
 import type {
   BrandingAsset,
@@ -140,6 +141,7 @@ function labelForItem(chrome: BrandingPageChrome, item: AssetConfig) {
 
 export function BrandingSettingsPage() {
   const vaultId = useVaultId();
+  const { shell } = useUi();
   const [model, setModel] = useState<BrandingSettingsModel | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -153,11 +155,11 @@ export function BrandingSettingsPage() {
       const data = await api.getBrandingSettings(vaultId);
       setModel(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load branding settings");
+      setError(err instanceof Error ? err.message : displayText(shell.load_failed));
     } finally {
       setLoading(false);
     }
-  }, [vaultId]);
+  }, [vaultId, shell.load_failed]);
 
   useEffect(() => {
     void load();
@@ -213,8 +215,8 @@ export function BrandingSettingsPage() {
 
   if (error || !model) {
     return (
-      <AdminPageShell title="Branding Settings">
-        <Alert type="error" showIcon title={error ?? "Failed to load branding settings"} />
+      <AdminPageShell title={displayText(shell.admin_branding_settings)}>
+        <Alert type="error" showIcon title={error ?? displayText(shell.load_failed)} />
       </AdminPageShell>
     );
   }

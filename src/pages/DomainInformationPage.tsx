@@ -86,7 +86,7 @@ export function DomainInformationPage() {
 
   if (error && !model) {
     return (
-      <AdminPageShell title="Domain Information">
+      <AdminPageShell title={displayText(shell.admin_domain_information)}>
         <Alert type="error" showIcon message={error} />
       </AdminPageShell>
     );

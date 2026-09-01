@@ -17,7 +17,7 @@ import type {
   DomainSettingsPatchRequest,
 } from "../api/types";
 import { displayText } from "../lib/i18n";
-import { emptySecurityPolicy, SESSION_IDLE_OPTIONS } from "./securityPolicyForm";
+import { emptySecurityPolicy, sessionIdleOptions } from "./securityPolicyForm";
 import { SecurityPolicyDetail, SecurityPolicyList } from "./SecurityPolicySection";
 import { emptyOAuthProfile } from "./oauthProfileForm";
 import { OAuthProfileDetail, OAuthProfileList } from "./OAuthProfileSection";
@@ -320,7 +320,7 @@ export function DomainSettingsPage() {
 
   if (error && !model) {
     return (
-      <AdminPageShell title="Domain Settings">
+      <AdminPageShell title={displayText(shell.admin_domain_settings)}>
         <Alert type="error" title={error} showIcon />
       </AdminPageShell>
     );
@@ -365,7 +365,7 @@ export function DomainSettingsPage() {
                         <Select
                           className="filter-bar__min-160"
                           value={Number(drafts[setting.definition_name] ?? 30)}
-                          options={SESSION_IDLE_OPTIONS.filter((opt) => opt.value > 0)}
+                          options={sessionIdleOptions(chrome).filter((opt) => opt.value > 0)}
                           disabled={!model.can_edit || saving}
                           onChange={(value) =>
                             setDrafts((prev) => ({
@@ -530,8 +530,8 @@ export function DomainSettingsPage() {
                     className="filter-bar__min-120"
                     disabled={!model.can_edit || saving}
                     options={[
-                      { value: "allow", label: "Allow" },
-                      { value: "deny", label: "Deny" },
+                      { value: "allow", label: displayText(chrome.allow_label) },
+                      { value: "deny", label: displayText(chrome.deny_label) },
                     ]}
                     onChange={(value) =>
                       void mutate({
@@ -551,17 +551,17 @@ export function DomainSettingsPage() {
                 locale={{ emptyText: adminTableEmptyText(displayText(chrome.empty_list_label)) }}
                 dataSource={model.network_rules ?? []}
                 columns={[
-                  { title: "Name", dataIndex: "name" },
-                  { title: "CIDR", dataIndex: "cidr" },
-                  { title: "Action", dataIndex: "action" },
-                  { title: "Priority", dataIndex: "priority" },
+                  { title: displayText(chrome.name_label), dataIndex: "name" },
+                  { title: displayText(chrome.cidr_label), dataIndex: "cidr" },
+                  { title: displayText(chrome.action_label), dataIndex: "action" },
+                  { title: displayText(chrome.priority_label), dataIndex: "priority" },
                   {
-                    title: "Enabled",
+                    title: displayText(chrome.enabled_label),
                     dataIndex: "enabled",
                     render: (v: boolean) => (v ? displayText(chrome.enabled_label) : displayText(chrome.disabled_label)),
                   },
                   {
-                    title: "Actions",
+                    title: displayText(chrome.actions_column),
                     render: (_, row) => (
                       <Space>
                         <Button
@@ -573,7 +573,7 @@ export function DomainSettingsPage() {
                             setEditorOpen(true);
                           }}
                         >
-                          Edit
+                          {displayText(chrome.edit_label)}
                         </Button>
                         <Button
                           size="small"
@@ -609,16 +609,16 @@ export function DomainSettingsPage() {
                 locale={{ emptyText: adminTableEmptyText(displayText(chrome.empty_list_label)) }}
                 dataSource={model.saml_profiles ?? []}
                 columns={[
-                  { title: "Name", dataIndex: "name" },
-                  { title: "Key", dataIndex: "profile_key" },
-                  { title: "IdP Entity ID", dataIndex: "idp_entity_id" },
+                  { title: displayText(chrome.name_label), dataIndex: "name" },
+                  { title: displayText(chrome.key_label), dataIndex: "profile_key" },
+                  { title: displayText(chrome.idp_entity_id_label), dataIndex: "idp_entity_id" },
                   {
-                    title: "Private Key",
+                    title: displayText(chrome.private_key_label),
                     dataIndex: "private_key_masked",
                     render: (v: string) => v || "—",
                   },
                   {
-                    title: "Actions",
+                    title: displayText(chrome.actions_column),
                     render: (_, row) => (
                       <Space>
                         <Button
@@ -630,7 +630,7 @@ export function DomainSettingsPage() {
                             setEditorOpen(true);
                           }}
                         >
-                          Edit
+                          {displayText(chrome.edit_label)}
                         </Button>
                         <Button
                           size="small"
@@ -713,7 +713,7 @@ export function DomainSettingsPage() {
 
       <Modal
         open={editorOpen}
-        title={editorMode === "create" ? displayText(chrome.create_label) : "Edit"}
+        title={editorMode === "create" ? displayText(chrome.create_label) : displayText(chrome.edit_label)}
         onCancel={() => setEditorOpen(false)}
         onOk={() => void saveEditor()}
         confirmLoading={saving}
@@ -723,30 +723,30 @@ export function DomainSettingsPage() {
       >
         {category === "network-access" ? (
           <Form layout="vertical">
-            <Form.Item label="Name" required>
+            <Form.Item label={displayText(chrome.name_label)} required>
               <Input
                 value={ruleDraft.name}
                 onChange={(e) => setRuleDraft((p) => ({ ...p, name: e.target.value }))}
               />
             </Form.Item>
-            <Form.Item label="CIDR / IP" required>
+            <Form.Item label={displayText(chrome.cidr_ip_label)} required>
               <Input
                 value={ruleDraft.cidr}
                 placeholder="10.0.0.0/8"
                 onChange={(e) => setRuleDraft((p) => ({ ...p, cidr: e.target.value }))}
               />
             </Form.Item>
-            <Form.Item label="Action">
+            <Form.Item label={displayText(chrome.action_label)}>
               <Select
                 value={ruleDraft.action}
                 options={[
-                  { value: "allow", label: "Allow" },
-                  { value: "deny", label: "Deny" },
+                  { value: "allow", label: displayText(chrome.allow_label) },
+                  { value: "deny", label: displayText(chrome.deny_label) },
                 ]}
                 onChange={(v) => setRuleDraft((p) => ({ ...p, action: v }))}
               />
             </Form.Item>
-            <Form.Item label="Priority">
+            <Form.Item label={displayText(chrome.priority_label)}>
               <InputNumber
                 value={ruleDraft.priority}
                 onChange={(v) => setRuleDraft((p) => ({ ...p, priority: Number(v ?? 100) }))}
@@ -756,7 +756,7 @@ export function DomainSettingsPage() {
               checked={ruleDraft.enabled}
               onChange={(e) => setRuleDraft((p) => ({ ...p, enabled: e.target.checked }))}
             >
-              Enabled
+              {displayText(chrome.enabled_label)}
             </Checkbox>
           </Form>
         ) : null}
@@ -764,38 +764,38 @@ export function DomainSettingsPage() {
         {category === "saml-profiles" ? (
           <Form layout="vertical">
             {editorMode === "create" ? (
-              <Form.Item label="Profile Key" required>
+              <Form.Item label={displayText(chrome.profile_key_label)} required>
                 <Input
                   value={samlDraft.profile_key}
                   onChange={(e) => setSamlDraft((p) => ({ ...p, profile_key: e.target.value }))}
                 />
               </Form.Item>
             ) : null}
-            <Form.Item label="Name" required>
+            <Form.Item label={displayText(chrome.name_label)} required>
               <Input
                 value={samlDraft.name}
                 onChange={(e) => setSamlDraft((p) => ({ ...p, name: e.target.value }))}
               />
             </Form.Item>
-            <Form.Item label="IdP Entity ID" required>
+            <Form.Item label={displayText(chrome.idp_entity_id_label)} required>
               <Input
                 value={samlDraft.idp_entity_id}
                 onChange={(e) => setSamlDraft((p) => ({ ...p, idp_entity_id: e.target.value }))}
               />
             </Form.Item>
-            <Form.Item label="SP Entity ID" required>
+            <Form.Item label={displayText(chrome.sp_entity_id_label)} required>
               <Input
                 value={samlDraft.sp_entity_id}
                 onChange={(e) => setSamlDraft((p) => ({ ...p, sp_entity_id: e.target.value }))}
               />
             </Form.Item>
-            <Form.Item label="IdP Metadata URL">
+            <Form.Item label={displayText(chrome.idp_metadata_url_label)}>
               <Input
                 value={samlDraft.idp_metadata_url}
                 onChange={(e) => setSamlDraft((p) => ({ ...p, idp_metadata_url: e.target.value }))}
               />
             </Form.Item>
-            <Form.Item label="IdP Metadata XML">
+            <Form.Item label={displayText(chrome.idp_metadata_xml_label)}>
               <Input.TextArea
                 rows={3}
                 value={samlDraft.idp_metadata_xml}
@@ -803,7 +803,7 @@ export function DomainSettingsPage() {
               />
             </Form.Item>
             {editorMode === "create" ? (
-              <Form.Item label="Private Key">
+              <Form.Item label={displayText(chrome.private_key_label)}>
                 <Input.TextArea
                   rows={2}
                   value={samlDraft.private_key}
@@ -817,7 +817,7 @@ export function DomainSettingsPage() {
                 setSamlDraft((p) => ({ ...p, is_esignature_profile: e.target.checked }))
               }
             >
-              eSignature Profile
+              {displayText(chrome.esignature_profile_label)}
             </Checkbox>
           </Form>
         ) : null}
@@ -845,13 +845,13 @@ export function DomainSettingsPage() {
         <Input.Password
           value={secretValue}
           onChange={(e) => setSecretValue(e.target.value)}
-          placeholder="New secret value"
+          placeholder={displayText(chrome.new_secret_placeholder)}
         />
       </Modal>
 
       <Modal
         open={!!bindModal}
-        title="Bind Federated ID"
+        title={displayText(chrome.bind_federated_id_label)}
         onCancel={() => {
           setBindModal(null);
           setBindUsername("");
@@ -876,18 +876,17 @@ export function DomainSettingsPage() {
       >
         <p>{bindModal?.profileName}</p>
         <p className="admin-page__modal-note">
-          The user must also be assigned an SSO Security Policy that references this OAuth profile.
-          Leave Subject ID empty to bind automatically on the user&apos;s first SSO login.
+          {displayText(chrome.bind_federated_help)}
         </p>
         <Form layout="vertical">
-          <Form.Item label="Username" required>
+          <Form.Item label={displayText(chrome.username_label)} required>
             <Input
               value={bindUsername}
               placeholder="user@domain.example.com"
               onChange={(e) => setBindUsername(e.target.value)}
             />
           </Form.Item>
-          <Form.Item label="Subject ID (open_id)" required>
+          <Form.Item label={displayText(chrome.subject_id_label)} required>
             <Input
               value={bindSubjectId}
               onChange={(e) => setBindSubjectId(e.target.value)}

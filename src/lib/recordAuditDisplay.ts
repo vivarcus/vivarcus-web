@@ -132,17 +132,48 @@ export function auditResultsSummaryRange(
   rows: Array<Record<string, unknown>>,
   timeFrom?: string,
   timeTo?: string,
+  now: Date = new Date(),
 ): { from: string; to: string } {
-  if (timeFrom && timeTo) {
+  const today = formatSummaryDate(localISODate(now));
+  if (timeFrom?.trim() && timeTo?.trim()) {
     return { from: formatSummaryDate(timeFrom), to: formatSummaryDate(timeTo) };
   }
+  if (timeFrom?.trim()) {
+    return { from: formatSummaryDate(timeFrom), to: today };
+  }
+  if (timeTo?.trim()) {
+    return { from: oldestEventDate(rows) ?? "—", to: formatSummaryDate(timeTo) };
+  }
+  return { from: oldestEventDate(rows) ?? "—", to: today };
+}
+
+function oldestEventDate(rows: Array<Record<string, unknown>>): string | undefined {
   const timestamps = rows
     .map((row) => String(row.timestamp ?? "").trim())
     .filter(Boolean);
-  if (timestamps.length === 0) {
-    return { from: "—", to: "—" };
+  if (timestamps.length === 0) return undefined;
+  return dateOnlyFromTimestamp(timestamps[timestamps.length - 1]);
+}
+
+function dateOnlyFromTimestamp(value: string): string {
+  const trimmed = value.trim();
+  const ddMmmYyyy = /^(\d{1,2} [A-Za-z]{3} \d{4})/.exec(trimmed);
+  if (ddMmmYyyy) return ddMmmYyyy[1];
+  const mdY = /^(\d{1,2})\/(\d{1,2})\/(\d{4})/.exec(trimmed);
+  if (mdY) {
+    const parsed = new Date(Number(mdY[3]), Number(mdY[1]) - 1, Number(mdY[2]));
+    return parsed.toLocaleDateString("en-GB", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    });
   }
-  return { from: timestamps[timestamps.length - 1], to: timestamps[0] };
+  return formatSummaryDate(value);
+}
+
+function localISODate(date: Date): string {
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
 }
 
 export function relatedAuditStorageKey(vaultId: string, objectName: string): string {

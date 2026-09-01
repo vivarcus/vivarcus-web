@@ -113,7 +113,7 @@ export function SecuritySettingsPage() {
   }
   if (error && !model) {
     return (
-      <AdminPageShell title="Security Settings">
+      <AdminPageShell title={displayText(shell.admin_security_settings)}>
         <Alert type="error" title={error} showIcon />
       </AdminPageShell>
     );

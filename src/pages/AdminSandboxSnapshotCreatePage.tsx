@@ -87,7 +87,11 @@ export function AdminSandboxSnapshotCreatePage() {
   }
 
   if (error && !model) {
-    return <Alert type="error" showIcon message={error} />;
+    return (
+      <AdminPageShell title={displayText(shell.admin_sandbox_snapshots)}>
+        <Alert type="error" showIcon message={error} />
+      </AdminPageShell>
+    );
   }
 
   if (!model) return null;

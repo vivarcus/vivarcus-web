@@ -9,14 +9,15 @@ import { AdminPageShell } from "../components/admin/AdminPageShell";
 import { useAuth } from "../auth/AuthProvider";
 import { useUi } from "../context/UiContext";
 import { useAuditPanelLoader } from "../hooks/useAuditPanelLoader";
-import { auditPanelLabel, auditPanelRows, parseAuditPanelKind, type AuditPanelKind } from "../lib/auditPanel";
+import { auditPanelLabel, auditPanelRows, parseAuditPanelKind, OBJECT_AUDIT_DISPLAY_LIMIT, type AuditPanelKind } from "../lib/auditPanel";
 import {
   buildExportQuery,
   domainDateRangeTooLarge,
   localDateInputToRFC3339,
   localDateTimeInputToRFC3339,
 } from "../lib/auditExport";
-import { displayText, type AuditChrome } from "../lib/i18n";
+import { displayText, displayTextTemplate, type AuditChrome } from "../lib/i18n";
+import { auditResultsSummaryRange } from "../lib/recordAuditDisplay";
 
 function resolvePanel(routePanel: string | undefined, queryPanel: string | null): AuditPanelKind {
   return parseAuditPanelKind(routePanel) ?? parseAuditPanelKind(queryPanel) ?? "system";
@@ -158,7 +159,7 @@ export function AdminLogsPage() {
         time_from: times.time_from,
         time_to: times.time_to,
         page_token: pageToken,
-        page_size: 50,
+        page_size: panel === "object_records" ? OBJECT_AUDIT_DISPLAY_LIMIT : 50,
         timezone: displayContext.timezone,
         date_format_profile: displayContext.date_format_profile,
         locale: displayContext.locale,
@@ -189,6 +190,10 @@ export function AdminLogsPage() {
   }, [panel, model?.numeric_vault_id]);
 
   const rows = model ? auditPanelRows(model) : [];
+  const objectSummaryRange =
+    panel === "object_records"
+      ? auditResultsSummaryRange(rows, applied.timeFrom, applied.timeTo)
+      : null;
 
   const exportQuery = useMemo(() => {
     const times = resolveTimeParams(applied);
@@ -407,25 +412,45 @@ export function AdminLogsPage() {
 
       {showResults && (
         <>
+          {panel === "object_records" && model.pagination.next_page_token && (
+            <Alert
+              type="info"
+              title={displayText(auditChrome.results_too_large)}
+              showIcon
+              role="status"
+            />
+          )}
+          {panel === "object_records" && objectSummaryRange && (
+            <p className="record-audit-panel__summary-text admin-logs__summary">
+              {displayTextTemplate(auditChrome.showing_events_for, {
+                from: objectSummaryRange.from,
+                to: objectSummaryRange.to,
+                count: rows.length,
+              })}
+            </p>
+          )}
           <AuditGrid
             columns={model.columns}
             rows={rows}
             chrome={auditChrome}
             wrapDescription
+            listWindow={panel === "object_records"}
             emptyText={
               showDomainFilters ? displayText(auditChrome.empty_domain_records) : undefined
             }
           />
-          <div className="pagination-bar">
-            {model.pagination.next_page_token && (
-              <Button
-                disabled={loading}
-                onClick={() => void load(model.pagination.next_page_token)}
-              >
-                {displayText(shell.next_page, "Next page")}
-              </Button>
-            )}
-          </div>
+          {panel !== "object_records" && (
+            <div className="pagination-bar">
+              {model.pagination.next_page_token && (
+                <Button
+                  disabled={loading}
+                  onClick={() => void load(model.pagination.next_page_token)}
+                >
+                  {displayText(shell.next_page, "Next page")}
+                </Button>
+              )}
+            </div>
+          )}
         </>
       )}
     </AdminPageShell>

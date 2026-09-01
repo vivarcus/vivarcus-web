@@ -36,6 +36,20 @@
   color: var(--text);
 }
 
+.language-region-settings__readonly-value {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.language-region-settings__change-request.ant-btn {
+  flex-shrink: 0;
+  height: auto;
+  padding: 0;
+}
+
 .language-region-settings .admin-settings-form__toggle-label {
   display: inline-flex;
   align-items: center;
