@@ -1,7 +1,7 @@
 import { DownOutlined, LockOutlined, UserOutlined } from "@ant-design/icons";
-import { Alert, Button, Dropdown, Form, Input } from "antd";
+import { Alert, Button, Dropdown, Form, Input, Modal } from "antd";
 import { useEffect, useMemo, useState } from "react";
-import { Navigate, useNavigate } from "react-router-dom";
+import { Navigate, useNavigate, useSearchParams } from "react-router-dom";
 import { api, HttpError } from "../api/client";
 import type { LoginProviderLink } from "../api/types";
 import { useAuth } from "../auth/AuthProvider";
@@ -31,6 +31,11 @@ type LoginLabels = {
   username: string;
   password: string;
   loginHelp: string;
+  loginHelpModalTitle: string;
+  loginHelpEmail: string;
+  loginHelpSent: string;
+  forgotPassword: string;
+  forgotPasswordSent: string;
   privacyPolicy: string;
   logInTitle: string;
   welcomeTitle: string;
@@ -44,6 +49,11 @@ const ZH_LABELS: LoginLabels = {
   username: "用户名",
   password: "密码",
   loginHelp: "登录遇到问题？",
+  loginHelpModalTitle: "登录帮助",
+  loginHelpEmail: "电子邮件",
+  loginHelpSent: "如果该电子邮件有对应账户，我们已发送登录帮助。",
+  forgotPassword: "忘记密码？",
+  forgotPasswordSent: "如果该用户名有对应账户，我们已发送密码重置说明。",
   privacyPolicy: "隐私政策",
   logInTitle: "登录",
   welcomeTitle: "欢迎",
@@ -58,6 +68,17 @@ function labelsFromChrome(chrome: AuthChrome): LoginLabels {
     username: displayText(chrome.username, "User Name"),
     password: displayText(chrome.password, "Password"),
     loginHelp: displayText(chrome.login_help, "Having trouble logging in?"),
+    loginHelpModalTitle: displayText(chrome.login_help_modal_title, "Login help"),
+    loginHelpEmail: displayText(chrome.login_help_email_label, "Email"),
+    loginHelpSent: displayText(
+      chrome.login_help_sent,
+      "If an account exists for that email, we sent login help.",
+    ),
+    forgotPassword: displayText(chrome.forgot_password, "Forgot password?"),
+    forgotPasswordSent: displayText(
+      chrome.forgot_password_sent,
+      "If an account exists for that user name, we sent password reset instructions.",
+    ),
     privacyPolicy: displayText(chrome.privacy_policy, "Privacy Policy"),
     logInTitle: displayText(chrome.log_in_title, "Log in"),
     welcomeTitle: displayText(chrome.welcome_title, "Welcome"),
@@ -101,6 +122,7 @@ function applyResolveResult(
 export function LoginPage() {
   const { session, login, authChrome } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [form] = Form.useForm<LoginFormValues>();
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -115,6 +137,12 @@ export function LoginPage() {
   );
   // Hold Navigate-to-/ while post-login landing is resolving (avoids Tasks flash → /vault-ai).
   const [completingLogin, setCompletingLogin] = useState(false);
+  const [helpOpen, setHelpOpen] = useState(false);
+  const [helpForgot, setHelpForgot] = useState(false);
+  const [helpEmail, setHelpEmail] = useState("");
+  const [helpUsername, setHelpUsername] = useState("");
+  const [helpBusy, setHelpBusy] = useState(false);
+  const [helpMessage, setHelpMessage] = useState<string | null>(null);
 
   const labels = useMemo(
     () => (lang === "zh" ? ZH_LABELS : labelsFromChrome(authChrome)),
@@ -124,6 +152,23 @@ export function LoginPage() {
   useEffect(() => {
     saveLoginLang(lang);
   }, [lang]);
+
+  useEffect(() => {
+    const prefill =
+      searchParams.get("prefill")?.trim() || searchParams.get("username")?.trim() || "";
+    if (prefill) {
+      form.setFieldsValue({ username: prefill });
+      setHelpUsername(prefill);
+    }
+    if (searchParams.get("help") === "1") {
+      setHelpForgot(false);
+      setHelpOpen(true);
+    }
+    if (searchParams.get("forgot") === "1") {
+      setHelpForgot(true);
+      setHelpOpen(true);
+    }
+  }, [form, searchParams]);
 
   useEffect(() => {
     const remembered = loadRememberedUser();
@@ -168,6 +213,36 @@ export function LoginPage() {
 
   if (session && !completingLogin) {
     return <Navigate to="/" replace />;
+  }
+
+  async function submitLoginHelp() {
+    if (helpMessage) {
+      setHelpOpen(false);
+      setHelpMessage(null);
+      return;
+    }
+    setHelpBusy(true);
+    try {
+      if (helpForgot) {
+        const username = helpUsername.trim();
+        if (!username) {
+          return;
+        }
+        await api.requestPasswordReset(username);
+        setHelpMessage(labels.forgotPasswordSent);
+      } else {
+        const email = helpEmail.trim();
+        if (!email) {
+          return;
+        }
+        await api.requestLoginHelp(email);
+        setHelpMessage(labels.loginHelpSent);
+      }
+    } catch {
+      setHelpMessage(helpForgot ? labels.forgotPasswordSent : labels.loginHelpSent);
+    } finally {
+      setHelpBusy(false);
+    }
   }
 
   async function onContinue(values: LoginFormValues) {
@@ -362,7 +437,16 @@ export function LoginPage() {
               : "auth-card__links"
           }
         >
-          <a href="#help" className="auth-card__link" onClick={(e) => e.preventDefault()}>
+          <a
+            href="#help"
+            className="auth-card__link"
+            onClick={(e) => {
+              e.preventDefault();
+              setHelpMessage(null);
+              setHelpForgot(false);
+              setHelpOpen(true);
+            }}
+          >
             {labels.loginHelp}
           </a>
           {showUserStep ? (
@@ -396,6 +480,56 @@ export function LoginPage() {
         </div>
         <p className="auth-footer__copy">Copyright 2010–2026 Vivarcus</p>
       </footer>
+      <Modal
+        title={helpForgot ? labels.forgotPassword : labels.loginHelpModalTitle}
+        open={helpOpen}
+        onCancel={() => {
+          setHelpOpen(false);
+          setHelpMessage(null);
+        }}
+        onOk={() => void submitLoginHelp()}
+        confirmLoading={helpBusy}
+        okText={labels.continue}
+        destroyOnHidden
+      >
+        {helpMessage ? (
+          <Alert type="success" title={helpMessage} showIcon />
+        ) : helpForgot ? (
+          <Input
+            autoComplete="username"
+            aria-label={labels.username}
+            placeholder={labels.username}
+            value={helpUsername}
+            onChange={(e) => setHelpUsername(e.target.value)}
+            onPressEnter={() => void submitLoginHelp()}
+          />
+        ) : (
+          <Input
+            autoComplete="email"
+            type="email"
+            aria-label={labels.loginHelpEmail}
+            placeholder={labels.loginHelpEmail}
+            value={helpEmail}
+            onChange={(e) => setHelpEmail(e.target.value)}
+            onPressEnter={() => void submitLoginHelp()}
+          />
+        )}
+        {!helpMessage && !helpForgot ? (
+          <p className="auth-card__links" style={{ marginTop: 12 }}>
+            <a
+              href="#forgot"
+              className="auth-card__link"
+              onClick={(e) => {
+                e.preventDefault();
+                setHelpForgot(true);
+                setHelpMessage(null);
+              }}
+            >
+              {labels.forgotPassword}
+            </a>
+          </p>
+        ) : null}
+      </Modal>
     </div>
   );
 }

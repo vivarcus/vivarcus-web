@@ -5,7 +5,7 @@ import { AuditExportButton } from "./AuditExportButton";
 import { AuditGrid } from "./AuditGrid";
 import { useUi } from "../context/UiContext";
 import { useAuditPanelLoader } from "../hooks/useAuditPanelLoader";
-import { auditPanelRows } from "../lib/auditPanel";
+import { auditPanelRows, OBJECT_AUDIT_DISPLAY_LIMIT } from "../lib/auditPanel";
 import { buildExportQuery, localDateTimeInputToRFC3339 } from "../lib/auditExport";
 import {
   auditResultsSummaryRange,
@@ -83,7 +83,7 @@ export function RecordAuditPanel({
   recordCell,
   onChromeChange,
 }: Props) {
-  const { shell, displayContext } = useUi();
+  const { displayContext } = useUi();
   const [draft, setDraft] = useState<FilterDraft>(defaultDraft);
   const [appliedFilters, setAppliedFilters] = useState<RecordAuditFilters>(emptyAppliedFilters);
   const relatedStorageKey = relatedAuditStorageKey(vaultId, objectName);
@@ -98,7 +98,7 @@ export function RecordAuditPanel({
     async (token?: string) =>
       api.recordAuditPanel(vaultId, objectName, recordId, {
         page_token: token,
-        page_size: 50,
+        page_size: OBJECT_AUDIT_DISPLAY_LIMIT,
         ...filtersToQuery(appliedFilters),
         include_related: appliedRelated,
         timezone: displayContext.timezone,
@@ -108,7 +108,7 @@ export function RecordAuditPanel({
     [vaultId, objectName, recordId, appliedFilters, appliedRelated, displayContext],
   );
 
-  const { panel, pageToken, error, loading, load, auditChrome } = useAuditPanelLoader({
+  const { panel, error, loading, auditChrome } = useAuditPanelLoader({
     fetchPanel,
     loadFailedMessage: displayText(defaultAuditChrome.load_records_failed),
     retryWhenEmpty: (model) => auditPanelRows(model).length === 0,
@@ -299,6 +299,14 @@ export function RecordAuditPanel({
           role="status"
         />
       )}
+      {panel?.pagination.next_page_token && (
+        <Alert
+          type="info"
+          title={displayText(auditChrome.results_too_large)}
+          showIcon
+          role="status"
+        />
+      )}
       {loading && !panel && (
         <Spin
           description={displayText(auditChrome.loading_records)}
@@ -352,21 +360,8 @@ export function RecordAuditPanel({
             chrome={auditChrome}
             wrapDescription
             veevaHeader
+            listWindow
           />
-
-          <div className="pagination-bar">
-            {pageToken && (
-              <Button onClick={() => void load()}>{displayText(shell.first_page)}</Button>
-            )}
-            {panel.pagination.next_page_token && (
-              <Button
-                disabled={loading}
-                onClick={() => void load(panel.pagination.next_page_token)}
-              >
-                {displayText(shell.next_page)}
-              </Button>
-            )}
-          </div>
         </>
       )}
     </div>

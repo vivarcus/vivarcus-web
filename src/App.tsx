@@ -1,4 +1,4 @@
-import { createBrowserRouter, Navigate, RouterProvider } from "react-router-dom";
+import { createBrowserRouter, Navigate, RouterProvider, useSearchParams } from "react-router-dom";
 import { AuthProvider } from "./auth/AuthProvider";
 import { AdminCollectionRedirect, AdminTabRedirect } from "./components/AdminDefaultRedirect";
 import { RouteChunkLoadRecovery } from "./components/RouteChunkLoadRecovery";
@@ -7,6 +7,15 @@ import { LoginPage } from "./pages/LoginPage";
 import { ObjectListPage } from "./pages/ObjectListPage";
 import { RecordDetailPage } from "./pages/RecordDetailPage";
 import { VaultHomePage } from "./pages/VaultHomePage";
+
+function ForgotPasswordRedirect() {
+  const [params] = useSearchParams();
+  const prefill = params.get("prefill")?.trim() || params.get("username")?.trim() || "";
+  const next = prefill
+    ? `/login?forgot=1&username=${encodeURIComponent(prefill)}`
+    : "/login?forgot=1";
+  return <Navigate to={next} replace />;
+}
 
 const router = createBrowserRouter([
   {
@@ -19,6 +28,17 @@ const router = createBrowserRouter([
       const { InvitePage } = await import("./pages/InvitePage");
       return { Component: InvitePage };
     },
+  },
+  {
+    path: "/changepassword",
+    lazy: async () => {
+      const { InvitePage } = await import("./pages/InvitePage");
+      return { Component: InvitePage };
+    },
+  },
+  {
+    path: "/forgotpassword",
+    element: <ForgotPasswordRedirect />,
   },
   {
     path: "/login/oauth",

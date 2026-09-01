@@ -12,20 +12,21 @@ import type {
   DomainSettingsModel,
   DomainSettingsPageChrome,
 } from "../api/types";
-import { displayText } from "../lib/i18n";
+import { displayText, displayTextTemplate } from "../lib/i18n";
 import {
-  API_TOKEN_EXPIRY_OPTIONS,
-  AUTH_TYPE_OPTIONS,
-  LOCKOUT_UNLOCK_OPTIONS,
-  PASSWORD_EXPIRY_OPTIONS,
-  PASSWORD_HISTORY_OPTIONS,
-  PASSWORD_RESET_LIMIT_OPTIONS,
-  POLICY_LIST_FILTER_OPTIONS,
-  SESSION_IDLE_OPTIONS,
-  STATUS_OPTIONS,
+  apiTokenExpiryOptions,
+  authTypeOptions,
   formatAuthenticationType,
   formatPolicyStatus,
+  lockoutUnlockOptions,
+  mfaMethodOptions,
   nearestSelectValue,
+  passwordExpiryOptions,
+  passwordHistoryOptions,
+  passwordResetLimitOptions,
+  policyListFilterOptions,
+  sessionIdleOptions,
+  statusOptions,
 } from "./securityPolicyForm";
 
 type PolicyDraft = Partial<DomainSecurityPolicy>;
@@ -83,7 +84,7 @@ export function SecurityPolicyList({
         <Space wrap>
           <Select
             value={listFilter}
-            options={POLICY_LIST_FILTER_OPTIONS}
+            options={policyListFilterOptions(chrome)}
             onChange={setListFilter}
             className="filter-bar__w-180"
           />
@@ -101,7 +102,7 @@ export function SecurityPolicyList({
         dataSource={policies}
         columns={[
           {
-            title: "Name",
+            title: displayText(chrome.name_label),
             dataIndex: "name",
             render: (name: string, row: DomainSecurityPolicy) => (
               <Button
@@ -114,14 +115,14 @@ export function SecurityPolicyList({
             ),
           },
           {
-            title: "Authentication Type",
+            title: displayText(chrome.authentication_type_label),
             dataIndex: "authentication_type",
-            render: (value: string) => formatAuthenticationType(value),
+            render: (value: string) => formatAuthenticationType(value, chrome),
           },
           {
-            title: "Status",
+            title: displayText(chrome.status_label),
             dataIndex: "status",
-            render: (value: string) => formatPolicyStatus(value),
+            render: (value: string) => formatPolicyStatus(value, chrome),
           },
         ]}
       />
@@ -155,12 +156,18 @@ export function SecurityPolicyDetail({
   const samlProfiles = model.saml_profiles ?? [];
   const oauthProfiles = model.oauth_profiles ?? [];
   const isPassword = policyDraft.authentication_type !== "sso";
-  const pageTitle = isPolicyCreate ? "New Policy" : policyDraft.name || "Policy";
+  const pageTitle = isPolicyCreate
+    ? displayText(chrome.new_policy_title)
+    : policyDraft.name || displayText(chrome.policy_fallback_title);
+  const passwordExpiry = passwordExpiryOptions(chrome);
+  const apiTokenExpiry = apiTokenExpiryOptions(chrome);
 
   const confirmDelete = () => {
     Modal.confirm({
       title: displayText(chrome.delete_label),
-      content: `Delete security policy "${policyDraft.name}"?`,
+      content: displayTextTemplate(chrome.delete_policy_confirm, {
+        name: policyDraft.name ?? "",
+      }),
       okButtonProps: { danger: true },
       onOk: onDelete,
     });
@@ -179,7 +186,7 @@ export function SecurityPolicyDetail({
         actions={
           <div className="page-header__actions">
             <Button disabled={saving} onClick={onBack}>
-              Cancel
+              {displayText(chrome.cancel_label)}
             </Button>
             <Button
               type="primary"
@@ -198,10 +205,10 @@ export function SecurityPolicyDetail({
         }
       />
 
-      <RecordSectionBlock title="Details">
+      <RecordSectionBlock title={displayText(chrome.details_section)}>
         <div className="admin-settings-form__fields">
           {isPolicyCreate ? (
-            <PolicyFieldRow label="Policy Key">
+            <PolicyFieldRow label={displayText(chrome.policy_key_label)}>
               <Input
                 value={policyDraft.policy_key}
                 onChange={(e) => setPolicyDraft((p) => ({ ...p, policy_key: e.target.value }))}
@@ -209,24 +216,24 @@ export function SecurityPolicyDetail({
               />
             </PolicyFieldRow>
           ) : null}
-          <PolicyFieldRow label="Policy Name">
+          <PolicyFieldRow label={displayText(chrome.policy_name_label)}>
             <Input
               value={policyDraft.name}
               onChange={(e) => setPolicyDraft((p) => ({ ...p, name: e.target.value }))}
               disabled={!model.can_edit || saving}
             />
           </PolicyFieldRow>
-          <PolicyFieldRow label="Description">
+          <PolicyFieldRow label={displayText(chrome.description_label)}>
             <Input
               value={policyDraft.description}
               onChange={(e) => setPolicyDraft((p) => ({ ...p, description: e.target.value }))}
               disabled={!model.can_edit || saving}
             />
           </PolicyFieldRow>
-          <PolicyFieldRow label="Status">
+          <PolicyFieldRow label={displayText(chrome.status_label)}>
             <Select
               value={policyDraft.status}
-              options={STATUS_OPTIONS}
+              options={statusOptions(chrome)}
               onChange={(value) => setPolicyDraft((p) => ({ ...p, status: value }))}
               disabled={!model.can_edit || saving}
             />
@@ -234,12 +241,12 @@ export function SecurityPolicyDetail({
         </div>
       </RecordSectionBlock>
 
-      <RecordSectionBlock title="Security Settings">
+      <RecordSectionBlock title={displayText(chrome.security_settings_section)}>
         <div className="admin-settings-form__fields">
-          <PolicyFieldRow label="Authentication Type">
+          <PolicyFieldRow label={displayText(chrome.authentication_type_label)}>
             <Select
               value={policyDraft.authentication_type}
-              options={AUTH_TYPE_OPTIONS}
+              options={authTypeOptions(chrome)}
               onChange={(value) => setPolicyDraft((p) => ({ ...p, authentication_type: value }))}
               disabled={!model.can_edit || saving}
             />
@@ -247,7 +254,7 @@ export function SecurityPolicyDetail({
 
           {isPassword ? (
             <>
-              <PolicyFieldRow label="Password Requirements">
+              <PolicyFieldRow label={displayText(chrome.password_requirements_label)}>
                 <div className="admin-settings-form__checkbox-group">
                   <Checkbox
                     checked={policyDraft.password_require_digit}
@@ -256,7 +263,7 @@ export function SecurityPolicyDetail({
                     }
                     disabled={!model.can_edit || saving}
                   >
-                    Passwords require a number
+                    {displayText(chrome.password_require_digit)}
                   </Checkbox>
                   <Checkbox
                     checked={policyDraft.password_require_upper}
@@ -265,7 +272,7 @@ export function SecurityPolicyDetail({
                     }
                     disabled={!model.can_edit || saving}
                   >
-                    Passwords require an upper-case letter
+                    {displayText(chrome.password_require_upper)}
                   </Checkbox>
                   <Checkbox
                     checked={policyDraft.password_require_lower}
@@ -274,7 +281,7 @@ export function SecurityPolicyDetail({
                     }
                     disabled={!model.can_edit || saving}
                   >
-                    Passwords require a lower-case letter
+                    {displayText(chrome.password_require_lower)}
                   </Checkbox>
                   <Checkbox
                     checked={policyDraft.password_require_special}
@@ -283,11 +290,11 @@ export function SecurityPolicyDetail({
                     }
                     disabled={!model.can_edit || saving}
                   >
-                    Passwords require a non-alphanumeric character
+                    {displayText(chrome.password_require_special)}
                   </Checkbox>
                 </div>
               </PolicyFieldRow>
-              <PolicyFieldRow label="Minimum Password Length">
+              <PolicyFieldRow label={displayText(chrome.min_password_length_label)}>
                 <InputNumber
                   min={7}
                   max={40}
@@ -298,40 +305,37 @@ export function SecurityPolicyDetail({
                   disabled={!model.can_edit || saving}
                 />
               </PolicyFieldRow>
-              <PolicyFieldRow label="Password Expiration">
+              <PolicyFieldRow label={displayText(chrome.password_expiration_label)}>
                 <Select
-                  value={nearestSelectValue(
-                    PASSWORD_EXPIRY_OPTIONS,
-                    policyDraft.password_expiry_days ?? 0,
-                  )}
-                  options={PASSWORD_EXPIRY_OPTIONS}
+                  value={nearestSelectValue(passwordExpiry, policyDraft.password_expiry_days ?? 0)}
+                  options={passwordExpiry}
                   onChange={(value) =>
                     setPolicyDraft((p) => ({ ...p, password_expiry_days: value }))
                   }
                   disabled={!model.can_edit || saving}
                 />
               </PolicyFieldRow>
-              <PolicyFieldRow label="Password History Reuse">
+              <PolicyFieldRow label={displayText(chrome.password_history_label)}>
                 <Select
                   value={policyDraft.password_history_count ?? 5}
-                  options={PASSWORD_HISTORY_OPTIONS}
+                  options={passwordHistoryOptions(chrome)}
                   onChange={(value) =>
                     setPolicyDraft((p) => ({ ...p, password_history_count: value }))
                   }
                   disabled={!model.can_edit || saving}
                 />
               </PolicyFieldRow>
-              <PolicyFieldRow label="Password Reset Daily Limit">
+              <PolicyFieldRow label={displayText(chrome.password_reset_limit_label)}>
                 <Select
                   value={policyDraft.password_reset_daily_limit ?? 0}
-                  options={PASSWORD_RESET_LIMIT_OPTIONS}
+                  options={passwordResetLimitOptions(chrome)}
                   onChange={(value) =>
                     setPolicyDraft((p) => ({ ...p, password_reset_daily_limit: value }))
                   }
                   disabled={!model.can_edit || saving}
                 />
               </PolicyFieldRow>
-              <PolicyFieldRow label="Account Lockout Threshold">
+              <PolicyFieldRow label={displayText(chrome.lockout_threshold_label)}>
                 <InputNumber
                   min={0}
                   value={policyDraft.lockout_threshold}
@@ -341,10 +345,10 @@ export function SecurityPolicyDetail({
                   disabled={!model.can_edit || saving}
                 />
               </PolicyFieldRow>
-              <PolicyFieldRow label="Account Lockout Duration">
+              <PolicyFieldRow label={displayText(chrome.lockout_duration_label)}>
                 <Select
                   value={policyDraft.lockout_unlock_minutes ?? 30}
-                  options={LOCKOUT_UNLOCK_OPTIONS}
+                  options={lockoutUnlockOptions(chrome)}
                   onChange={(value) =>
                     setPolicyDraft((p) => ({ ...p, lockout_unlock_minutes: value }))
                   }
@@ -362,7 +366,7 @@ export function SecurityPolicyDetail({
                   }
                   disabled={!model.can_edit || saving}
                 >
-                  Require security question on password reset
+                  {displayText(chrome.require_security_question)}
                 </Checkbox>
               </PolicyFieldRow>
               <PolicyFieldRow label="">
@@ -376,13 +380,13 @@ export function SecurityPolicyDetail({
                   }
                   disabled={!model.can_edit || saving}
                 >
-                  Allow browsers to save and autofill password field on the login form
+                  {displayText(chrome.allow_browser_password_save)}
                 </Checkbox>
               </PolicyFieldRow>
             </>
           ) : (
             <>
-              <PolicyFieldRow label="SAML Profile">
+              <PolicyFieldRow label={displayText(chrome.saml_profile_label)}>
                 <ProfileSelect
                   value={policyDraft.saml_profile_id}
                   profiles={samlProfiles.filter((p) => !p.is_esignature_profile)}
@@ -392,7 +396,7 @@ export function SecurityPolicyDetail({
                   }
                 />
               </PolicyFieldRow>
-              <PolicyFieldRow label="eSignature Profile">
+              <PolicyFieldRow label={displayText(chrome.esignature_profile_label)}>
                 <ProfileSelect
                   value={policyDraft.esignature_profile_id}
                   profiles={samlProfiles.filter((p) => p.is_esignature_profile)}
@@ -402,7 +406,7 @@ export function SecurityPolicyDetail({
                   }
                 />
               </PolicyFieldRow>
-              <PolicyFieldRow label="OAuth / OIDC Profile">
+              <PolicyFieldRow label={displayText(chrome.oauth_oidc_profile_label)}>
                 <ProfileSelect
                   value={policyDraft.oauth_profile_id}
                   profiles={oauthProfiles}
@@ -412,13 +416,10 @@ export function SecurityPolicyDetail({
                   }
                 />
               </PolicyFieldRow>
-              <PolicyFieldRow label="API Token Expiry">
+              <PolicyFieldRow label={displayText(chrome.api_token_expiry_label)}>
                 <Select
-                  value={nearestSelectValue(
-                    API_TOKEN_EXPIRY_OPTIONS,
-                    policyDraft.api_token_expiry_days ?? 30,
-                  )}
-                  options={API_TOKEN_EXPIRY_OPTIONS}
+                  value={nearestSelectValue(apiTokenExpiry, policyDraft.api_token_expiry_days ?? 30)}
+                  options={apiTokenExpiry}
                   onChange={(value) =>
                     setPolicyDraft((p) => ({ ...p, api_token_expiry_days: value }))
                   }
@@ -428,10 +429,10 @@ export function SecurityPolicyDetail({
             </>
           )}
 
-          <PolicyFieldRow label="Logout user after inactivity">
+          <PolicyFieldRow label={displayText(chrome.session_idle_label)}>
             <Select
               value={policyDraft.session_idle_timeout_minutes ?? 0}
-              options={SESSION_IDLE_OPTIONS}
+              options={sessionIdleOptions(chrome)}
               onChange={(value) =>
                 setPolicyDraft((p) => ({ ...p, session_idle_timeout_minutes: value }))
               }
@@ -439,8 +440,8 @@ export function SecurityPolicyDetail({
             />
           </PolicyFieldRow>
           <PolicyFieldRow
-            label="Session Max Lifetime"
-            help="Maximum session lifetime in hours (Veeva hard limit: 48)."
+            label={displayText(chrome.session_max_lifetime_label)}
+            help={displayText(chrome.session_max_lifetime_help)}
           >
             <InputNumber
               min={1}
@@ -453,13 +454,13 @@ export function SecurityPolicyDetail({
                 }))
               }
               disabled={!model.can_edit || saving}
-              addonAfter="hours"
+              addonAfter={displayText(chrome.hours_suffix)}
             />
           </PolicyFieldRow>
         </div>
       </RecordSectionBlock>
 
-      <RecordSectionBlock title="Multi-Factor Authentication">
+      <RecordSectionBlock title={displayText(chrome.mfa_section)}>
         <div className="admin-settings-form__fields">
           <PolicyFieldRow label="">
             <Checkbox
@@ -467,18 +468,14 @@ export function SecurityPolicyDetail({
               onChange={(e) => setPolicyDraft((p) => ({ ...p, mfa_required: e.target.checked }))}
               disabled={!model.can_edit || saving}
             >
-              Require multi-factor authentication
+              {displayText(chrome.mfa_required)}
             </Checkbox>
           </PolicyFieldRow>
-          <PolicyFieldRow label="MFA Methods">
+          <PolicyFieldRow label={displayText(chrome.mfa_methods_label)}>
             <Select
               mode="multiple"
               value={policyDraft.mfa_methods}
-              options={[
-                { value: "totp", label: "TOTP" },
-                { value: "webauthn", label: "WebAuthn" },
-                { value: "sms", label: "SMS" },
-              ]}
+              options={mfaMethodOptions(chrome)}
               onChange={(value) => setPolicyDraft((p) => ({ ...p, mfa_methods: value }))}
               disabled={!model.can_edit || saving || !policyDraft.mfa_required}
             />
@@ -486,7 +483,7 @@ export function SecurityPolicyDetail({
         </div>
       </RecordSectionBlock>
 
-      <RecordSectionBlock title="Delegated Authentication">
+      <RecordSectionBlock title={displayText(chrome.delegated_auth_section)}>
         <div className="admin-settings-form__fields">
           <PolicyFieldRow label="">
             <Checkbox
@@ -496,10 +493,10 @@ export function SecurityPolicyDetail({
               }
               disabled={!model.can_edit || saving}
             >
-              Allow delegate authentication
+              {displayText(chrome.delegate_allowed)}
             </Checkbox>
           </PolicyFieldRow>
-          <PolicyFieldRow label="Delegate Max Days">
+          <PolicyFieldRow label={displayText(chrome.delegate_max_days_label)}>
             <InputNumber
               min={0}
               value={policyDraft.delegate_max_days}
@@ -512,9 +509,9 @@ export function SecurityPolicyDetail({
         </div>
       </RecordSectionBlock>
 
-      <RecordSectionBlock title="Compliance">
+      <RecordSectionBlock title={displayText(chrome.compliance_section)}>
         <div className="admin-settings-form__fields">
-          <PolicyFieldRow label="Compliance Text">
+          <PolicyFieldRow label={displayText(chrome.compliance_text_label)}>
             <Input.TextArea
               rows={3}
               value={policyDraft.compliance_text}
@@ -524,7 +521,7 @@ export function SecurityPolicyDetail({
               disabled={!model.can_edit || saving}
             />
           </PolicyFieldRow>
-          <PolicyFieldRow label="Compliance Version">
+          <PolicyFieldRow label={displayText(chrome.compliance_version_label)}>
             <Input
               value={policyDraft.compliance_version}
               onChange={(e) =>
