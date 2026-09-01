@@ -1,6 +1,7 @@
 import { createBrowserRouter, Navigate, RouterProvider } from "react-router-dom";
 import { AuthProvider } from "./auth/AuthProvider";
 import { AdminCollectionRedirect, AdminTabRedirect } from "./components/AdminDefaultRedirect";
+import { RouteChunkLoadRecovery } from "./components/RouteChunkLoadRecovery";
 import { AppShell } from "./layout/AppShell";
 import { LoginPage } from "./pages/LoginPage";
 import { ObjectListPage } from "./pages/ObjectListPage";
@@ -8,6 +9,9 @@ import { RecordDetailPage } from "./pages/RecordDetailPage";
 import { VaultHomePage } from "./pages/VaultHomePage";
 
 const router = createBrowserRouter([
+  {
+    errorElement: <RouteChunkLoadRecovery />,
+    children: [
   { path: "/login", element: <LoginPage /> },
   {
     path: "/invite",
@@ -29,6 +33,13 @@ const router = createBrowserRouter([
     element: <AppShell />,
     children: [
       { index: true, element: <VaultHomePage /> },
+      {
+        path: "notifications",
+        lazy: async () => {
+          const { NotificationsPage } = await import("./pages/NotificationsPage");
+          return { Component: NotificationsPage };
+        },
+      },
       {
         path: "vault-ai",
         lazy: async () => {
@@ -625,6 +636,8 @@ const router = createBrowserRouter([
     ],
   },
   { path: "*", element: <Navigate to="/login" replace /> },
+    ],
+  },
 ]);
 
 export default function App() {

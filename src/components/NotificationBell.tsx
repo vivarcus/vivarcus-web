@@ -1,6 +1,4 @@
 import { Badge, Button, Empty, Popover, Spin, message } from "antd";
-import dayjs from "dayjs";
-import relativeTime from "dayjs/plugin/relativeTime";
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../api/client";
@@ -11,21 +9,12 @@ import {
   downloadOutboundVpkArtifact,
   parseOutboundVpkDownloadTarget,
 } from "../lib/outboundExportDownload";
-import {
-  notificationBodyText,
-  notificationContainsHtml,
-  notificationPlainText,
-  resolveInAppHref,
-  sanitizeNotificationHtml,
-  splitTaskInlineLink,
-} from "./notificationMessage";
-
-dayjs.extend(relativeTime);
+import { NotificationItemRow } from "./NotificationItemRow";
 
 export const POLL_INTERVAL_MS = 30_000;
 /** Stop unread-count polls after this long with no pointer/keyboard input. */
 export const USER_IDLE_MS = 120_000;
-const MESSAGE_COLLAPSE_LEN = 160;
+export const DROPDOWN_LIMIT = 25;
 
 const USER_ACTIVITY_EVENTS = [
   "pointerdown",
@@ -53,101 +42,10 @@ type Props = {
   vaultId: string;
 };
 
-type NotificationRowProps = {
-  item: NotificationItem;
-  onNavigate: (target: string) => void;
-  onSelect: (item: NotificationItem) => void;
-  showLessLabel: string;
-  showMoreLabel: string;
-};
-
-function NotificationRow({
-  item,
-  onNavigate,
-  onSelect,
-  showLessLabel,
-  showMoreLabel,
-}: NotificationRowProps) {
-  const [expanded, setExpanded] = useState(false);
-  const rawMessage = notificationBodyText(item);
-  const { message, linkLabel } = splitTaskInlineLink(rawMessage, item.target_url);
-  const htmlMessage = notificationContainsHtml(message) ? sanitizeNotificationHtml(message) : "";
-  const plainMessage = htmlMessage ? notificationPlainText(message) : message;
-  const collapsible = plainMessage.length > MESSAGE_COLLAPSE_LEN;
-  const collapsedText = collapsible
-    ? `${plainMessage.slice(0, MESSAGE_COLLAPSE_LEN - 1).trimEnd()}…`
-    : plainMessage;
-
-  function handleContentClick(event: React.MouseEvent<HTMLElement>) {
-    const anchor = (event.target as HTMLElement).closest("a");
-    if (!anchor) {
-      return;
-    }
-    event.preventDefault();
-    event.stopPropagation();
-    const target = resolveInAppHref(anchor.getAttribute("href"));
-    if (target) {
-      onNavigate(target);
-    }
-  }
-
-  return (
-    <div
-      role="button"
-      tabIndex={0}
-      className={`notification-dropdown__item${item.read ? "" : " notification-dropdown__item--unread"}`}
-      onClick={() => onSelect(item)}
-      onKeyDown={(event) => {
-        if (event.key === "Enter" || event.key === " ") {
-          event.preventDefault();
-          onSelect(item);
-        }
-      }}
-    >
-      <div className="notification-dropdown__message" onClick={handleContentClick}>
-        {htmlMessage ? (
-          expanded || !collapsible ? (
-            <div
-              className="notification-dropdown__html"
-              dangerouslySetInnerHTML={{ __html: htmlMessage }}
-            />
-          ) : (
-            <span>{collapsedText}</span>
-          )
-        ) : (
-          <span>{expanded || !collapsible ? message : collapsedText}</span>
-        )}
-        {linkLabel ? (
-          <>
-            {": "}
-            <span className="notification-dropdown__inline-link">{linkLabel}</span>
-          </>
-        ) : null}
-        {collapsible ? (
-          <button
-            type="button"
-            className="notification-dropdown__show-more"
-            onClick={(event) => {
-              event.stopPropagation();
-              setExpanded((value) => !value);
-            }}
-          >
-            {expanded ? showLessLabel : showMoreLabel}
-          </button>
-        ) : null}
-      </div>
-      <div className="notification-dropdown__time" title={item.created_at}>
-        {dayjs(item.created_at).fromNow()}
-      </div>
-    </div>
-  );
-}
-
 export function NotificationBell({ vaultId }: Props) {
   const navigate = useNavigate();
   const { shell } = useUi();
   const [open, setOpen] = useState(false);
-  const [view, setView] = useState<"unread" | "all">("unread");
   const [unreadCount, setUnreadCount] = useState(0);
   const [items, setItems] = useState<NotificationItem[]>([]);
   const [loading, setLoading] = useState(false);
@@ -161,34 +59,17 @@ export function NotificationBell({ vaultId }: Props) {
     }
   }, [vaultId]);
 
-  const markDisplayedAsRead = useCallback(
-    async (notifications: NotificationItem[]): Promise<NotificationItem[]> => {
-      if (!notifications.some((item) => !item.read)) {
-        return notifications;
-      }
-      try {
-        await api.markAllNotificationsRead(vaultId);
-        setUnreadCount(0);
-        return notifications.map((item) => ({ ...item, read: true }));
-      } catch {
-        return notifications;
-      }
-    },
-    [vaultId],
-  );
-
   const refreshList = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await api.notifications(vaultId, view);
-      const readItems = await markDisplayedAsRead(res.notifications);
-      setItems(readItems);
+      const res = await api.notifications(vaultId, "all", DROPDOWN_LIMIT);
+      setItems(res.notifications);
     } catch {
       setItems([]);
     } finally {
       setLoading(false);
     }
-  }, [vaultId, view, markDisplayedAsRead]);
+  }, [vaultId]);
 
   useEffect(() => {
     let timer: number | undefined;
@@ -310,27 +191,46 @@ export function NotificationBell({ vaultId }: Props) {
     navigate(target);
   }
 
-  async function handleSelect(item: NotificationItem) {
-    const target = item.target_url?.trim();
-    if (target) {
-      await navigateTarget(target);
+  async function handleMarkRead(item: NotificationItem) {
+    if (item.read) {
+      return;
+    }
+    try {
+      await api.markNotificationRead(vaultId, item.id);
+      setItems((current) =>
+        current.map((row) => (row.id === item.id ? { ...row, read: true } : row)),
+      );
+      setUnreadCount((count) => Math.max(0, count - 1));
+    } catch {
+      // keep current unread state
     }
   }
 
-  function handleViewAllToggle(event: React.MouseEvent) {
+  async function handleDismiss(item: NotificationItem) {
+    try {
+      await api.dismissNotification(vaultId, item.id);
+      setItems((current) => current.filter((row) => row.id !== item.id));
+      if (!item.read) {
+        setUnreadCount((count) => Math.max(0, count - 1));
+      }
+    } catch {
+      // keep the row
+    }
+  }
+
+  function handleViewAll(event: React.MouseEvent) {
     event.preventDefault();
     event.stopPropagation();
-    setView((current) => (current === "unread" ? "all" : "unread"));
+    setOpen(false);
+    navigate("/notifications");
   }
 
   const panel = (
     <div className="notification-dropdown">
       <div className="notification-dropdown__header">
         <strong>{displayText(shell.notifications_aria, "Notifications")}</strong>
-        <button type="button" className="notification-dropdown__view-all" onClick={handleViewAllToggle}>
-          {view === "unread"
-            ? displayText(shell.notifications_view_all, "View all")
-            : displayText(shell.notifications_unread_only, "Unread only")}
+        <button type="button" className="notification-dropdown__view-all" onClick={handleViewAll}>
+          {displayText(shell.notifications_view_all, "View all")}
         </button>
       </div>
       {loading ? (
@@ -349,15 +249,21 @@ export function NotificationBell({ vaultId }: Props) {
       {!loading && items.length > 0 ? (
         <div className="notification-dropdown__list">
           {items.map((item) => (
-            <NotificationRow
+            <NotificationItemRow
               key={item.id}
               item={item}
               onNavigate={(target) => {
                 void navigateTarget(target);
               }}
-              onSelect={handleSelect}
-              showLessLabel={displayText(shell.notifications_show_less, "Show less")}
+              onMarkRead={(row) => {
+                void handleMarkRead(row);
+              }}
+              onDismiss={(row) => {
+                void handleDismiss(row);
+              }}
               showMoreLabel={displayText(shell.notifications_show_more, "Show more")}
+              markReadLabel={displayText(shell.notifications_mark_read, "Mark as read")}
+              deleteLabel={displayText(shell.notifications_delete, "Delete")}
             />
           ))}
         </div>

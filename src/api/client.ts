@@ -3038,10 +3038,11 @@ export const api = {
     );
   },
 
-  notifications(vaultId: string, view: "unread" | "all" = "unread", limit = 50) {
+  notifications(vaultId: string, view: "unread" | "all" = "unread", limit = 50, offset = 0) {
     const q = new URLSearchParams();
     if (view === "all") q.set("view", "all");
     if (limit) q.set("limit", String(limit));
+    if (offset) q.set("offset", String(offset));
     const suffix = q.toString() ? `?${q}` : "";
     return vaultFetch<import("./types").NotificationListResponse>(
       vaultId,

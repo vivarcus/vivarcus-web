@@ -3133,6 +3133,7 @@ export type NotificationItem = {
 
 export type NotificationListResponse = {
   notifications: NotificationItem[];
+  total?: number;
 };
 
 export type NotificationUnreadCountResponse = {

@@ -623,6 +623,17 @@ export type ShellChrome = {
   notifications_empty: DisplayText;
   notifications_download_started: DisplayText;
   notifications_download_failed: DisplayText;
+  notifications_mark_read: DisplayText;
+  notifications_delete: DisplayText;
+  notifications_all: DisplayText;
+  notifications_views: DisplayText;
+  notifications_sort_date: DisplayText;
+  notifications_mark_all_read: DisplayText;
+  notifications_pagination_range: DisplayText;
+  notifications_previous_page: DisplayText;
+  notifications_next_page: DisplayText;
+  notifications_page_input: DisplayText;
+  notifications_list_actions: DisplayText;
   tab_collections_aria: DisplayText;
   tab_collections_label: DisplayText;
   tab_more_label: DisplayText;
@@ -4859,6 +4870,20 @@ export const defaultShellChrome: ShellChrome = {
   notifications_empty: t("No notifications", "ui.notifications_empty"),
   notifications_download_started: t("Download started", "ui.notifications_download_started"),
   notifications_download_failed: t("Download failed", "ui.notifications_download_failed"),
+  notifications_mark_read: t("Mark as read", "ui.notifications_mark_read"),
+  notifications_delete: t("Delete", "ui.notifications_delete"),
+  notifications_all: t("All Notifications", "ui.notifications_all"),
+  notifications_views: t("Views", "ui.notifications_views"),
+  notifications_sort_date: t("Date Received", "ui.notifications_sort_date"),
+  notifications_mark_all_read: t("Mark All as Read", "ui.notifications_mark_all_read"),
+  notifications_pagination_range: t(
+    "{start}-{end}, of {total}",
+    "ui.notifications_pagination_range",
+  ),
+  notifications_previous_page: t("Previous page", "list.previous_page"),
+  notifications_next_page: t("Next page", "list.next_page"),
+  notifications_page_input: t("Page number", "list.page_input_label"),
+  notifications_list_actions: t("List actions", "list.actions_aria"),
   tab_collections_aria: t("Tab collections", "nav.tab_collections_aria"),
   tab_collections_label: t("Tab Collections", "nav.tab_collections_label"),
   tab_more_label: t("More Tabs", "nav.tab_more_label"),
