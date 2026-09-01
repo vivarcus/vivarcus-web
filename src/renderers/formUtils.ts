@@ -5,7 +5,6 @@ import {
   datePickerInputFormats,
   normalizeDateInputText,
   parseTimeToUtcDate,
-  timeWallClockToRfc3339,
   utcInstantToWallClock,
   wallClockToUtcIso,
   type WallClock,
@@ -240,6 +239,24 @@ export function resolveFieldScale(element: FormElement): number | undefined {
   return scale != null && scale >= 0 ? scale : undefined;
 }
 
+/** Maps stored-fraction Percent scale to percent-point decimals (Veeva: 65% → 0.65). */
+export function percentDisplayScale(storedScale?: number): number | undefined {
+  if (storedScale == null || storedScale < 0) {
+    return storedScale;
+  }
+  return Math.max(0, storedScale - 2);
+}
+
+export function resolveFieldMinValue(element: FormElement): number | undefined {
+  const n = element.field_render?.min_value;
+  return n != null && Number.isFinite(n) ? n : undefined;
+}
+
+export function resolveFieldMaxValue(element: FormElement): number | undefined {
+  const n = element.field_render?.max_value;
+  return n != null && Number.isFinite(n) ? n : undefined;
+}
+
 /** Parses a stored Time field into a picker value (UTC wall-clock, no timezone). */
 export function parseTimeDayjsValue(value: unknown): Dayjs | null {
   const parsed = parseTimeToUtcDate(value);
@@ -256,10 +273,13 @@ export function parseTimeDayjsValue(value: unknown): Dayjs | null {
     .millisecond(0);
 }
 
-/** Serializes a Time picker value as RFC3339 UTC on 1970-01-01. */
-export function timeDayjsToRfc3339(value: Dayjs | null): string {
+/** Serializes a Time picker value as canonical HH:MM:SS (no timezone). */
+export function timeDayjsToWallClock(value: Dayjs | null): string {
   if (!value) {
     return "";
   }
-  return timeWallClockToRfc3339(value.hour(), value.minute(), value.second());
+  const hour = String(value.hour()).padStart(2, "0");
+  const minute = String(value.minute()).padStart(2, "0");
+  const second = String(value.second()).padStart(2, "0");
+  return `${hour}:${minute}:${second}`;
 }

@@ -7,7 +7,28 @@ import { AdminPageLoading } from "../components/admin/AdminPageLoading";
 import { AdminPageShell } from "../components/admin/AdminPageShell";
 import { useUi } from "../context/UiContext";
 import { useVaultId } from "../hooks/useVaultId";
-import { displayText } from "../lib/i18n";
+import { displayText, displayTextTemplate } from "../lib/i18n";
+
+const GMT_MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+function formatGmt(iso: string | undefined): string {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return iso;
+  const dd = d.getUTCDate();
+  const mon = GMT_MONTHS[d.getUTCMonth()];
+  const yyyy = d.getUTCFullYear();
+  const hh = String(d.getUTCHours()).padStart(2, "0");
+  const mm = String(d.getUTCMinutes()).padStart(2, "0");
+  return `${dd} ${mon} ${yyyy} ${hh}:${mm} GMT`;
+}
+
+function formatMillions(n: number | undefined): string {
+  return (n ?? 0).toLocaleString(undefined, {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+}
 
 export function VaultAISettingsPage() {
   const vaultId = useVaultId();
@@ -21,6 +42,8 @@ export function VaultAISettingsPage() {
   const [basicConnection, setBasicConnection] = useState("platform_default");
   const [maxOutputTokens, setMaxOutputTokens] = useState(4096);
   const [autoSwitch, setAutoSwitch] = useState(true);
+  const [alertLimit, setAlertLimit] = useState<number | null>(null);
+  const [alertEmail, setAlertEmail] = useState("");
 
   const load = useCallback(async () => {
     if (!vaultId) return;
@@ -34,6 +57,8 @@ export function VaultAISettingsPage() {
       setBasicConnection(data.basic_llm_connection || "platform_default");
       setMaxOutputTokens(data.max_output_tokens || 4096);
       setAutoSwitch(data.auto_switch_conversation !== false);
+      setAlertLimit(data.token_alert_limit_millions ?? null);
+      setAlertEmail(data.token_alert_email ?? "");
     } catch (err) {
       setError(err instanceof Error ? err.message : displayText(shell.load_failed));
       setModel(null);
@@ -56,6 +81,9 @@ export function VaultAISettingsPage() {
         basic_llm_connection: basicConnection,
         max_output_tokens: maxOutputTokens,
         auto_switch_conversation: autoSwitch,
+        token_alert_limit_millions: alertLimit ?? undefined,
+        clear_token_alert_limit: alertLimit == null,
+        token_alert_email: alertEmail,
       });
       setModel(next);
       setEnabled(next.enabled);
@@ -63,6 +91,8 @@ export function VaultAISettingsPage() {
       setBasicConnection(next.basic_llm_connection);
       setMaxOutputTokens(next.max_output_tokens);
       setAutoSwitch(next.auto_switch_conversation);
+      setAlertLimit(next.token_alert_limit_millions ?? null);
+      setAlertEmail(next.token_alert_email ?? "");
       message.success(displayText(next.chrome.save_label));
     } catch (err) {
       message.error(err instanceof Error ? err.message : displayText(shell.save_failed));
@@ -156,12 +186,72 @@ export function VaultAISettingsPage() {
               {displayText(chrome.auto_switch_conversation_help)}
             </p>
           </div>
-          <footer className="admin-settings-form__footer-actions">
-            <Button type="primary" disabled={!model.can_edit} loading={saving} onClick={() => void save()}>
-              {displayText(chrome.save_label)}
-            </Button>
-          </footer>
         </RecordSectionBlock>
+        <RecordSectionBlock title={displayText(chrome.llm_token_usage_title)}>
+          <div className="admin-settings-form__row admin-settings-form__row--start">
+            <span className="admin-settings-form__label admin-settings-form__label--strong">
+              {displayText(chrome.alert_limit_label)}
+            </span>
+            <div className="admin-settings-form__control admin-token-usage__limit">
+              <InputNumber
+                min={0}
+                value={alertLimit ?? undefined}
+                disabled={disabled}
+                onChange={(v) => setAlertLimit(typeof v === "number" ? v : null)}
+              />
+              <span className="admin-token-usage__suffix">{displayText(chrome.alert_limit_suffix)}</span>
+            </div>
+          </div>
+          <div className="admin-settings-form__row admin-settings-form__row--start">
+            <span className="admin-settings-form__label admin-settings-form__label--strong">
+              {displayText(chrome.alert_email_label)}
+            </span>
+            <div className="admin-settings-form__control">
+              <Input
+                type="email"
+                value={alertEmail}
+                disabled={disabled}
+                onChange={(e) => setAlertEmail(e.target.value)}
+              />
+            </div>
+          </div>
+          <p className="admin-token-usage__as-of">
+            {displayTextTemplate(chrome.usage_as_of_label, {
+              datetime: formatGmt(model.token_usage?.as_of),
+            })}
+          </p>
+          <dl className="admin-token-usage__dl">
+            <div>
+              <dt>{displayText(chrome.vault_ai_llm_label)}</dt>
+              <dd>{formatMillions(model.token_usage?.vault_ai_llm)}</dd>
+            </div>
+            <div>
+              <dt>{displayText(chrome.customer_llm_label)}</dt>
+              <dd>{formatMillions(model.token_usage?.customer_llm)}</dd>
+            </div>
+            <div>
+              <dt>{displayText(chrome.total_30_day_label)}</dt>
+              <dd>{formatMillions(model.token_usage?.total_30_day)}</dd>
+            </div>
+          </dl>
+          <p className="admin-token-usage__as-of">
+            {displayTextTemplate(chrome.hourly_usage_label, {
+              from: formatGmt(model.token_usage?.hourly_from),
+              to: formatGmt(model.token_usage?.hourly_to),
+            })}
+          </p>
+          <dl className="admin-token-usage__dl">
+            <div>
+              <dt>{displayText(chrome.hourly_total_label)}</dt>
+              <dd>{formatMillions(model.token_usage?.hourly_total)}</dd>
+            </div>
+          </dl>
+        </RecordSectionBlock>
+        <footer className="admin-settings-form__footer-actions">
+          <Button type="primary" disabled={!model.can_edit} loading={saving} onClick={() => void save()}>
+            {displayText(chrome.save_label)}
+          </Button>
+        </footer>
       </div>
     </AdminPageShell>
   );

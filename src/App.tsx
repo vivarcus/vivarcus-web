@@ -122,6 +122,32 @@ const router = createBrowserRouter([
                 ),
               },
               {
+                path: "agent_traces",
+                children: [
+                  {
+                    index: true,
+                    lazy: async () => {
+                      const { AdminAgentTracesListPage } = await import("./pages/AdminAgentTracesListPage");
+                      return { Component: AdminAgentTracesListPage };
+                    },
+                  },
+                  {
+                    path: "new",
+                    lazy: async () => {
+                      const { AdminAgentTraceCreatePage } = await import("./pages/AdminAgentTraceCreatePage");
+                      return { Component: AdminAgentTraceCreatePage };
+                    },
+                  },
+                  {
+                    path: ":id",
+                    lazy: async () => {
+                      const { AdminAgentTraceDetailPage } = await import("./pages/AdminAgentTraceDetailPage");
+                      return { Component: AdminAgentTraceDetailPage };
+                    },
+                  },
+                ],
+              },
+              {
                 path: ":panel",
                 lazy: async () => {
                   const { AdminLogsPage } = await import("./pages/AdminLogsPage");

@@ -12,7 +12,10 @@ import { wrapFormControl } from "./fieldChrome";
 import {
   isFieldDisabled,
   isFieldRequired,
+  percentDisplayScale,
   resolveFieldLabel,
+  resolveFieldMaxValue,
+  resolveFieldMinValue,
   resolveFieldScale,
 } from "./formUtils";
 
@@ -26,9 +29,19 @@ export function NumberInputRenderer({
   const label = resolveFieldLabel(element);
   const disabled = isFieldDisabled(element);
   const required = isFieldRequired(element);
-  const scale = resolveFieldScale(element);
+  const storedScale = resolveFieldScale(element);
+  const fieldType = element.field_type ?? element.field_render?.field_type;
+  const isPercent = fieldType === "Percent";
+  const displayScale = isPercent ? percentDisplayScale(storedScale) : storedScale;
+  const stored = value == null || value === "" ? null : Number(value);
   const numericValue =
-    value == null || value === "" ? null : Number(value);
+    stored == null || !Number.isFinite(stored) ? null : isPercent ? stored * 100 : stored;
+  const storedMin = resolveFieldMinValue(element);
+  const storedMax = resolveFieldMaxValue(element);
+  const min =
+    storedMin == null ? undefined : isPercent ? storedMin * 100 : storedMin;
+  const max =
+    storedMax == null ? undefined : isPercent ? storedMax * 100 : storedMax;
   const locale = useMemo(
     () => antdLocaleForDisplay(displayContext),
     [displayContext],
@@ -40,7 +53,9 @@ export function NumberInputRenderer({
       {wrapFormControl(
         <InputNumber
           value={Number.isFinite(numericValue) ? numericValue : null}
-          precision={scale}
+          precision={displayScale}
+          min={min}
+          max={max}
           disabled={disabled}
           // Commit while typing so a late form/prefetch re-render cannot wipe an un-blurred draft.
           changeOnBlur={false}
@@ -57,10 +72,16 @@ export function NumberInputRenderer({
             if (!Number.isFinite(numeric)) {
               return String(raw);
             }
-            return formatNumberDisplayValue(numeric, displayContext, scale);
+            return formatNumberDisplayValue(numeric, displayContext, displayScale);
           }}
           parser={(raw) => parseLocaleNumberInput(raw ?? "", intlLocale)}
-          onChange={(next) => onChange(next ?? null)}
+          onChange={(next) => {
+            if (next == null) {
+              onChange(null);
+              return;
+            }
+            onChange(isPercent ? next / 100 : next);
+          }}
         />,
         { label, required, showLabel },
       )}

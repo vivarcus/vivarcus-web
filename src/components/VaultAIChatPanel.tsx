@@ -14,7 +14,6 @@ import {
 import {
   CloseOutlined,
   CompressOutlined,
-  DownloadOutlined,
   ExpandOutlined,
   FormOutlined,
   HistoryOutlined,
@@ -105,6 +104,21 @@ function VaultAITitleIcon() {
   );
 }
 
+function VaultAITraceWaveformIcon() {
+  return (
+    <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden focusable="false">
+      <path
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.4"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M1 8h1.2l1-4.2 1.4 8.4 1.3-6.4 1.2 4.6 1.1-2.4H15"
+      />
+    </svg>
+  );
+}
+
 export function VaultAIChatPanel({
   open,
   vaultId,
@@ -138,6 +152,9 @@ export function VaultAIChatPanel({
   const [thinkingStage, setThinkingStage] = useState("thinking");
   const [traceStatus, setTraceStatus] = useState("");
   const [traceActionCount, setTraceActionCount] = useState(0);
+  const [traceActivityOpen, setTraceActivityOpen] = useState(false);
+  const [traceStoppedAt, setTraceStoppedAt] = useState("");
+  const traceStatusRef = useRef("");
   const [autoSwitchConversation, setAutoSwitchConversation] = useState(true);
   const [showHistory, setShowHistory] = useState(false);
   const listRef = useRef<HTMLDivElement>(null);
@@ -158,6 +175,7 @@ export function VaultAIChatPanel({
     start: VaultAIChatFloatRect;
   } | null>(null);
   conversationIdRef.current = conversationId;
+  traceStatusRef.current = traceStatus;
 
   const scrollToBottom = useCallback(() => {
     requestAnimationFrame(() => {
@@ -355,9 +373,13 @@ export function VaultAIChatPanel({
     if (!conversationId) return;
     try {
       const c = await api.vaultAIChatSetTrace(vaultId, conversationId, enabled);
-      setTraceStatus(c.trace_status ?? (enabled ? "active" : ""));
+      const next = c.trace_status ?? (enabled ? "active" : "ended");
+      setTraceStatus(next);
       setTraceActionCount(c.trace_action_count ?? 0);
-      antMessage.success(enabled ? "Trace started (max 5 actions)" : "Trace stopped");
+      if (!enabled) {
+        setTraceStoppedAt(new Date().toLocaleString());
+        setTraceActivityOpen(true);
+      }
     } catch (e) {
       antMessage.error(e instanceof Error ? e.message : "Failed to update trace");
     }
@@ -551,7 +573,12 @@ export function VaultAIChatPanel({
             setStreamingContent("");
             void refreshConversations(autoSwitchConversation);
             void api.vaultAIChatGetConversation(vaultId, conversationId).then((res) => {
-              setTraceStatus(res.conversation.trace_status ?? "");
+              const next = res.conversation.trace_status ?? "";
+              if (traceStatusRef.current === "active" && next === "ended") {
+                setTraceStoppedAt(new Date().toLocaleString());
+                setTraceActivityOpen(true);
+              }
+              setTraceStatus(next);
               setTraceActionCount(res.conversation.trace_action_count ?? 0);
             });
           },
@@ -1132,33 +1159,30 @@ export function VaultAIChatPanel({
               </div>
               <Space size={4} className="vault-ai-chat-full__main-actions">
                 {conversationId ? (
-                  <>
-                    {traceStatus === "active" ? (
-                      <Button size="small" type="text" onClick={() => void toggleTrace(false)}>
-                        {displayTextTemplate(chrome.stop_trace, { count: traceActionCount })}
-                      </Button>
-                    ) : (
-                      <Button
-                        size="small"
-                        type="text"
-                        onClick={() => void toggleTrace(true)}
-                        disabled={sending || !hasRecordContext}
-                      >
-                        {displayText(chrome.start_trace)}
-                      </Button>
-                    )}
-                    {(traceStatus === "active" ||
-                      traceStatus === "ended" ||
-                      traceActionCount > 0) && (
-                      <Button
-                        size="small"
-                        type="text"
-                        icon={<DownloadOutlined />}
-                        onClick={() => void downloadTrace()}
-                        aria-label={displayText(chrome.trace_json)}
-                      />
-                    )}
-                  </>
+                  traceStatus === "active" ? (
+                    <button
+                      type="button"
+                      className="vault-ai-chat__tracing-pill"
+                      onClick={() => void toggleTrace(false)}
+                      title={displayTextTemplate(chrome.stop_trace, { count: traceActionCount })}
+                      aria-label={displayTextTemplate(chrome.stop_trace, { count: traceActionCount })}
+                    >
+                      <span className="vault-ai-chat__tracing-dot" aria-hidden />
+                      <span>{displayText(chrome.tracing_label)}</span>
+                      <StopOutlined />
+                    </button>
+                  ) : (
+                    <Button
+                      size="small"
+                      type="text"
+                      className="vault-ai-chat__trace-icon-btn"
+                      icon={<VaultAITraceWaveformIcon />}
+                      onClick={() => void toggleTrace(true)}
+                      disabled={sending || !hasRecordContext}
+                      aria-label={displayText(chrome.start_trace)}
+                      title={displayText(chrome.start_trace)}
+                    />
+                  )
                 ) : null}
                 <Button
                   size="small"
@@ -1182,6 +1206,11 @@ export function VaultAIChatPanel({
                 />
               </Space>
             </header>
+            {traceStatus === "active" ? (
+              <div className="vault-ai-chat-full__trace-banner" role="status">
+                {displayText(chrome.trace_started_banner)}
+              </div>
+            ) : null}
 
             <div className="vault-ai-chat-full__main-body">
               {!hasRecordContext ? (
@@ -1202,6 +1231,29 @@ export function VaultAIChatPanel({
             </div>
           </section>
         </div>
+        <Modal
+          title={displayText(chrome.trace_activity_title)}
+          open={traceActivityOpen}
+          onCancel={() => setTraceActivityOpen(false)}
+          footer={
+            <Button type="primary" onClick={() => void downloadTrace()}>
+              {displayText(chrome.trace_download)}
+            </Button>
+          }
+        >
+          <dl className="vault-ai-chat__trace-activity">
+            <div>
+              <dt>{displayText(chrome.trace_ended)}</dt>
+              <dd>{traceStoppedAt}</dd>
+            </div>
+            <div>
+              <dt>{displayText(chrome.trace_session_id)}</dt>
+              <dd>
+                <code>{conversationId}</code>
+              </dd>
+            </div>
+          </dl>
+        </Modal>
       </Modal>
     );
   }

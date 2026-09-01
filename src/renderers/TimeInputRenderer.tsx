@@ -13,7 +13,7 @@ import {
   isFieldRequired,
   parseTimeDayjsValue,
   resolveFieldLabel,
-  timeDayjsToRfc3339,
+  timeDayjsToWallClock,
 } from "./formUtils";
 
 export function TimeInputRenderer({
@@ -50,7 +50,7 @@ export function TimeInputRenderer({
           className="field__time"
           use12Hours={use12Hours}
           allowClear={!required && !disabled}
-          onChange={(next) => onChange(next ? timeDayjsToRfc3339(next) : null)}
+          onChange={(next) => onChange(next ? timeDayjsToWallClock(next) : null)}
         />,
         { label, required, showLabel },
       )}

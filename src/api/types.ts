@@ -1199,6 +1199,8 @@ export type FieldRenderModel = {
   target_object_api_name?: string;
   max_length?: number;
   scale?: number;
+  min_value?: number;
+  max_value?: number;
   picklist_options?: PicklistEntryOption[];
   picklist_options_catalog?: PicklistEntryOption[];
   controlling_field_api_name?: string;
@@ -4112,6 +4114,17 @@ export type VaultAISettingsModel = {
   basic_llm_connection: string;
   max_output_tokens: number;
   auto_switch_conversation: boolean;
+  token_alert_limit_millions?: number | null;
+  token_alert_email?: string;
+  token_usage?: {
+    as_of: string;
+    vault_ai_llm: number;
+    customer_llm: number;
+    total_30_day: number;
+    hourly_from: string;
+    hourly_to: string;
+    hourly_total: number;
+  };
   chrome: {
     page_title: DisplayText;
     section_title: DisplayText;
@@ -4125,6 +4138,16 @@ export type VaultAISettingsModel = {
     auto_switch_conversation_label: DisplayText;
     auto_switch_conversation_help: DisplayText;
     save_label: DisplayText;
+    llm_token_usage_title: DisplayText;
+    alert_limit_label: DisplayText;
+    alert_limit_suffix: DisplayText;
+    alert_email_label: DisplayText;
+    usage_as_of_label: DisplayText;
+    vault_ai_llm_label: DisplayText;
+    customer_llm_label: DisplayText;
+    total_30_day_label: DisplayText;
+    hourly_usage_label: DisplayText;
+    hourly_total_label: DisplayText;
   };
 };
 
@@ -4134,6 +4157,58 @@ export type VaultAISettingsPatch = {
   basic_llm_connection?: string;
   max_output_tokens?: number;
   auto_switch_conversation?: boolean;
+  token_alert_limit_millions?: number | null;
+  clear_token_alert_limit?: boolean;
+  token_alert_email?: string;
+};
+
+export type AgentTraceSession = {
+  id: string;
+  name: string;
+  trace_for_user_id: string;
+  trace_for_user: string;
+  status: string;
+  created_at: string;
+  expires_at: string;
+  days_to_expiration: number;
+};
+
+export type AgentTraceDetailRow = {
+  id: string;
+  date_time_utc: string;
+  agent: string;
+  action: string;
+  chat_id: string;
+  trace_session_id: string;
+};
+
+export type AgentTracesChrome = {
+  page_title: DisplayText;
+  create: DisplayText;
+  name: DisplayText;
+  trace_for_user: DisplayText;
+  days_to_expiration: DisplayText;
+  status: DisplayText;
+  created_date: DisplayText;
+  save: DisplayText;
+  details: DisplayText;
+  trace_details: DisplayText;
+  reset_trace: DisplayText;
+  download_all: DisplayText;
+  download: DisplayText;
+  date_time_utc: DisplayText;
+  agent: DisplayText;
+  action: DisplayText;
+  chat_id: DisplayText;
+  trace_session_id: DisplayText;
+  reset_title: DisplayText;
+  reset_body: DisplayText;
+  cancel: DisplayText;
+  continue: DisplayText;
+  status_active: DisplayText;
+  status_inactive: DisplayText;
+  empty: DisplayText;
+  empty_details: DisplayText;
 };
 
 export type SecuritySettingsModel = {

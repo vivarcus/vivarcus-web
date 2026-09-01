@@ -5,11 +5,12 @@ import {
   parseDateTimeDayjsValue,
   parseDayjsValue,
   parseTimeDayjsValue,
+  percentDisplayScale,
   picklistSelectBehavior,
   resolveFieldScale,
   resolveFieldUnavailableMessage,
   resolvePicklistOptionsWithCurrentValues,
-  timeDayjsToRfc3339,
+  timeDayjsToWallClock,
 } from "./formUtils";
 import { defaultShellChrome } from "../lib/i18n";
 
@@ -160,7 +161,7 @@ describe("parseTimeDayjsValue", () => {
     const picker = parseTimeDayjsValue("2026-07-22T15:04:00Z");
     expect(picker?.hour()).toBe(15);
     expect(picker?.minute()).toBe(4);
-    expect(timeDayjsToRfc3339(picker)).toBe("1970-01-01T15:04:00.000Z");
+    expect(timeDayjsToWallClock(picker)).toBe("15:04:00");
   });
 });
 
@@ -183,5 +184,14 @@ describe("resolveFieldScale", () => {
         },
       }),
     ).toBe(2);
+  });
+});
+
+describe("percentDisplayScale", () => {
+  it("maps stored-fraction scale onto percent-point decimals", () => {
+    expect(percentDisplayScale(0)).toBe(0);
+    expect(percentDisplayScale(2)).toBe(0);
+    expect(percentDisplayScale(4)).toBe(2);
+    expect(percentDisplayScale(undefined)).toBeUndefined();
   });
 });

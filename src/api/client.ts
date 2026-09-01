@@ -2598,6 +2598,55 @@ export const api = {
     );
   },
 
+  adminAgentTraces(vaultId: string) {
+    return vaultFetch<{
+      sessions: import("./types").AgentTraceSession[];
+      users: { id: string; label: string }[];
+      chrome: import("./types").AgentTracesChrome;
+    }>(vaultId, `/ui/admin/logs/agent-traces`);
+  },
+
+  adminAgentTraceCreate(
+    vaultId: string,
+    body: { name: string; trace_for_user_id: string },
+  ) {
+    return vaultFetch<import("./types").AgentTraceSession>(vaultId, `/ui/admin/logs/agent-traces`, {
+      method: "POST",
+      body: JSON.stringify(body),
+    });
+  },
+
+  adminAgentTraceGet(vaultId: string, id: string) {
+    return vaultFetch<{
+      session: import("./types").AgentTraceSession;
+      details: import("./types").AgentTraceDetailRow[];
+      chrome: import("./types").AgentTracesChrome;
+    }>(vaultId, `/ui/admin/logs/agent-traces/${id}`);
+  },
+
+  adminAgentTracePatch(vaultId: string, id: string, body: { status?: string }) {
+    return vaultFetch<import("./types").AgentTraceSession>(vaultId, `/ui/admin/logs/agent-traces/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(body),
+    });
+  },
+
+  adminAgentTraceReset(vaultId: string, id: string) {
+    return vaultFetch<import("./types").AgentTraceSession>(
+      vaultId,
+      `/ui/admin/logs/agent-traces/${id}/reset`,
+      { method: "POST", body: "{}" },
+    );
+  },
+
+  adminAgentTraceDownloadAll(vaultId: string, id: string) {
+    return vaultFetchBlob(vaultId, `/ui/admin/logs/agent-traces/${id}/download`);
+  },
+
+  adminAgentTraceDownloadDetail(vaultId: string, id: string, detailId: string) {
+    return vaultFetchBlob(vaultId, `/ui/admin/logs/agent-traces/${id}/details/${detailId}/download`);
+  },
+
   securitySettings(vaultId: string) {
     return vaultFetch<import("./types").SecuritySettingsModel>(
       vaultId,

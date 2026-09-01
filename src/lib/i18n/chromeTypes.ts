@@ -702,6 +702,11 @@ export type VaultAIChrome = {
   stop_trace: DisplayText;
   trace_json: DisplayText;
   trace_ended: DisplayText;
+  trace_started_banner: DisplayText;
+  tracing_label: DisplayText;
+  trace_activity_title: DisplayText;
+  trace_session_id: DisplayText;
+  trace_download: DisplayText;
   close: DisplayText;
   disclaimer: DisplayText;
   no_record_context: DisplayText;
@@ -2202,10 +2207,15 @@ export const defaultVaultAIChrome: VaultAIChrome = {
   pin: t("Dock", "vault_ai.pin"),
   unpin: t("Float", "vault_ai.unpin"),
   float_view: t("Float", "vault_ai.float_view"),
-  start_trace: t("Start Trace", "vault_ai.start_trace"),
+  start_trace: t("Start Agent Activity Trace", "vault_ai.start_trace"),
   stop_trace: t("Stop Trace ({count}/5)", "vault_ai.stop_trace"),
   trace_json: t("Trace JSON", "vault_ai.trace_json"),
   trace_ended: t("Trace ended", "vault_ai.trace_ended"),
+  trace_started_banner: t("Trace started", "vault_ai.trace_started_banner"),
+  tracing_label: t("Tracing…", "vault_ai.tracing_label"),
+  trace_activity_title: t("Agent Trace Activity", "vault_ai.trace_activity_title"),
+  trace_session_id: t("Trace Session ID", "vault_ai.trace_session_id"),
+  trace_download: t("Download", "vault_ai.trace_download"),
   close: t("Close", "vault_ai.close"),
   disclaimer: t(
     "AI Chat responses may be inaccurate and should be verified.",
