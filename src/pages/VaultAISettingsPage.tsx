@@ -10,8 +10,8 @@ import { useVaultId } from "../hooks/useVaultId";
 import { displayText, displayTextTemplate } from "../lib/i18n";
 import { formatTokenUsageGmt } from "../lib/vaultAITokenUsage";
 
-const DEFAULT_ADVANCED_LLM = "ai_llm__sys";
-const DEFAULT_BASIC_LLM = "ai_basic_llm__sys";
+const DEFAULT_ADVANCED_LLM = "vault_ai_llm__sys";
+const DEFAULT_BASIC_LLM = "vault_ai_basic_llm__sys";
 
 function formatMillions(n: number | undefined): string {
   return (n ?? 0).toLocaleString(undefined, {
