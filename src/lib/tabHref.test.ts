@@ -43,4 +43,15 @@ describe("tabHref", () => {
     };
     expect(tabHref("vault-1", tab)).toBe("/pages/home__v");
   });
+
+  it("routes Tasks tab home__v to the dashboard even if route is a page stub", () => {
+    const tab: NavTab = {
+      api_name: "home__v",
+      label: "Tasks",
+      kind: "task_dashboard",
+      route: "/pages/home__v",
+      page_api_name: "home__v",
+    };
+    expect(tabHref("vault-1", tab)).toBe("/");
+  });
 });

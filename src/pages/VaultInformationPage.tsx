@@ -68,9 +68,6 @@ export function VaultInformationPage() {
   if (model.assembly_version?.trim()) {
     versionHoverParts.push(`${displayText(chrome.assembly_version_label)}: ${model.assembly_version}`);
   }
-  if (model.platform_version?.trim()) {
-    versionHoverParts.push(`${displayText(chrome.platform_version_label)}: ${model.platform_version}`);
-  }
   const versionNode =
     versionHoverParts.length > 0 ? (
       <Tooltip title={<span className="vault-information__tooltip-preline">{versionHoverParts.join("\n")}</span>}>

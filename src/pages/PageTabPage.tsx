@@ -1,6 +1,6 @@
 import { Alert } from "antd";
 import { useMemo } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, Navigate, useParams } from "react-router-dom";
 import { useVaultId } from "../hooks/useVaultId";
 import type { NavigationModel } from "../api/types";
 import { useOptionalNavigationContext } from "../context/NavigationContext";
@@ -66,6 +66,10 @@ export function PageTabPage() {
 
   if (pageApiName === MILESTONE_WORKSPACE_PAGE) {
     return <MilestoneWorkspacePage />;
+  }
+
+  if (pageApiName === "home__v") {
+    return <Navigate to="/" replace />;
   }
 
   return (

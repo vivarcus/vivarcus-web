@@ -5,7 +5,7 @@ import { primaryNavTab } from "./navTabUtils";
 export function tabHref(_vaultId: string, tab: NavTab): string {
   const target = primaryNavTab(tab);
   if (target.kind === "task_dashboard" || target.api_name === "home__v") {
-    return target.route?.startsWith("/") ? target.route : "/";
+    return "/";
   }
   if (target.kind === "vault_ai" || target.api_name === "vault_ai__sys") {
     return target.route?.startsWith("/") ? target.route : "/vault-ai";

@@ -2652,7 +2652,6 @@ export type VaultInformationPageChrome = {
   vault_name_label: DisplayText;
   vault_version_label: DisplayText;
   assembly_version_label: DisplayText;
-  platform_version_label: DisplayText;
   vault_url_label: DisplayText;
   pod_label: DisplayText;
   geographic_region_label: DisplayText;
@@ -2666,7 +2665,6 @@ export type VaultInformationModel = {
   vault_name: string;
   vault_version: string;
   assembly_version?: string;
-  platform_version?: string;
   vault_url: string;
   pod: string;
   geographic_region: string;

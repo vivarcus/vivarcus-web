@@ -3,10 +3,12 @@ import {
   activeSelectDropdown,
   clickSelectOption,
   fieldLabelPattern,
+  fieldLabelsMatch,
   findFieldByApiName,
   findFieldByLabel,
   getPicklistSelection,
   listFormPicklistFields,
+  optionLabelsMatch,
   selectPicklistField,
 } from "./selectPicklistField";
 
@@ -99,6 +101,22 @@ describe("fieldLabelPattern", () => {
   });
 });
 
+describe("fieldLabelsMatch", () => {
+  it("treats Reviewer and Reviewer(s) as the same control label", () => {
+    expect(fieldLabelsMatch("Reviewer(s)", "Reviewer")).toBe(true);
+    expect(fieldLabelsMatch("QC Reviewer(s)", "QC Reviewer")).toBe(true);
+    expect(fieldLabelsMatch("QC Reviewer(s)", "Reviewer(s)")).toBe(false);
+  });
+});
+
+describe("optionLabelsMatch", () => {
+  it("matches username local-part to display name on participant pickers", () => {
+    expect(optionLabelsMatch("qa.lead User", "qa.lead", true)).toBe(true);
+    expect(optionLabelsMatch("qa.lead User", "qa.lead@meridiantx.com", true)).toBe(true);
+    expect(optionLabelsMatch("Phase III", "Phase", false)).toBe(false);
+  });
+});
+
 describe("findFieldByApiName", () => {
   beforeEach(() => {
     document.body.innerHTML = `<div data-field-api-name="study_phase__v"></div>`;
@@ -140,6 +158,38 @@ describe("clickSelectOption", () => {
   it("clicks matching option in active dropdown", () => {
     expect(clickSelectOption("Phase III")).toBe(true);
     expect(activeSelectDropdown()).not.toBeNull();
+  });
+
+  it("matches qa.lead to qa.lead User in a workflow participant dropdown", () => {
+    document.body.innerHTML = `
+      <div class="workflow-start-control">
+        <div role="combobox" aria-controls="reviewer_list"></div>
+      </div>
+      <div class="ant-select-dropdown" id="reviewer_list">
+        <div class="ant-select-item-option" title="qa.lead User">qa.lead User</div>
+      </div>
+    `;
+    const combobox = document.querySelector<HTMLElement>('[role="combobox"]')!;
+    expect(clickSelectOption("qa.lead", combobox)).toBe(true);
+  });
+
+  it("treats an already-selected option in the owned dropdown as success", () => {
+    document.body.innerHTML = `
+      <div class="workflow-start-control">
+        <div role="combobox" aria-controls="reviewer_list"></div>
+      </div>
+      <div class="ant-select-dropdown" id="reviewer_list">
+        <div class="ant-select-item-option ant-select-item-option-selected">qa.lead User</div>
+      </div>
+    `;
+    const combobox = document.querySelector<HTMLElement>('[role="combobox"]')!;
+    const option = document.querySelector(".ant-select-item-option")!;
+    let clicked = false;
+    option.addEventListener("click", () => {
+      clicked = true;
+    });
+    expect(clickSelectOption("qa.lead User", combobox)).toBe(true);
+    expect(clicked).toBe(false);
   });
 
   it("does not click a leftover sibling dropdown's already-selected option", () => {
@@ -202,6 +252,20 @@ describe("selectPicklistField", () => {
     const input = item.querySelector<HTMLInputElement>("input.ant-select-selection-search-input")!;
     input.value = "qa.lead User";
     expect(getPicklistSelection(item)).toBeNull();
+  });
+
+  it("reads custom tagRender chips inside the participant Select", () => {
+    document.body.innerHTML = `
+      <div class="workflow-start-control" data-field-api-name="reviewers__c">
+        <div class="ant-select">
+          <div role="combobox">
+            <span class="ant-tag">qa.lead User<span class="ant-tag-close-icon">×</span></span>
+          </div>
+        </div>
+      </div>
+    `;
+    const item = findFieldByApiName("reviewers__c")!;
+    expect(getPicklistSelection(item)).toBe("qa.lead User");
   });
 
   it("reads multiple-select tags without the remove icon", () => {
@@ -269,15 +333,20 @@ describe("selectPicklistField", () => {
       dropdownOpen: true,
     });
     wireOptionSelection("study_phase__v");
-    document.addEventListener("mousedown", (event) => {
+    const onMouseDown = (event: Event) => {
       const target = event.target as HTMLElement | null;
       if (target === document.body || target?.closest(".workflow-start-modal")) {
         document.querySelector(".ant-select-dropdown")?.classList.add("ant-select-dropdown-hidden");
       }
-    });
-    const item = findFieldByApiName("study_phase__v")!;
-    await expect(selectPicklistField(item, "Phase III")).resolves.toEqual({ ok: true });
-    expect(activeSelectDropdown()).toBeNull();
+    };
+    document.addEventListener("mousedown", onMouseDown);
+    try {
+      const item = findFieldByApiName("study_phase__v")!;
+      await expect(selectPicklistField(item, "Phase III")).resolves.toEqual({ ok: true });
+      expect(activeSelectDropdown()).toBeNull();
+    } finally {
+      document.removeEventListener("mousedown", onMouseDown);
+    }
   });
 
   it("selects option after a cold dropdown slower than 300ms", async () => {
@@ -294,6 +363,34 @@ describe("selectPicklistField", () => {
     const result = await selectPicklistField(item, "Draft");
     expect(result).toEqual({ ok: true });
     expect(getPicklistSelection(item)).toBe("Draft");
+  });
+
+  it("selects a workflow participant by username local-part into a tagRender chip", async () => {
+    document.body.innerHTML = `
+      <div class="workflow-start-modal">
+        <div class="workflow-start-control" data-field-api-name="reviewers__c">
+          <div class="ant-form-item-label"><span>Reviewer(s)</span></div>
+          <div class="ant-select">
+            <div role="combobox" aria-controls="reviewer_list"></div>
+          </div>
+        </div>
+      </div>
+      <div class="ant-select-dropdown" id="reviewer_list">
+        <div class="ant-select-item-option" title="qa.lead User">qa.lead User</div>
+      </div>
+    `;
+    const item = findFieldByApiName("reviewers__c")!;
+    const option = document.querySelector(".ant-select-item-option")!;
+    option.addEventListener("click", () => {
+      option.classList.add("ant-select-item-option-selected");
+      const select = item.querySelector(".ant-select")!;
+      select.insertAdjacentHTML(
+        "afterbegin",
+        `<span class="ant-tag">qa.lead User<span class="ant-tag-close-icon">×</span></span>`,
+      );
+    });
+    await expect(selectPicklistField(item, "qa.lead")).resolves.toEqual({ ok: true });
+    expect(getPicklistSelection(item)).toBe("qa.lead User");
   });
 });
 
@@ -330,6 +427,38 @@ describe("findFieldByLabel workflow start controls", () => {
     `;
     expect(findFieldByApiName("reviewers__c")?.classList.contains("workflow-start-control")).toBe(true);
     expect(findFieldByLabel("审查者")?.classList.contains("workflow-start-control")).toBe(true);
+  });
+
+  it("finds Reviewer(s) and QC Reviewer(s) despite assignment-tag chrome", () => {
+    document.body.innerHTML = `
+      <div class="ant-modal workflow-start-modal">
+        <div class="workflow-start-control" data-field-api-name="reviewers__c">
+          <div class="ant-form-item-label">
+            <label>
+              <span>Reviewer(s)</span>
+              <span class="anticon"></span>
+              <span class="ant-tag workflow-start-assignment-tag">Assigned to every user</span>
+            </label>
+          </div>
+          <div class="ant-select"><div role="combobox"></div></div>
+        </div>
+        <div class="workflow-start-control" data-field-api-name="qc_reviewers__c">
+          <div class="ant-form-item-label">
+            <label>
+              <span>QC Reviewer(s)</span>
+              <span class="anticon"></span>
+              <span class="ant-tag workflow-start-assignment-tag">Assigned to every user</span>
+            </label>
+          </div>
+          <div class="ant-select"><div role="combobox"></div></div>
+        </div>
+      </div>
+    `;
+    expect(findFieldByLabel("Reviewer(s)")?.getAttribute("data-field-api-name")).toBe("reviewers__c");
+    expect(findFieldByLabel("Reviewer")?.getAttribute("data-field-api-name")).toBe("reviewers__c");
+    expect(findFieldByLabel("QC Reviewer(s)")?.getAttribute("data-field-api-name")).toBe(
+      "qc_reviewers__c",
+    );
   });
 });
 

@@ -53,6 +53,7 @@ const router = createBrowserRouter([
     element: <AppShell />,
     children: [
       { index: true, element: <VaultHomePage /> },
+      { path: "tasks", element: <Navigate to="/" replace /> },
       {
         path: "notifications",
         lazy: async () => {

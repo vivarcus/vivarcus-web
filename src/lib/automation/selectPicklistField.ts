@@ -39,9 +39,77 @@ function openSelectCombobox(combobox: HTMLElement): void {
   combobox.click();
 }
 
+function collapseWs(value: string): string {
+  return value.replace(/\s+/g, " ").trim();
+}
+
+function normalizeFieldLabel(text: string): string {
+  return collapseWs(text).replace(/\*$/, "").trim();
+}
+
+function stripPluralMarker(text: string): string {
+  return text.replace(/\(s\)$/i, "").trim();
+}
+
+export function fieldLabelsMatch(candidate: string, wanted: string): boolean {
+  const a = normalizeFieldLabel(candidate);
+  const b = normalizeFieldLabel(wanted);
+  if (!a || !b) {
+    return false;
+  }
+  if (a.localeCompare(b, undefined, { sensitivity: "accent" }) === 0) {
+    return true;
+  }
+  return (
+    stripPluralMarker(a).localeCompare(stripPluralMarker(b), undefined, { sensitivity: "accent" }) === 0
+  );
+}
+
 export function fieldLabelPattern(label: string): RegExp {
   const escaped = escapeRegex(label);
-  return new RegExp(`^${escaped}(\\*)?$`);
+  return new RegExp(`^${escaped}(\\*)?$`, "i");
+}
+
+function localPart(value: string): string {
+  const trimmed = collapseWs(value);
+  const at = trimmed.indexOf("@");
+  return (at > 0 ? trimmed.slice(0, at) : trimmed).toLowerCase();
+}
+
+/** Exact label match, plus username local-part / "qa.lead" → "qa.lead User" for participant pickers. */
+export function optionLabelsMatch(candidate: string, wanted: string, looseUserMatch = false): boolean {
+  const a = collapseWs(candidate);
+  const b = collapseWs(wanted);
+  if (!a || !b) {
+    return false;
+  }
+  if (a.localeCompare(b, undefined, { sensitivity: "accent" }) === 0) {
+    return true;
+  }
+  const al = a.toLowerCase();
+  const bl = b.toLowerCase();
+  if (al === bl) {
+    return true;
+  }
+  if (!looseUserMatch) {
+    return false;
+  }
+  if (al.startsWith(`${bl} `) || bl.startsWith(`${al} `)) {
+    return true;
+  }
+  const aLocal = localPart(a);
+  const bLocal = localPart(b);
+  if (aLocal && aLocal === bLocal) {
+    return true;
+  }
+  return al.startsWith(`${bLocal} `) || bl.startsWith(`${aLocal} `);
+}
+
+function isWorkflowParticipantItem(item: HTMLElement): boolean {
+  return (
+    item.classList.contains("workflow-start-control") ||
+    item.closest(".workflow-start-modal, .workflow-start-form") !== null
+  );
 }
 
 export function activeSelectDropdown(): HTMLElement | null {
@@ -51,31 +119,51 @@ export function activeSelectDropdown(): HTMLElement | null {
   return dropdowns.length > 0 ? dropdowns[dropdowns.length - 1]! : null;
 }
 
+/** Open dropdown bound to this combobox via aria-controls/owns. No leftover-sibling fallback. */
+export function ownedDropdownForCombobox(combobox: HTMLElement): HTMLElement | null {
+  const listId = combobox.getAttribute("aria-controls") || combobox.getAttribute("aria-owns");
+  if (!listId || listId === "undefined_list") {
+    return null;
+  }
+  const list = document.getElementById(listId);
+  const owned = list?.closest<HTMLElement>(".ant-select-dropdown");
+  if (owned && !owned.classList.contains("ant-select-dropdown-hidden")) {
+    return owned;
+  }
+  return null;
+}
+
 /** Resolve the open dropdown owned by this combobox (aria-controls), not a leftover sibling Select. */
 export function dropdownForCombobox(combobox: HTMLElement): HTMLElement | null {
-  const listId = combobox.getAttribute("aria-controls") || combobox.getAttribute("aria-owns");
-  if (listId) {
-    const list = document.getElementById(listId);
-    const owned = list?.closest<HTMLElement>(".ant-select-dropdown");
-    if (owned && !owned.classList.contains("ant-select-dropdown-hidden")) {
-      return owned;
+  return ownedDropdownForCombobox(combobox) ?? activeSelectDropdown();
+}
+
+const LABEL_CHROME = /^(Assigned to every user|Available to any user|Assigned|Available|已分配|可用)$/i;
+
+function labelNodeCandidates(item: HTMLElement): string[] {
+  const out: string[] = [];
+  const nodes = item.querySelectorAll("dt, .ant-form-item-label span, .ant-form-item-label label");
+  for (const node of nodes) {
+    const text = normalizeFieldLabel(node.textContent ?? "");
+    if (!text || LABEL_CHROME.test(text)) {
+      continue;
     }
+    out.push(text);
   }
-  return activeSelectDropdown();
+  return out;
 }
 
 export function fieldLabelText(item: HTMLElement, fallback = ""): string {
   const dt = item.querySelector("dt");
   if (dt) {
-    return (dt.textContent?.trim() ?? fallback).replace(/\*$/, "").trim();
+    return normalizeFieldLabel(dt.textContent ?? fallback);
   }
-  const formLabel = item.querySelector<HTMLElement>(
-    ".ant-form-item-label span, .ant-form-item-label label",
-  );
-  if (formLabel) {
-    return (formLabel.textContent?.trim() ?? fallback).replace(/\*$/, "").trim();
+  const candidates = labelNodeCandidates(item);
+  if (candidates.length === 0) {
+    return normalizeFieldLabel(fallback);
   }
-  return fallback.replace(/\*$/, "").trim();
+  // Innermost span is shortest; Form.Item + Space wrappers concatenate the assignment tag.
+  return [...candidates].sort((a, b) => a.length - b.length)[0]!;
 }
 
 function modalFieldRoots(): HTMLElement[] {
@@ -107,23 +195,22 @@ export function findFieldByApiName(fieldApiName: string): HTMLElement | null {
 }
 
 export function findFieldByLabel(fieldLabel: string): HTMLElement | null {
-  const pattern = fieldLabelPattern(fieldLabel);
   for (const root of modalFieldRoots()) {
-    const found = findFieldByLabelInRoot(root, pattern);
+    const found = findFieldByLabelInRoot(root, fieldLabel);
     if (found) {
       return found;
     }
   }
-  return findFieldByLabelInRoot(document, pattern);
+  return findFieldByLabelInRoot(document, fieldLabel);
 }
 
-function findFieldByLabelInRoot(root: ParentNode, pattern: RegExp): HTMLElement | null {
+function findFieldByLabelInRoot(root: ParentNode, wanted: string): HTMLElement | null {
   const items = root.querySelectorAll<HTMLElement>(".field-grid__item, .workflow-start-control");
   for (const item of items) {
     const nodes = item.querySelectorAll("dt, .ant-form-item-label span, .ant-form-item-label label");
     for (const node of nodes) {
-      const text = (node.textContent?.trim() ?? "").replace(/\*$/, "").trim();
-      if (pattern.test(text) || pattern.test(node.textContent?.trim() ?? "")) {
+      const text = normalizeFieldLabel(node.textContent ?? "");
+      if (fieldLabelsMatch(text, wanted) || fieldLabelPattern(wanted).test(node.textContent?.trim() ?? "")) {
         return item;
       }
     }
@@ -138,15 +225,28 @@ function getCombobox(item: HTMLElement): HTMLElement | null {
 function selectedItemLabels(item: HTMLElement): string[] {
   const contents = item.querySelectorAll(".ant-select-selection-item-content");
   if (contents.length > 0) {
-    return [...contents].map((el) => (el.textContent ?? "").replace(/\s+/g, " ").trim()).filter(Boolean);
+    return [...contents].map((el) => collapseWs(el.textContent ?? "")).filter(Boolean);
   }
   const selected = item.querySelectorAll(".ant-select-selection-item");
   if (selected.length > 0) {
     return [...selected]
       .map((el) => {
         const clone = el.cloneNode(true) as HTMLElement;
-        clone.querySelectorAll(".ant-select-selection-item-remove").forEach((node) => node.remove());
-        return (clone.textContent ?? "").replace(/\s+/g, " ").trim();
+        clone.querySelectorAll(".ant-select-selection-item-remove, .ant-tag-close-icon").forEach((node) => {
+          node.remove();
+        });
+        return collapseWs(clone.textContent ?? "");
+      })
+      .filter(Boolean);
+  }
+  // Custom tagRender (workflow participant Select) replaces selection-item with antd Tag.
+  const tags = item.querySelectorAll(".ant-select .ant-tag");
+  if (tags.length > 0) {
+    return [...tags]
+      .map((el) => {
+        const clone = el.cloneNode(true) as HTMLElement;
+        clone.querySelectorAll(".ant-tag-close-icon, .anticon").forEach((node) => node.remove());
+        return collapseWs(clone.textContent ?? "");
       })
       .filter(Boolean);
   }
@@ -159,8 +259,8 @@ function selectedItemLabels(item: HTMLElement): string[] {
     }
     const labels: string[] = [];
     for (const el of item.querySelectorAll<HTMLElement>(".ant-select, .ant-select-selector, [class*='selection']")) {
-      const text = (el.textContent ?? "").replace(/\s+/g, " ").trim();
-      if (text && !/请选择/.test(text) && text !== (combo.getAttribute("aria-label") ?? "")) {
+      const text = collapseWs(el.textContent ?? "");
+      if (text && !/请选择|Select users/i.test(text) && text !== (combo.getAttribute("aria-label") ?? "")) {
         labels.push(text);
       }
     }
@@ -176,29 +276,39 @@ export function getPicklistSelection(item: HTMLElement): string | null {
 }
 
 function isOptionSelected(item: HTMLElement, optionLabel: string): boolean {
-  const pattern = new RegExp(`^${escapeRegex(optionLabel)}$`);
-  return selectedItemLabels(item).some((text) => pattern.test(text));
+  const loose = isWorkflowParticipantItem(item);
+  return selectedItemLabels(item).some((text) => optionLabelsMatch(text, optionLabel, loose));
+}
+
+function optionNodeMatches(option: HTMLElement, optionLabel: string, looseUserMatch: boolean): boolean {
+  const text = collapseWs(option.textContent ?? "");
+  const ariaLabel = collapseWs(option.getAttribute("aria-label") ?? "");
+  const title = collapseWs(option.getAttribute("title") ?? "");
+  return (
+    optionLabelsMatch(text, optionLabel, looseUserMatch) ||
+    optionLabelsMatch(ariaLabel, optionLabel, looseUserMatch) ||
+    optionLabelsMatch(title, optionLabel, looseUserMatch)
+  );
 }
 
 export function clickSelectOption(optionLabel: string, combobox?: HTMLElement): boolean {
-  const optionPattern = new RegExp(`^\\s*${escapeRegex(optionLabel)}\\s*$`);
-  // Prefer the dropdown owned by this combobox. A leftover sibling Select (workflow
-  // start has two participant pickers) is often the last visible dropdown; clicking
-  // its already-selected option would deselect that field.
-  const dropdown = combobox ? dropdownForCombobox(combobox) : activeSelectDropdown();
+  const owned = combobox ? ownedDropdownForCombobox(combobox) : null;
+  const dropdown = owned ?? (combobox ? dropdownForCombobox(combobox) : activeSelectDropdown());
   if (!dropdown) {
     return false;
   }
+  const loose = Boolean(combobox?.closest(".workflow-start-control, .workflow-start-modal"));
   const options = dropdown.querySelectorAll<HTMLElement>(".ant-select-item-option");
   for (const option of options) {
-    const text = option.textContent?.trim() ?? "";
-    const ariaLabel = option.getAttribute("aria-label")?.trim() ?? "";
-    if (!(optionPattern.test(text) || text === optionLabel || optionPattern.test(ariaLabel))) {
+    if (!optionNodeMatches(option, optionLabel, loose)) {
       continue;
     }
     if (option.classList.contains("ant-select-item-option-selected")) {
-      // Clicking a selected multiple-select option deselects it. If this is a
-      // leftover sibling dropdown, keep looking; the owned dropdown is next.
+      // Owned dropdown: already selected — success. Leftover sibling: skip so we
+      // do not toggle the first reviewer off.
+      if (owned) {
+        return true;
+      }
       continue;
     }
     option.scrollIntoView?.({ block: "nearest" });
@@ -208,22 +318,34 @@ export function clickSelectOption(optionLabel: string, combobox?: HTMLElement): 
   return false;
 }
 
+function searchInputForItem(item: HTMLElement, combobox: HTMLElement): HTMLInputElement | null {
+  if (combobox instanceof HTMLInputElement && !combobox.readOnly) {
+    return combobox;
+  }
+  const selectors = [
+    "input.ant-select-selection-search-input",
+    "input.ant-select-input",
+    'input[type="search"]',
+    'input[role="combobox"]',
+  ];
+  for (const selector of selectors) {
+    const input = item.querySelector<HTMLInputElement>(selector);
+    if (input && isVisible(input) && !input.readOnly) {
+      return input;
+    }
+  }
+  return null;
+}
+
 async function typeIntoSelectSearch(
   item: HTMLElement,
   combobox: HTMLElement,
   optionLabel: string,
 ): Promise<void> {
-  const searchInput = item.querySelector<HTMLInputElement>("input.ant-select-selection-search-input");
-  if (searchInput && isVisible(searchInput)) {
+  const searchInput = searchInputForItem(item, combobox);
+  if (searchInput) {
     searchInput.focus();
     setNativeInputValue(searchInput, optionLabel);
-    return;
-  }
-
-  const antInput = item.querySelector<HTMLInputElement>("input.ant-select-input");
-  if (antInput && isVisible(antInput) && !antInput.readOnly) {
-    antInput.focus();
-    setNativeInputValue(antInput, optionLabel);
     return;
   }
 
@@ -232,6 +354,23 @@ async function typeIntoSelectSearch(
     document.dispatchEvent(new KeyboardEvent("keydown", { key: char, bubbles: true }));
     document.dispatchEvent(new KeyboardEvent("keypress", { key: char, bubbles: true }));
   }
+}
+
+function ownedOptionIsSelected(combobox: HTMLElement, optionLabel: string): boolean {
+  const dropdown = ownedDropdownForCombobox(combobox) ?? dropdownForCombobox(combobox);
+  if (!dropdown) {
+    return false;
+  }
+  const loose = Boolean(combobox.closest(".workflow-start-control, .workflow-start-modal"));
+  for (const option of dropdown.querySelectorAll<HTMLElement>(".ant-select-item-option")) {
+    if (
+      optionNodeMatches(option, optionLabel, loose) &&
+      option.classList.contains("ant-select-item-option-selected")
+    ) {
+      return true;
+    }
+  }
+  return false;
 }
 
 function dismissSelectDropdown(): void {
@@ -254,7 +393,9 @@ export async function selectPicklistField(
     return { ok: false, reason: "combobox not found" };
   }
 
-  if (isOptionSelected(item, optionLabel)) {
+  const selectedNow = () => isOptionSelected(item, optionLabel) || ownedOptionIsSelected(combobox, optionLabel);
+
+  if (selectedNow()) {
     return { ok: true };
   }
 
@@ -268,10 +409,10 @@ export async function selectPicklistField(
     // Cold Ant Design Select portals can take >300ms to mount options; poll instead of a fixed sleep.
     openSelectCombobox(combobox);
     if (await waitUntil(tryClick, DROPDOWN_WAIT_MS)) {
-      if (await waitUntil(() => isOptionSelected(item, optionLabel), 500)) {
+      if (await waitUntil(selectedNow, 500)) {
         dismissSelectDropdown();
         await waitUntil(() => dropdownForCombobox(combobox) === null, 500);
-        if (isOptionSelected(item, optionLabel)) {
+        if (selectedNow()) {
           return { ok: true };
         }
       }
@@ -281,10 +422,10 @@ export async function selectPicklistField(
     // Remote-search participant pickers (workflow start) need the member-options
     // round-trip after typing; reuse the same poll budget as a cold dropdown.
     if (await waitUntil(tryClick, DROPDOWN_WAIT_MS)) {
-      if (await waitUntil(() => isOptionSelected(item, optionLabel), 500)) {
+      if (await waitUntil(selectedNow, 500)) {
         dismissSelectDropdown();
         await waitUntil(() => dropdownForCombobox(combobox) === null, 500);
-        if (isOptionSelected(item, optionLabel)) {
+        if (selectedNow()) {
           return { ok: true };
         }
       }
