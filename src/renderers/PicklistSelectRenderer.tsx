@@ -48,9 +48,13 @@ export function PicklistSelectRenderer({
   }
 
   const picklistBehavior = picklistSelectBehavior(options.length);
+  // Remount when the option set changes (e.g. controlling picklist cascade);
+  // Ant Design Select can keep a stale portal list after options shrink.
+  const optionsKey = options.map((entry) => entry.name).join("\0");
 
   return wrapFormControl(
     <Select
+      key={optionsKey}
       value={current || undefined}
       disabled={disabled}
       allowClear={!required}

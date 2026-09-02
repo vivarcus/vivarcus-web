@@ -73,7 +73,33 @@ describe("applyPicklistCascadeOptions", () => {
       "xml__c",
       "csv__c",
     ]);
+    expect(dependent.picklist_options?.map((entry) => entry.name)).toEqual(["xml__c", "csv__c"]);
     expect(dependent.read_only).toBeFalsy();
+  });
+
+  it("overwrites stale top-level picklist_options when cascading", () => {
+    const withStaleTopLevel: FormSection[] = [
+      {
+        ...dependentSections[0],
+        elements: [
+          dependentSections[0].elements[0],
+          {
+            ...dependentSections[0].elements[1],
+            picklist_options: [
+              { name: "xml__c", label: "XML" },
+              { name: "csv__c", label: "CSV" },
+              { name: "json__c", label: "JSON" },
+            ],
+          },
+        ],
+      },
+    ];
+    const sections = applyPicklistCascadeOptions(withStaleTopLevel, {
+      connection_type__c: "vault__c",
+    });
+    const dependent = sections[0].elements[1];
+    expect(dependent.picklist_options).toEqual([]);
+    expect(dependent.field_render?.picklist_options).toEqual([]);
   });
 });
 

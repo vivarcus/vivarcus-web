@@ -82,6 +82,9 @@ function withPicklistField(
   }
   return {
     ...el,
+    // Keep top-level picklist_options in sync — resolvePicklistOptions prefers it
+    // over field_render.picklist_options, so a stale copy would ignore cascade.
+    picklist_options: options,
     read_only: blockedByParent || el.read_only,
     field_render: fieldRender,
   };

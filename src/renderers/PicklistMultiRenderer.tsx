@@ -47,9 +47,11 @@ export function PicklistMultiRenderer({
   }
 
   const picklistBehavior = picklistSelectBehavior(options.length);
+  const optionsKey = options.map((entry) => entry.name).join("\0");
 
   return wrapFormControl(
     <Select
+      key={optionsKey}
       mode="multiple"
       value={selected}
       disabled={disabled}
