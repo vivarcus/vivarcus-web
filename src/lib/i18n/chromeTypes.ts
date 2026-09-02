@@ -651,6 +651,7 @@ export type ShellChrome = {
   component_type_example: DisplayText;
   document_viewer: DocumentViewerChrome;
   cfg_packaging: CfgPackagingChrome;
+  connections: ConnectionsChrome;
   vault_ai: VaultAIChrome;
   domain_user: DomainUserChrome;
   operations: OperationsChrome;
@@ -761,6 +762,18 @@ export type VaultAIChrome = {
   ask_user_other: DisplayText;
   ask_user_placeholder: DisplayText;
   ask_user_submit: DisplayText;
+};
+
+export type ConnectionsChrome = {
+  upload_file: DisplayText;
+  uploaded: DisplayText;
+  download_file: DisplayText;
+};
+
+export const defaultConnectionsChrome: ConnectionsChrome = {
+  upload_file: t("Upload Connection File", "connections.upload_file"),
+  uploaded: t("Connection established", "connections.uploaded"),
+  download_file: t("Download Connection File", "connections.download_file"),
 };
 
 export type CfgPackagingChrome = {
@@ -5083,6 +5096,7 @@ export const defaultShellChrome: ShellChrome = {
   component_type_example: t("Pagelayout", "admin.component_type_example"),
   document_viewer: defaultDocumentViewerChrome,
   cfg_packaging: defaultCfgPackagingChrome,
+  connections: defaultConnectionsChrome,
   vault_ai: defaultVaultAIChrome,
   domain_user: defaultDomainUserChrome,
   operations: defaultOperationsChrome,

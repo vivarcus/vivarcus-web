@@ -1,4 +1,4 @@
-import { Alert, Button, Checkbox, Input, InputNumber, message } from "antd";
+import { Alert, Button, Checkbox, Input, InputNumber, Select, message } from "antd";
 import { useCallback, useEffect, useState } from "react";
 import { api } from "../api/client";
 import type { VaultAISettingsModel } from "../api/types";
@@ -9,6 +9,9 @@ import { useUi } from "../context/UiContext";
 import { useVaultId } from "../hooks/useVaultId";
 import { displayText, displayTextTemplate } from "../lib/i18n";
 import { formatTokenUsageGmt } from "../lib/vaultAITokenUsage";
+
+const DEFAULT_ADVANCED_LLM = "ai_llm__sys";
+const DEFAULT_BASIC_LLM = "ai_basic_llm__sys";
 
 function formatMillions(n: number | undefined): string {
   return (n ?? 0).toLocaleString(undefined, {
@@ -25,8 +28,8 @@ export function VaultAISettingsPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [enabled, setEnabled] = useState(false);
-  const [advancedConnection, setAdvancedConnection] = useState("platform_default");
-  const [basicConnection, setBasicConnection] = useState("platform_default");
+  const [advancedConnection, setAdvancedConnection] = useState(DEFAULT_ADVANCED_LLM);
+  const [basicConnection, setBasicConnection] = useState(DEFAULT_BASIC_LLM);
   const [maxOutputTokens, setMaxOutputTokens] = useState(4096);
   const [autoSwitch, setAutoSwitch] = useState(true);
   const [alertLimit, setAlertLimit] = useState<number | null>(null);
@@ -40,8 +43,8 @@ export function VaultAISettingsPage() {
       const data = await api.vaultAISettings(vaultId);
       setModel(data);
       setEnabled(data.enabled);
-      setAdvancedConnection(data.advanced_llm_connection || "platform_default");
-      setBasicConnection(data.basic_llm_connection || "platform_default");
+      setAdvancedConnection(data.advanced_llm_connection || DEFAULT_ADVANCED_LLM);
+      setBasicConnection(data.basic_llm_connection || DEFAULT_BASIC_LLM);
       setMaxOutputTokens(data.max_output_tokens || 4096);
       setAutoSwitch(data.auto_switch_conversation !== false);
       setAlertLimit(data.token_alert_limit_millions ?? null);
@@ -102,6 +105,24 @@ export function VaultAISettingsPage() {
   if (!model) return null;
   const chrome = model.chrome;
   const disabled = !model.can_edit || saving;
+  const llmOptions = (() => {
+    const seen = new Set<string>();
+    const items: Array<{ value: string; label: string }> = [];
+    for (const opt of model.llm_connections ?? []) {
+      const value = opt.api_name?.trim();
+      if (!value || seen.has(value)) continue;
+      seen.add(value);
+      items.push({ value, label: opt.name?.trim() ? `${opt.name} (${value})` : value });
+    }
+    for (const current of [advancedConnection, basicConnection]) {
+      const value = current.trim();
+      if (value && !seen.has(value)) {
+        seen.add(value);
+        items.push({ value, label: value });
+      }
+    }
+    return items;
+  })();
 
   return (
     <AdminPageShell title={displayText(chrome.page_title)}>
@@ -120,10 +141,14 @@ export function VaultAISettingsPage() {
               {displayText(chrome.advanced_llm_connection_label)}
             </span>
             <div className="admin-settings-form__control">
-              <Input
+              <Select
                 value={advancedConnection}
                 disabled={disabled}
-                onChange={(e) => setAdvancedConnection(e.target.value)}
+                options={llmOptions}
+                showSearch
+                optionFilterProp="label"
+                onChange={(v) => setAdvancedConnection(typeof v === "string" ? v : DEFAULT_ADVANCED_LLM)}
+                style={{ width: "100%" }}
               />
               <p className="admin-settings-form__hint admin-settings-form__hint--flush">
                 {displayText(chrome.advanced_llm_help)}
@@ -135,10 +160,14 @@ export function VaultAISettingsPage() {
               {displayText(chrome.basic_llm_connection_label)}
             </span>
             <div className="admin-settings-form__control">
-              <Input
+              <Select
                 value={basicConnection}
                 disabled={disabled}
-                onChange={(e) => setBasicConnection(e.target.value)}
+                options={llmOptions}
+                showSearch
+                optionFilterProp="label"
+                onChange={(v) => setBasicConnection(typeof v === "string" ? v : DEFAULT_BASIC_LLM)}
+                style={{ width: "100%" }}
               />
               <p className="admin-settings-form__hint admin-settings-form__hint--flush">
                 {displayText(chrome.basic_llm_help)}

@@ -557,6 +557,13 @@ const router = createBrowserRouter([
             },
           },
           {
+            path: "connections",
+            lazy: async () => {
+              const { AdminConnectionsPage } = await import("./pages/AdminConnectionsPage");
+              return { Component: AdminConnectionsPage };
+            },
+          },
+          {
             path: "settings",
             children: [
               { index: true, element: <Navigate to="language-region" replace /> },

@@ -4642,6 +4642,32 @@ export const api = {
     );
   },
 
+  downloadConnectionFile(vaultId: string, recordId: string) {
+    return vaultFetchRaw(
+      vaultId,
+      `/ui/connections/${encodeURIComponent(recordId)}/connection-file`,
+    ).then(async (res) => {
+      const blob = await res.blob();
+      const cd = res.headers.get("Content-Disposition") ?? "";
+      const star = /filename\*=UTF-8''([^;]+)/i.exec(cd);
+      const quoted = /filename="([^"]+)"/i.exec(cd);
+      const plain = /filename=([^;]+)/i.exec(cd);
+      const rawName = star?.[1] ?? quoted?.[1] ?? plain?.[1]?.trim();
+      const filename = rawName ? decodeURIComponent(rawName.replace(/"/g, "")) : "connection.json";
+      return { blob, filename };
+    });
+  },
+
+  uploadConnectionFile(vaultId: string, file: File) {
+    const form = new FormData();
+    form.append("file", file);
+    return vaultFetch<{ record_id: string; api_name: string }>(
+      vaultId,
+      `/ui/connections/upload-file`,
+      { method: "POST", body: form },
+    );
+  },
+
   listInboundPackages(vaultId: string) {
     return vaultFetch<{ items: import("./types").InboundPackageListItem[] }>(
       vaultId,

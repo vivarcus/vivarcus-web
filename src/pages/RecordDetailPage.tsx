@@ -12,6 +12,7 @@ import { handleStaleError } from "../lib/staleGuard";
 import { defaultFormChrome, defaultPageActionLabels, defaultPageMessages, displayText } from "../lib/i18n";
 import { recordHeaderStateLabel } from "../lib/recordHeaderStateLabel";
 import { downloadOutboundVpkArtifact } from "../lib/outboundExportDownload";
+import { triggerBrowserDownload } from "../lib/documentActions";
 import { LifecycleStagesChevron } from "../components/LifecycleStagesChevron";
 import { RecordPageHeader } from "../components/record/RecordPageHeader";
 import { RecordPageBody, RecordPageShell } from "../components/record/RecordPageShell";
@@ -1080,6 +1081,24 @@ export function RecordDetailPage() {
                   onChangeType={() => setChangeTypeOpen(true)}
                   lifecyclePending={toolbarActionPending}
                   onAuditOpen={() => setAuditOpen(true)}
+                  onDownloadConnectionFile={
+                    objectName === "connection__sys" &&
+                    vaultId &&
+                    recordId &&
+                    (page.object_type_api_name === "vault_to_vault__sys" ||
+                      (page.object_type_api_name ?? "").endsWith(".vault_to_vault__sys"))
+                      ? () => {
+                          void (async () => {
+                            try {
+                              const { blob, filename } = await api.downloadConnectionFile(vaultId, recordId);
+                              triggerBrowserDownload(blob, filename);
+                            } catch (err) {
+                              message.error(err instanceof Error ? err.message : displayText(shell.load_failed));
+                            }
+                          })();
+                        }
+                      : undefined
+                  }
                 />
               )
             ) : undefined

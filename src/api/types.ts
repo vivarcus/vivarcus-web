@@ -4123,6 +4123,7 @@ export type VaultAISettingsModel = {
     hourly_to: string;
     hourly_total: number;
   };
+  llm_connections?: Array<{ api_name: string; name: string }>;
   chrome: {
     page_title: DisplayText;
     section_title: DisplayText;

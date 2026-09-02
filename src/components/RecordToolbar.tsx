@@ -5,6 +5,7 @@ import { useMemo, useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import type { LifecycleAction, RecordPageModel, SdkAction } from "../api/types";
 import { defaultPageActionLabels, displayText } from "../lib/i18n";
+import { useUi } from "../context/UiContext";
 import type { RecordNavState } from "../lib/vaultNav";
 import { partitionLifecycleToolbarActions } from "./record/lifecycleToolbarActions";
 import { WorkflowStateChangeIcon } from "./record/WorkflowStateChangeIcon";
@@ -42,6 +43,7 @@ type Props = {
   onChangeType?: () => void;
   lifecyclePending?: boolean;
   onAuditOpen?: () => void;
+  onDownloadConnectionFile?: () => void;
 };
 
 type MenuSection = {
@@ -112,7 +114,9 @@ export function RecordToolbar({
   onChangeType,
   lifecyclePending,
   onAuditOpen,
+  onDownloadConnectionFile,
 }: Props) {
+  const { shell } = useUi();
   const [workflowMenuOpen, setWorkflowMenuOpen] = useState(false);
   const labels = { ...defaultPageActionLabels, ...(page.actions.labels ?? {}) };
   const copyParams = new URLSearchParams();
@@ -207,6 +211,14 @@ export function RecordToolbar({
       onClick: () => onLifecycleAction(action),
       disabled: lifecyclePending,
       name: action.name,
+    });
+  }
+  if (onDownloadConnectionFile && objectName === "connection__sys") {
+    manageItems.push({
+      kind: "button",
+      label: displayText(shell.connections.download_file),
+      onClick: onDownloadConnectionFile,
+      name: "download_connection_file",
     });
   }
   for (const action of page.sdk_actions ?? []) {
