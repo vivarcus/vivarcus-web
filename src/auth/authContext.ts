@@ -14,7 +14,7 @@ export type AuthContextValue = {
   login: (username: string, password: string) => Promise<string | null>;
   completeOAuthSession: (sessionToken: string) => Promise<string | null>;
   logout: () => Promise<void>;
-  selectVault: (vaultId: string) => void | Promise<void>;
+  selectVault: (vaultId: string, landing?: string) => void | Promise<void>;
   clearVaultSelection: () => void;
   refreshVaults: () => Promise<void>;
   selectedVault: VaultRef | null;

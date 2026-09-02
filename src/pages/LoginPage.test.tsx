@@ -10,6 +10,7 @@ import {
   saveRememberedUser,
 } from "../auth/rememberedUser";
 import { clearSession } from "../auth/session";
+import * as session from "../auth/session";
 import { AppShell } from "../layout/AppShell";
 import { defaultAuthChrome } from "../lib/i18n";
 import { displayText } from "../lib/i18n/displayText";
@@ -60,6 +61,22 @@ function renderLoginRoutes() {
   );
 }
 
+function renderShellRoutes() {
+  return render(
+    <MemoryRouter initialEntries={["/"]}>
+      <AntdProvider>
+        <AuthProvider>
+          <Routes>
+            <Route path="/" element={<AppShell />}>
+              <Route index element={<div>Home</div>} />
+            </Route>
+          </Routes>
+        </AuthProvider>
+      </AntdProvider>
+    </MemoryRouter>,
+  );
+}
+
 function mockFetchRouter(handlers: Record<string, unknown>) {
   const all = {
     "/ui/auth/public-config": { vault_dns_base: "" },
@@ -97,10 +114,12 @@ describe("LoginPage", () => {
   beforeEach(() => {
     localStorage.removeItem("vivarcus.selectedLang");
     saveLoginLang("zh");
+    vi.spyOn(session, "replaceDocument").mockImplementation(() => {});
   });
 
   afterEach(() => {
     vi.unstubAllGlobals();
+    vi.restoreAllMocks();
     clearSession();
     clearRememberedUser();
     localStorage.removeItem("vivarcus.selectedLang");
@@ -166,10 +185,9 @@ describe("LoginPage", () => {
     await continueThenLogin(user, "navuser@domain.test", "Phase3-Nav-Password!");
 
     await waitFor(() => {
-      expect(screen.getByText("Home")).toBeInTheDocument();
-      expect(screen.getByRole("button", { name: "Vault One" })).toBeInTheDocument();
+      expect(session.replaceDocument).toHaveBeenCalledWith("/");
     });
-
+    expect(screen.queryByText("Home")).not.toBeInTheDocument();
     expect(fetch).toHaveBeenCalledWith(
       "/ui/auth/resolve",
       expect.objectContaining({
@@ -189,6 +207,7 @@ describe("LoginPage", () => {
     );
     expect(localStorage.getItem("vivarcus.session_token")).toBe("test-session-token");
     expect(localStorage.getItem("vivarcus.selected_vault_id")).toBe(vaults[0].vault_id);
+    expect(document.cookie).toContain(`vivarcus_vault_id=${vaults[0].vault_id}`);
     expect(loadRememberedUser()?.userName).toBe("navuser@domain.test");
   });
 
@@ -277,9 +296,10 @@ describe("LoginPage", () => {
     resolveNavigation({ default_landing_route: "/vault-ai" });
 
     await waitFor(() => {
-      expect(screen.getByText("Vault AI Landing")).toBeInTheDocument();
+      expect(session.replaceDocument).toHaveBeenCalledWith("/vault-ai");
     });
     expect(screen.queryByText("Home")).not.toBeInTheDocument();
+    expect(screen.queryByText("Vault AI Landing")).not.toBeInTheDocument();
   });
 
   it("opens password step for remembered user and supports switch user", async () => {
@@ -466,10 +486,7 @@ describe("LoginPage", () => {
     await continueThenLogin(user, "navuser@domain.test", "Phase3-Nav-Password!");
 
     await waitFor(() => {
-      expect(screen.getByText("Home")).toBeInTheDocument();
-      expect(
-        screen.getByRole("button", { name: "Vault Two" }),
-      ).toBeInTheDocument();
+      expect(session.replaceDocument).toHaveBeenCalledWith("/");
     });
     expect(localStorage.getItem("vivarcus.selected_vault_id")).toBe(vaults[1].vault_id);
   });
@@ -512,10 +529,17 @@ describe("LoginPage", () => {
     });
     vi.stubGlobal("fetch", fetchMock);
 
-    const user = userEvent.setup();
-    renderLoginRoutes();
+    session.saveSession({
+      sessionToken: "test-session-token",
+      userId: "user-1",
+      username: "navuser@domain.test",
+      homeDomainId: "domain.test",
+      vaults,
+    });
+    session.setSelectedVault(vaults[0].vault_id);
 
-    await continueThenLogin(user, "navuser@domain.test", "Phase3-Nav-Password!");
+    const user = userEvent.setup();
+    renderShellRoutes();
 
     await waitFor(() => {
       expect(screen.getByRole("button", { name: "Vault One" })).toBeInTheDocument();
@@ -576,14 +600,17 @@ describe("LoginPage", () => {
       }),
     );
 
-    const user = userEvent.setup();
-    renderLoginRoutes();
+    session.saveSession({
+      sessionToken: "test-session-token",
+      userId: "user-1",
+      username: "acceptuser@platform.accept.vivarcus.com",
+      homeDomainId: "platform.accept.vivarcus.com",
+      vaults,
+    });
+    session.setSelectedVault(vaults[0].vault_id);
 
-    await continueThenLogin(
-      user,
-      "acceptuser@platform.accept.vivarcus.com",
-      "Accept-Vivarcus!",
-    );
+    const user = userEvent.setup();
+    renderShellRoutes();
 
     await user.click(await screen.findByRole("button", { name: "Acceptance Vault" }));
 

@@ -6,6 +6,7 @@ const USERNAME_KEY = "vivarcus.username";
 const DOMAIN_KEY = "vivarcus.home_domain_id";
 const VAULTS_KEY = "vivarcus.vaults";
 export const SELECTED_VAULT_KEY = "vivarcus.selected_vault_id";
+export const VAULT_COOKIE_NAME = "vivarcus_vault_id";
 
 const AUTH_KEYS = [
   SESSION_KEY,
@@ -17,6 +18,28 @@ const AUTH_KEYS = [
 ] as const;
 
 const authStorage = localStorage;
+
+function vaultCookieSuffix(): string {
+  const secure =
+    typeof location !== "undefined" && location.protocol === "https:" ? "; Secure" : "";
+  return `; path=/; SameSite=Lax${secure}`;
+}
+
+function syncVaultCookie(vaultId: string | null) {
+  if (typeof document === "undefined") return;
+  if (vaultId) {
+    document.cookie = `${VAULT_COOKIE_NAME}=${encodeURIComponent(vaultId)}${vaultCookieSuffix()}`;
+    return;
+  }
+  document.cookie = `${VAULT_COOKIE_NAME}=; Max-Age=0${vaultCookieSuffix()}`;
+}
+
+/** Full document navigation so gateway can route the next shell/assets by vault cookie. */
+export function replaceDocument(path: string) {
+  if (typeof window === "undefined") return;
+  const next = path.startsWith("/") ? path : `/${path}`;
+  window.location.replace(next);
+}
 
 function migrateAuthFromSessionStorage() {
   if (authStorage.getItem(SESSION_KEY)) return;
@@ -80,6 +103,7 @@ export function loadSession(): SessionState | null {
   }
   const selectedFromStorage = authStorage.getItem(SELECTED_VAULT_KEY);
   const selectedVaultId = resolveSelectedVaultId(vaults, null, selectedFromStorage);
+  syncVaultCookie(selectedVaultId);
   return {
     sessionToken,
     userId,
@@ -114,10 +138,12 @@ export function updateVaults(vaults: VaultRef[]) {
 
 export function setSelectedVault(vaultId: string) {
   authStorage.setItem(SELECTED_VAULT_KEY, vaultId);
+  syncVaultCookie(vaultId);
 }
 
 export function clearSelectedVault() {
   authStorage.removeItem(SELECTED_VAULT_KEY);
+  syncVaultCookie(null);
 }
 
 export function clearSession() {
@@ -125,6 +151,7 @@ export function clearSession() {
     authStorage.removeItem(key);
     sessionStorage.removeItem(key);
   }
+  syncVaultCookie(null);
 }
 
 export function formatCellValue(value: unknown): string {

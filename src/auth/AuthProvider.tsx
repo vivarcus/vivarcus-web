@@ -14,6 +14,7 @@ import {
   clearSelectedVault,
   clearSession,
   loadSession,
+  replaceDocument,
   resolveSelectedVaultId,
   saveSession,
   SESSION_KEY,
@@ -74,15 +75,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (selectedVaultId) {
           applySelectedVault(selectedVaultId);
         }
-        setSession({
-          sessionToken: res.session_token,
-          userId: res.user_id,
-          homeDomainId: res.home_domain_id,
-          vaults: res.vaults,
-          selectedVaultId,
-        });
         params.delete("handoff");
         const next = `${window.location.pathname}${params.toString() ? `?${params}` : ""}${window.location.hash}`;
+        if (selectedVaultId) {
+          replaceDocument(next || "/");
+          return;
+        }
         window.history.replaceState({}, "", next);
       } catch {
         // Leave URL; user can re-login from login host.
@@ -182,24 +180,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Always clear local session even if revoke/audit logging fails.
     }
     clearSession();
-    setSession(null);
-    setAuthChrome(defaultAuthChrome);
-    setAuthDisplayContext(defaultDisplayContext);
+    const { isLoginHost, loadPublicAuthConfig } = await import("../lib/vaultDns");
+    const { loginPortalURL } = await import("../lib/vaultHostNav");
+    try {
+      const cfg = await loadPublicAuthConfig(() => api.publicAuthConfig());
+      const base = cfg.vault_dns_base;
+      if (base && !isLoginHost(window.location.hostname, base)) {
+        window.location.replace(loginPortalURL(base));
+        return;
+      }
+    } catch {
+      // Same-origin login shell.
+    }
+    replaceDocument("/login");
   }, [session?.selectedVaultId]);
 
-  const selectVault = useCallback(async (vaultId: string) => {
+  const selectVault = useCallback(async (vaultId: string, landing?: string) => {
     const { switchVaultHostIfConfigured } = await import("../lib/vaultHostNav");
     const vaults = loadSession()?.vaults ?? [];
     if (await switchVaultHostIfConfigured(vaultId, vaults)) {
       return;
     }
     applySelectedVault(vaultId);
-    setSession((prev) => (prev ? { ...prev, selectedVaultId: vaultId } : prev));
+    const current = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+    replaceDocument(landing ?? (current || "/"));
   }, []);
 
   const clearVaultSelection = useCallback(() => {
     clearSelectedVault();
-    setSession((prev) => (prev ? { ...prev, selectedVaultId: null } : prev));
+    replaceDocument("/");
   }, []);
 
   const refreshVaults = useCallback(async () => {
@@ -207,16 +216,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     persistVaults(res.vaults);
     if (res.chrome) setAuthChrome(res.chrome);
     if (res.display_context) setAuthDisplayContext(res.display_context);
+    const previousSelected = session?.selectedVaultId ?? null;
+    const selectedVaultId = resolveSelectedVaultId(
+      res.vaults,
+      res.default_vault_id,
+      previousSelected,
+    );
     setSession((prev) => {
       if (!prev) return prev;
-      const selectedVaultId = resolveSelectedVaultId(
-        res.vaults,
-        res.default_vault_id,
-        prev.selectedVaultId,
-      );
-      if (selectedVaultId && selectedVaultId !== prev.selectedVaultId) {
-        applySelectedVault(selectedVaultId);
-      }
       return {
         ...prev,
         userId: res.user_id,
@@ -225,7 +232,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         selectedVaultId,
       };
     });
-  }, []);
+    if (selectedVaultId && selectedVaultId !== previousSelected) {
+      applySelectedVault(selectedVaultId);
+      replaceDocument(
+        `${window.location.pathname}${window.location.search}${window.location.hash}` || "/",
+      );
+    }
+  }, [session?.selectedVaultId]);
 
   const value = useMemo(
     () => ({

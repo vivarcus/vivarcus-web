@@ -67,9 +67,8 @@ export function HeaderMenus({ vaultLabel, vaultId, canViewUserProfile = false }:
 
   function handleSelectVault(targetVaultId: string) {
     if (targetVaultId === vaultId) return;
-    selectVault(targetVaultId);
+    selectVault(targetVaultId, "/");
     setVaultOpen(false);
-    navigate("/");
   }
 
   function handleVaultOpenChange(open: boolean) {

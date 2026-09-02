@@ -1,6 +1,6 @@
 import { Alert, Spin } from "antd";
 import { useEffect, useMemo, useState } from "react";
-import { Navigate, useNavigate, useSearchParams } from "react-router-dom";
+import { Navigate, useSearchParams } from "react-router-dom";
 import { HttpError } from "../api/client";
 import { useAuth } from "../auth/AuthProvider";
 import { loadLoginLang } from "../auth/rememberedUser";
@@ -10,12 +10,11 @@ import {
 } from "../lib/defaultLanding";
 import { oauthErrorFromChrome } from "../lib/i18n/preAuthLabels";
 import { redirectToVaultHostIfConfigured } from "../lib/vaultHostNav";
-import { loadSession } from "../auth/session";
+import { loadSession, replaceDocument } from "../auth/session";
 
 export function OAuthCompletePage() {
   const { session, completeOAuthSession, authChrome } = useAuth();
   const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(true);
   const lang = useMemo(() => loadLoginLang(), []);
@@ -50,7 +49,7 @@ export function OAuthCompletePage() {
           if (landing === "/") {
             markPendingDefaultLanding();
           }
-          navigate(landing, { replace: true });
+          replaceDocument(landing);
         }
       } catch (err) {
         if (cancelled) return;
@@ -65,7 +64,7 @@ export function OAuthCompletePage() {
     return () => {
       cancelled = true;
     };
-  }, [sessionToken, errorCode, completeOAuthSession, navigate, authChrome, lang]);
+  }, [sessionToken, errorCode, completeOAuthSession, authChrome, lang]);
 
   if (session && !error && !busy) {
     return <Navigate to="/" replace />;

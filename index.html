@@ -8,6 +8,24 @@
   </head>
   <body>
     <div id="root"></div>
+    <script>
+      (function () {
+        try {
+          var id = localStorage.getItem("vivarcus.selected_vault_id");
+          var secure = location.protocol === "https:" ? "; Secure" : "";
+          if (id) {
+            document.cookie =
+              "vivarcus_vault_id=" +
+              encodeURIComponent(id) +
+              "; path=/; SameSite=Lax" +
+              secure;
+          } else {
+            document.cookie =
+              "vivarcus_vault_id=; path=/; Max-Age=0; SameSite=Lax" + secure;
+          }
+        } catch (e) {}
+      })();
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

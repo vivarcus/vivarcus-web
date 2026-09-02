@@ -1,10 +1,12 @@
 import { afterEach, describe, expect, it } from "vitest";
 import {
+  clearSelectedVault,
   clearSession,
   getSessionToken,
   loadSession,
   saveSession,
   SESSION_KEY,
+  setSelectedVault,
 } from "./session";
 
 describe("session", () => {
@@ -32,6 +34,26 @@ describe("session", () => {
     expect(loadSession()?.sessionToken).toBe("tok-1");
     expect(localStorage.getItem(SESSION_KEY)).toBe("tok-1");
     expect(sessionStorage.getItem(SESSION_KEY)).toBeNull();
+  });
+
+  it("syncs selected vault into a cookie that gateway can read", () => {
+    saveSession({
+      sessionToken: "tok-1",
+      userId: "user-1",
+      homeDomainId: "domain.test",
+      vaults: [
+        {
+          vault_id: "550e8400-e29b-41d4-a716-446655440000",
+          domain_id: "domain.test",
+          name: "Vault",
+          state: "Active",
+        },
+      ],
+    });
+    setSelectedVault("550e8400-e29b-41d4-a716-446655440000");
+    expect(document.cookie).toContain("vivarcus_vault_id=550e8400-e29b-41d4-a716-446655440000");
+    clearSelectedVault();
+    expect(document.cookie).not.toContain("vivarcus_vault_id=550e8400-e29b-41d4-a716-446655440000");
   });
 
   it("migrates legacy sessionStorage auth on first read", () => {

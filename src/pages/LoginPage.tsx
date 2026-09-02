@@ -1,7 +1,7 @@
 import { LockOutlined, UserOutlined } from "@ant-design/icons";
 import { Alert, Button, ConfigProvider, Form, Input, Modal } from "antd";
 import { useEffect, useMemo, useState } from "react";
-import { Navigate, useNavigate, useSearchParams } from "react-router-dom";
+import { Navigate, useSearchParams } from "react-router-dom";
 import { api, HttpError } from "../api/client";
 import type { LoginProviderLink } from "../api/types";
 import { useAuth } from "../auth/AuthProvider";
@@ -20,7 +20,7 @@ import { AuthLangSwitcher } from "../components/AuthLangSwitcher";
 import { antdLocaleForDisplay } from "../lib/i18n/antdLocale";
 import { displayContextForLoginLang, loginLabelsFromChrome } from "../lib/i18n/preAuthLabels";
 import { redirectToVaultHostIfConfigured } from "../lib/vaultHostNav";
-import { loadSession } from "../auth/session";
+import { loadSession, replaceDocument } from "../auth/session";
 
 type LoginFormValues = {
   username: string;
@@ -61,7 +61,6 @@ function applyResolveResult(
 
 export function LoginPage() {
   const { session, login, authChrome } = useAuth();
-  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [form] = Form.useForm<LoginFormValues>();
   const [error, setError] = useState<string | null>(null);
@@ -233,7 +232,7 @@ export function LoginPage() {
       if (landing === "/") {
         markPendingDefaultLanding();
       }
-      navigate(landing, { replace: true });
+      replaceDocument(landing);
       // Keep completingLogin true so session cannot trip Navigate to "/" before leave.
     } catch (err) {
       setCompletingLogin(false);
