@@ -464,7 +464,7 @@
   padding-top: 0.85rem;
 }
 
-.notification-item--unread .notification-item__badge::before {
+.notification-item--new .notification-item__badge::before {
   content: "";
   width: 8px;
   height: 8px;

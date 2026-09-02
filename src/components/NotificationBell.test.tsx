@@ -16,6 +16,7 @@ vi.mock("../api/client", () => ({
     notificationUnreadCount: vi.fn(),
     notifications: vi.fn(),
     markAllNotificationsRead: vi.fn(),
+    markNotificationsSeen: vi.fn(),
     markNotificationRead: vi.fn(),
     dismissNotification: vi.fn(),
   },
@@ -90,10 +91,12 @@ describe("NotificationBell message rendering", () => {
     vi.mocked(api.notificationUnreadCount).mockReset();
     vi.mocked(api.notifications).mockReset();
     vi.mocked(api.markAllNotificationsRead).mockReset();
+    vi.mocked(api.markNotificationsSeen).mockReset();
     vi.mocked(api.markNotificationRead).mockReset();
     vi.mocked(api.dismissNotification).mockReset();
-    vi.mocked(api.notificationUnreadCount).mockResolvedValue({ unread_count: 1 });
+    vi.mocked(api.notificationUnreadCount).mockResolvedValue({ unread_count: 1, new_count: 1 });
     vi.mocked(api.markAllNotificationsRead).mockResolvedValue({ ok: true });
+    vi.mocked(api.markNotificationsSeen).mockResolvedValue({ ok: true });
     vi.mocked(api.markNotificationRead).mockResolvedValue({ ok: true });
     vi.mocked(api.dismissNotification).mockResolvedValue({ ok: true });
     setPageFocus({ visible: true, focused: true });
@@ -153,7 +156,7 @@ describe("NotificationBell message rendering", () => {
     });
   });
 
-  it("does not mark all notifications read when the dropdown opens", async () => {
+  it("clears the new-count badge when the dropdown opens without marking all read", async () => {
     vi.mocked(api.notifications).mockResolvedValue({
       notifications: [
         {
@@ -162,6 +165,7 @@ describe("NotificationBell message rendering", () => {
           body: "You have been assigned the task: Site visit",
           target_url: "/objects/user_task__v/records/abc123",
           read: false,
+          new: true,
           dismissed: false,
           created_at: "2026-08-31T00:00:00Z",
         },
@@ -170,13 +174,22 @@ describe("NotificationBell message rendering", () => {
     });
 
     renderBell();
+    await waitFor(() => {
+      expect(document.querySelector(".ant-badge-count")).toBeTruthy();
+    });
     fireEvent.click(document.querySelector(".header-menus__icon-btn--notifications")!);
 
     await waitFor(() => {
       expect(api.notifications).toHaveBeenCalled();
     });
     expect(api.notifications).toHaveBeenCalledWith("vault-1", "all", 25);
+    await waitFor(() => {
+      expect(api.markNotificationsSeen).toHaveBeenCalledWith("vault-1");
+    });
     expect(api.markAllNotificationsRead).not.toHaveBeenCalled();
+    await waitFor(() => {
+      expect(document.querySelector(".ant-badge-count")).toBeNull();
+    });
   });
 
   it("marks one notification read from the row action", async () => {
@@ -243,7 +256,7 @@ describe("NotificationBell unread-count polling", () => {
   beforeEach(() => {
     vi.useFakeTimers();
     vi.mocked(api.notificationUnreadCount).mockReset();
-    vi.mocked(api.notificationUnreadCount).mockResolvedValue({ unread_count: 0 });
+    vi.mocked(api.notificationUnreadCount).mockResolvedValue({ unread_count: 0, new_count: 0 });
     setPageFocus({ visible: true, focused: true });
   });
 

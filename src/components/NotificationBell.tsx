@@ -1,5 +1,5 @@
 import { Badge, Button, Empty, Popover, Spin, message } from "antd";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../api/client";
 import type { NotificationItem } from "../api/types";
@@ -12,7 +12,7 @@ import {
 import { NotificationItemRow } from "./NotificationItemRow";
 
 export const POLL_INTERVAL_MS = 30_000;
-/** Stop unread-count polls after this long with no pointer/keyboard input. */
+/** Stop new-count polls after this long with no pointer/keyboard input. */
 export const USER_IDLE_MS = 120_000;
 export const DROPDOWN_LIMIT = 25;
 
@@ -24,7 +24,7 @@ const USER_ACTIVITY_EVENTS = [
   "scroll",
 ] as const;
 
-/** Unread-count polling requires a visible tab that is focused or under the pointer. */
+/** New-count polling requires a visible tab that is focused or under the pointer. */
 export function pageHasFocus(pointerOverPage = false): boolean {
   return document.visibilityState === "visible" && (document.hasFocus() || pointerOverPage);
 }
@@ -46,14 +46,19 @@ export function NotificationBell({ vaultId }: Props) {
   const navigate = useNavigate();
   const { shell } = useUi();
   const [open, setOpen] = useState(false);
-  const [unreadCount, setUnreadCount] = useState(0);
+  const [newCount, setNewCount] = useState(0);
   const [items, setItems] = useState<NotificationItem[]>([]);
   const [loading, setLoading] = useState(false);
+  const seenEpochRef = useRef(0);
 
   const refreshCount = useCallback(async () => {
+    const epoch = seenEpochRef.current;
     try {
       const res = await api.notificationUnreadCount(vaultId);
-      setUnreadCount(res.unread_count);
+      if (epoch !== seenEpochRef.current) {
+        return;
+      }
+      setNewCount(res.new_count);
     } catch {
       // ignore polling errors
     }
@@ -165,12 +170,21 @@ export function NotificationBell({ vaultId }: Props) {
     };
   }, [refreshCount]);
 
-  useEffect(() => {
-    if (!open) {
+  async function handleOpenChange(next: boolean) {
+    setOpen(next);
+    if (!next) {
       return;
     }
-    void refreshList();
-  }, [open, refreshList]);
+    seenEpochRef.current += 1;
+    setNewCount(0);
+    try {
+      await refreshList();
+      await api.markNotificationsSeen(vaultId);
+      seenEpochRef.current += 1;
+    } catch {
+      void refreshCount();
+    }
+  }
 
   async function navigateTarget(target: string) {
     setOpen(false);
@@ -198,9 +212,11 @@ export function NotificationBell({ vaultId }: Props) {
     try {
       await api.markNotificationRead(vaultId, item.id);
       setItems((current) =>
-        current.map((row) => (row.id === item.id ? { ...row, read: true } : row)),
+        current.map((row) => (row.id === item.id ? { ...row, read: true, new: false } : row)),
       );
-      setUnreadCount((count) => Math.max(0, count - 1));
+      if (item.new) {
+        setNewCount((count) => Math.max(0, count - 1));
+      }
     } catch {
       // keep current unread state
     }
@@ -210,8 +226,8 @@ export function NotificationBell({ vaultId }: Props) {
     try {
       await api.dismissNotification(vaultId, item.id);
       setItems((current) => current.filter((row) => row.id !== item.id));
-      if (!item.read) {
-        setUnreadCount((count) => Math.max(0, count - 1));
+      if (item.new) {
+        setNewCount((count) => Math.max(0, count - 1));
       }
     } catch {
       // keep the row
@@ -277,11 +293,13 @@ export function NotificationBell({ vaultId }: Props) {
       trigger="click"
       placement="bottomRight"
       open={open}
-      onOpenChange={setOpen}
+      onOpenChange={(next) => {
+        void handleOpenChange(next);
+      }}
       arrow={{ pointAtCenter: true }}
       overlayClassName="notification-popover"
     >
-      <Badge count={unreadCount} size="small" offset={[-2, 4]}>
+      <Badge count={newCount} size="small" offset={[-2, 4]}>
         <Button
           type="text"
           className="header-menus__icon-btn header-menus__icon-btn--notifications"

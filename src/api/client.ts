@@ -3129,6 +3129,14 @@ export const api = {
     );
   },
 
+  markNotificationsSeen(vaultId: string) {
+    return vaultFetch<{ ok: boolean }>(
+      vaultId,
+      "/api/v1/notifications/seen",
+      { method: "POST" },
+    );
+  },
+
   dismissNotification(vaultId: string, notificationId: string) {
     return vaultFetch<{ ok: boolean }>(
       vaultId,

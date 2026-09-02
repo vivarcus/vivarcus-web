@@ -3239,6 +3239,7 @@ export type NotificationItem = {
   body: string;
   target_url?: string;
   read: boolean;
+  new?: boolean;
   dismissed: boolean;
   created_at: string;
 };
@@ -3250,6 +3251,7 @@ export type NotificationListResponse = {
 
 export type NotificationUnreadCountResponse = {
   unread_count: number;
+  new_count: number;
 };
 
 // --- Admin metadata viewer (Objects / Fields / Pagelayouts) ---

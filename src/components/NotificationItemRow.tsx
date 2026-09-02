@@ -62,8 +62,8 @@ export function NotificationItemRow({
   return (
     <div
       className={`notification-item${item.read ? "" : " notification-item--unread"}${
-        layout === "page" ? " notification-item--page" : ""
-      }`}
+        item.new ? " notification-item--new" : ""
+      }${layout === "page" ? " notification-item--page" : ""}`}
     >
       {layout === "page" ? (
         <div className="notification-item__avatar" aria-hidden>
